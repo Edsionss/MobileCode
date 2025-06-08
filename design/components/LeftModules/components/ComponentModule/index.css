@@ -24,25 +24,41 @@
   justify-content: right;
 }
 
+.core-panel__item-content {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 
+.core-panel__drag-wrapper {
+  padding: 10px;
+}
 
 
 .core-panel__drag-group {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
 }
+
+
 
 /* --- 单个组件项的样式 --- */
 .core-panel__components {
-  flex: 0 0 calc(33.333% - 0px);
+  /* flex: 0 0 calc(33.333% - 0px); */
+  width: 31%;
   box-sizing: border-box;
   padding: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 90px;
-  border: 1px dashed #e9e9eb;
+  height: 45px;
+  border: 1px solid #e9e9eb;
+  border-radius: 0.5rem;
   font-size: 14px;
   color: #303133;
   /* 明确拖拽手势 */

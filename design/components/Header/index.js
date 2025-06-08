@@ -1,24 +1,33 @@
 import main from '@config/main.js'
 const { header, componentLoader } = main
-const { titleList, modeList, buttonList, version, icon } = header
+const { titleList, modeList, buttonList, version, icon, defaultMode } = header
 const createAsyncComponent = componentLoader.createAsyncComponent
 const headerComponent = {
   name: 'headerComponent',
   props: {
-    defaultTitle: {
-      type: Array
+    chooseTitleList: {
+      type: Array,
+      default: () => titleList
     },
-    defaultMode: {
-      type: Array
+    chooseModeList: {
+      type: Array,
+      default: () => modeList
     },
-    defaultButton: {
-      type: Array
+    chooseButtonList: {
+      type: Array,
+      default: () => buttonList
     },
-    defaultVersion: {
-      type: String
+    chooseVersion: {
+      type: String,
+      default: () => version
     },
-    defaultIcon: {
-      type: String
+    chooseIcon: {
+      type: String,
+      default: () => icon
+    },
+    chooseMode: {
+      type: String,
+      default: () => defaultMode
     }
   },
   template: `
@@ -26,31 +35,51 @@ const headerComponent = {
   `,
   data() {
     return {
-      titleList: [],
-      modeList: [],
-      buttonList: [],
-      version: '',
-      icon: ''
-    }
-  },
-  methods: {
-    defaultClick(item) {
-      console.log('默认点击事件', item)
-    },
-    loadDefaultData() {
-      this.titleList = this.defaultTitle || titleList
-      this.modeList = this.defaultMode || modeList
-      this.buttonList = this.defaultButton || buttonList
-      this.version = this.defaultVersion || version
-      this.icon = this.defaultIcon || icon
+      titleList: this.chooseTitleList,
+      modeList: this.chooseModeList,
+      buttonList: this.chooseButtonList,
+      version: this.chooseVersion,
+      icon: this.chooseIcon,
+      currentModeItem: {},
+      currentMode: this.chooseMode
     }
   },
   created() {
     // 初始化数据
-    this.loadDefaultData()
+    this.loadData()
   },
   // 监听拖拽事件
-  mounted() {}
+  mounted() {
+    // 监听窗口大小变化
+    window.addEventListener(
+      'resize',
+      function () {
+        this.$emit('change-mode', this.currentModeItem)
+      }.bind(this)
+    )
+  },
+  beforeDestroy() {
+    // 移除事件监听器
+    window.removeEventListener('resize')
+  },
+  methods: {
+    changeMode(item) {
+      if (item.label === this.currentMode) {
+        return
+      }
+      this.currentMode = item.label
+      this.currentModeItem = item
+      this.$emit('change-mode', this.currentModeItem)
+    },
+    defaultClick(item) {
+      console.log('默认点击事件', item)
+      item.click && item.click(item).bind(this)
+    },
+    loadData() {
+      this.currentModeItem = this.modeList.find(item => item.label === this.currentMode)
+      this.$emit('change-mode', this.currentModeItem)
+    }
+  }
 }
 // 使用 import.meta.url 可以帮助我们构建一个相对于当前 JS 文件的路径
 // 这比硬编码 '..' 更健壮

@@ -5,7 +5,7 @@
     <div class="attribute-panel__main">
       <div class="attribute-panel__tabs">
         <van-tabs color="#409EFF" v-model:active="currentTabName" @click="defaultClick">
-          <van-tab v-for="tab in tabs" :title="tab.label" :name="tab.name" :key="tab.name">
+          <van-tab v-for="tab in tabs" :title="tab.label" :name="tab.name" :key="tab.id">
             <!-- 属性列表容器 -->
             <div class="attribute-panel__properties-list">
               <!-- 单个属性/表单项 -->
@@ -35,19 +35,19 @@
                     <template
                       v-if="item.options && Array.isArray(item.options) && (item.component === 'el-select' || item.component === 'el-radio-group' || item.component === 'el-checkbox-group')">
                       <template v-if="item.component === 'el-select'">
-                        <el-option v-for="optionItem in item.options" :key="optionItem.value" :label="optionItem.label"
+                        <el-option v-for="optionItem in item.options" :key="optionItem.id" :label="optionItem.label"
                           :value="optionItem.value" :disabled="optionItem.disabled === true">
                         </el-option>
                       </template>
                       <template v-else-if="item.component === 'el-radio-group'">
-                        <el-radio v-for="optionItem in item.options" :key="optionItem.value" :label="optionItem.value"
+                        <el-radio v-for="optionItem in item.options" :key="optionItem.id" :label="optionItem.value"
                           :disabled="optionItem.disabled === true">
                           {{ optionItem.label }}
                         </el-radio>
                       </template>
                       <template v-else-if="item.component === 'el-checkbox-group'">
-                        <el-checkbox v-for="optionItem in item.options" :key="optionItem.value"
-                          :label="optionItem.value" :disabled="optionItem.disabled === true">
+                        <el-checkbox v-for="optionItem in item.options" :key="optionItem.id" :label="optionItem.value"
+                          :disabled="optionItem.disabled === true">
                           {{ optionItem.label }}
                         </el-checkbox>
                       </template>

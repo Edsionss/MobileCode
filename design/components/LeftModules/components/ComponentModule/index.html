@@ -1,9 +1,9 @@
 <div class="core-panel">
   <div class="core-panel__container">
     <van-tabs color="#409EFF" v-model:active="groupName" @click="defaultClick">
-      <van-tab v-for="group in componentModule.group" :title="group.label" :name="group.name" :key="group.name">
+      <van-tab v-for="group in componentModule.group" :title="group.label" :name="group.name" :key="group.id">
         <div class="core-panel__main">
-          <div class="core-panel__item" v-for="children in group.group" :key="children.name">
+          <div class="core-panel__item" v-for="children in group.group" :key="children.id">
             <div class="core-panel__item-header" @click="foldItem(children)">
               <div class="core-panel__header-label">
                 {{children.label}}
@@ -14,10 +14,10 @@
             </div>
             <div class="core-panel__item-content" v-show="show">
               <draggable v-model="children.children" :group="{ name: 'itxst', pull: 'clone', put: false }"
-                force-fallback="true" animation="1000" @start="onStart" @end="onEnd" :sort="false"
+                force-fallback="true" animation="300" @start="onStart" @end="onEnd" :sort="false"
                 chosen-class="core-panel__dragg__item" class="core-panel__drag-wrapper">
                 <transition-group tag="div" class="core-panel__drag-group">
-                  <ol class="core-panel__components" v-for="(item,index) in children.children" :key="item.name+index">
+                  <ol class="core-panel__components" v-for="(item,index) in children.children" :key="item.id">
                     {{item.label}}
                   </ol>
                 </transition-group>

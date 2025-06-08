@@ -2,11 +2,15 @@
   <div class="components-panel__content">
     <!-- 左侧模块栏 -->
     <div class="components-panel__module-bar">
-      <div class="components-panel__module-item" v-for="(item,index) in module">
+      <div class="components-panel__module-item" v-for="(item,index) in module" :key="item.id"
+        :class="{ 'components-panel__module-item__active': currentModuleName === item.name }">
         <div class="components-panel__module-icon" @click="defaultClick(item,index,'module')">
           <el-tooltip class="item" effect="dark" :content="item.name" placement="right">
-            <img v-if="item.src" :src="item.src" alt="">
-            <el-icon v-else :class="item.icon"></el-icon>
+            <div class="components-panel__module-icon-item">
+              <img v-if="item.src" :src="item.src" alt="">
+              <el-icon v-else :class="item.icon"></el-icon>
+              <div class="components-panel__module-icon-item-name">{{item.name}}</div>
+            </div>
           </el-tooltip>
         </div>
       </div>
