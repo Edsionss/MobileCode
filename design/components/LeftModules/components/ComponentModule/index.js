@@ -13,7 +13,7 @@ const ComponentModule = {
   },
   template: `
   `,
-
+  inject: ['dragComponents'],
   data() {
     return {
       componentModule: componentModule,
@@ -29,7 +29,16 @@ const ComponentModule = {
       this.show = !this.show
     },
     onStart() {},
-    onEnd() {}
+    onEnd(array, event) {
+      if (event.pullMode === 'clone') {
+        if (typeof this.dragComponents === 'function') {
+          this.dragComponents(array.children[event.oldIndex])
+        }
+      }
+    },
+    onClone(e) {
+      console.log('onClone', e)
+    }
   }
 }
 // 使用 import.meta.url 可以帮助我们构建一个相对于当前 JS 文件的路径

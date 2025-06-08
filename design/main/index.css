@@ -62,6 +62,11 @@ body {
   cursor: pointer;
 }
 
+.design-layout__canvas-panel__body {
+  height: 100%;
+  width: 100%;
+}
+
 .design-layout__canvas-panel__warning {
   padding: 10px;
 

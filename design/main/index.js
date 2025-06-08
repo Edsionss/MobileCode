@@ -20,6 +20,11 @@ Vue.component('canvas-component', bodyCanvasComponent)
 var app = new Vue({
   el: '#app',
   components: {},
+  provide() {
+    return {
+      dragComponents: this.dragComponents
+    }
+  },
   data() {
     return {
       currentGroup: 'form',
@@ -45,6 +50,9 @@ var app = new Vue({
 
   computed: {},
   methods: {
+    dragComponents(item) {
+      console.log(item)
+    },
     changeMode(item) {
       // console.log('当前模式', item)
       this.canvas.currentMode = item.label
