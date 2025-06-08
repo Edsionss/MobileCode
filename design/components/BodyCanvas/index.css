@@ -6,14 +6,19 @@
 .canvas-drag {
   width: 100%;
   height: 100%;
-  /* background-color: #f0f2f5; */
   padding: 10px;
   box-sizing: border-box;
-  /*  */
-  border: 1px dashed #ccc;
+  /* border: 1px dashed #ccc; */
   border-top: none;
   border-bottom: none;
   /* 建议加上，避免 padding 影响总宽高 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overflow: auto;
 }
 
 /* Element: The status indicator text */
@@ -41,6 +46,22 @@
   /* hover 时显示虚线边框 */
 }
 
+.canvas-drag__container {
+  height: 100%;
+  overflow: auto;
+  width: 100%;
+
+}
+
+.canvas-drag__content,
+.canvas-drag__item-group {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+
+
 /* Modifier: The state of an item when it is being chosen/dragged */
 /* 注意：BEM 推荐将 Modifier 和 Element 类名写在一起，以提高选择器权重和明确性 */
 .canvas-drag__item--chosen {
@@ -48,6 +69,7 @@
   /* 选中时给一个淡蓝色背景 */
   border: solid 2px #3089dc !important;
   /* draggable 可能会覆盖，所以保留 !important */
+
 }
 
 /* 

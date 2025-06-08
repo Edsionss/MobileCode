@@ -11,10 +11,10 @@ const bodyCanvasComponent = {
     return {
       drag: false,
       myArray: [
-        { people: 'cn', id: 1, name: 'www.itxst.com' },
-        { people: 'cn', id: 2, name: 'www.baidu.com' },
-        { people: 'cn', id: 3, name: 'www.taobao.com' },
-        { people: 'us', id: 4, name: 'www.google.com' }
+        { people: 'cn', id: 1123123, name: 'www.itxst.com' },
+        { people: 'cn', id: 2456456, name: 'www.baidu.com' },
+        { people: 'cn', id: 3456456, name: 'www.taobao.com' },
+        { people: 'us', id: 4564564, name: 'www.google.com' }
       ]
     }
   },

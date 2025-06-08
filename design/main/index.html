@@ -37,18 +37,32 @@
 
 <body>
   <div id="app">
-    <div class="design-main-body">
-      <div class="header-container">
-        <header-component></headerComponent>
+    <!-- Block: design-layout -->
+    <div class="design-layout">
+      <!-- Element: header -->
+      <div class="design-layout__header">
+        <header-component @change-Mode="changeMode"></headerComponent>
       </div>
-      <div class="body-container">
-        <div class="components">
+      <!-- Element: body -->
+      <div class="design-layout__body">
+        <!-- Element: components-panel -->
+        <div class="design-layout__components-panel">
           <modules-component></modules-component>
         </div>
-        <div class="canvas">
-          <canvas-component></canvas-component>
+        <!-- Element: canvas-panel -->
+        <div class="design-layout__canvas-panel" :style="canvas.currentModeStyle">
+
+          <div class="design-layout__canvas-panel__warning" v-if="canvas.canvasWarning">
+            <div class="design-layout__canvas-panel__warning-title">
+              {{ canvas.canvasWarningTitle }}
+            </div>
+          </div>
+          <div class="design-layout__canvas-panel__body" v-else>
+            <canvas-component></canvas-component>
+          </div>
         </div>
-        <div class="attribute">
+        <!-- Element: attribute-panel -->
+        <div class="design-layout__attribute-panel">
           <attribute-component :group="currentGroup" :component="currentComponent"
             :tab="currentTab"></attribute-component>
         </div>

@@ -56,6 +56,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
 }
 
 /* Element: 单个模式选项 */
@@ -66,18 +67,23 @@
   border-radius: 5px;
   transition: background-color 0.2s;
   /* 增加过渡效果 */
-}
-
-.header-panel__mode-item:hover,
-.header-panel__mode-item:active {
-  background-color: #F2F2F2;
+  user-select: none;
 }
 
 /* Modifier: 选中状态的模式选项 */
+.header-panel__mode-item:hover,
+.header-panel__mode-item:active,
 .header-panel__mode-item--active {
-  background-color: #e0eafc;
-  /* 举例：一个激活状态的背景色 */
+  background-color: #d9ecff;
 }
+
+/* 父元素 hover 时改变子元素样式，这是 BEM 允许的 */
+.header-panel__mode-item:hover .header-panel__mode-label,
+.header-panel__mode-item--active .header-panel__mode-label {
+  color: #409EFF;
+}
+
+
 
 /* Element: 模式选项的内容包裹器 */
 .header-panel__mode-content {
@@ -101,10 +107,7 @@
   /* 增加过渡效果 */
 }
 
-/* 父元素 hover 时改变子元素样式，这是 BEM 允许的 */
-.header-panel__mode-item:hover .header-panel__mode-label {
-  color: #000;
-}
+
 
 
 /* --- 右侧区域 --- */

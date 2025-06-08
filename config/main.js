@@ -1,3 +1,4 @@
+import utils from '@utils/index.js'
 import global from './global/index.js'
 import header from './components/header.js'
 import bodyCanvas from './components/bodyCanvas.js'
@@ -10,8 +11,7 @@ import rightAttribute from './components/rightAttribute.js'
 import componentsAttrForm from './base/componentsAttrForm.js'
 import componentLoader from '../utils/componentLoader.js'
 import componentsDict from '../modules/componentsDict.js'
-
-export default {
+const config = {
   header,
   bodyCanvas,
   leftModules,
@@ -25,3 +25,10 @@ export default {
   help,
   template
 }
+for (const key in config) {
+  let data = config[key]
+  config[key] = utils.generateDataId(data)
+}
+console.log(config)
+
+export default config
