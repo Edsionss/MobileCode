@@ -18,12 +18,25 @@ const bodyCanvasComponent = {
       ]
     }
   },
+  watch: {
+    myArray() {
+      // console.log(this.myArray)
+    }
+  },
   methods: {
     onStart() {
       this.drag = true
+      console.log(this.myArray, e)
     },
     onEnd() {
       this.drag = false
+      console.log(this.myArray, e)
+    },
+    onClone(e) {
+      console.log(this.myArray, e)
+    },
+    onAddItem(event) {
+      console.log('一个新项被添加!', event)
     }
   }
 }
