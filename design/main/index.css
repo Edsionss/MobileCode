@@ -1,0 +1,33 @@
+body {
+  font-family: sans-serif;
+}
+
+.design-main-body .body-container {
+  width: 100%;
+  height: calc(100vh - 57px);
+  overflow: hidden;
+  position: relative;
+  background-color: #ffffff;
+}
+
+.design-main-body .body-container .components,
+.design-main-body .body-container .canvas,
+.design-main-body .body-container .attribute {
+  height: 100%;
+  overflow: auto;
+  position: absolute;
+  top: 0;
+}
+
+.design-main-body .body-container .components {
+  left: 0;
+}
+
+.design-main-body .body-container .canvas {
+  right: 415px;
+  width: calc(100% - 780px);
+}
+
+.design-main-body .body-container .attribute {
+  right: 0;
+}

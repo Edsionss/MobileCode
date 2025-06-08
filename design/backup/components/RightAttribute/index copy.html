@@ -1,0 +1,81 @@
+<div class="attribute-container">
+  <div v-if="group&&component">
+    <div class="attribute-header"></div>
+    <div class="attribute-main">
+      <div class="attribute-tabs">
+        <van-tabs color="#409EFF" v-model:active="currentTabName" @click="defaultClick">
+          <van-tab v-for="tab in tabs" :title="tab.label" :name="tab.name" :key="tab.name">
+            <!-- 更稳健的 key -->
+            <div class="dynamic-item-wrapper">
+              <div class="dynamic-item-wrapper-main" v-for="(item, index) in tab.content"
+                :key="item.valueName || item.component + '-' + index">
+                <div class="components-label">
+                  <el-tooltip v-if="item.props.tip" class="item" effect="dark" :content="item.props.tip||'没有任何提示'"
+                    :placement="item.tipPosition || 'top'">
+                    <div class="label-content">
+                      <el-icon class="el-icon-warning-outline"></el-icon>
+                      <label>{{item.props.label||'标题' }}：</label>
+                    </div>
+                  </el-tooltip>
+                  <div class="label-content" v-else>
+                    <el-icon v-if="item.props.labelIcon" :class="item.props.labelIcon"></el-icon>
+                    <label>{{item.props.label||'标题' }}：</label>
+                  </div>
+                </div>
+                <div class="components-content">
+                  <!--事件也通过方法处理，方便绑定this -->
+                  <!-- 特殊处理 el-upload 的 file-list (如果使用 v-model 模式) -->
+                  <component :is="item.component" v-bind="getProcessedProps(item)" v-on="getProcessedEvents(item)"
+                    :value="isInputWithValue(tab,item) ? formData[tab.name][item.valueName] : undefined"
+                    @input="componentEmittedInput($event, tab,item)"
+                    :file-list="item.component === 'el-upload' && item.valueName ? formData[tab.name][item.valueName] : undefined"
+                    v-if="!isHidden(tab,item)">
+                    <!-- 新增：条件渲染 -->
+                    <!-- 专门为 el-select, el-radio-group, el-checkbox-group 渲染选项 -->
+                    <template
+                      v-if="item.options && Array.isArray(item.options) && (item.component === 'el-select' || item.component === 'el-radio-group' || item.component === 'el-checkbox-group')">
+                      <!-- //处理el-select -->
+                      <template v-if="item.component === 'el-select'">
+                        <el-option v-for="optionItem in item.options" :key="optionItem.value" :label="optionItem.label"
+                          :value="optionItem.value" :disabled="optionItem.disabled === true">
+                        </el-option>
+                      </template>
+                      <!-- //处理el-radio-group -->
+                      <template v-else-if="item.component === 'el-radio-group'">
+                        <!-- 可以根据 item.optionType 进一步区分 el-radio 或 el-radio-button -->
+                        <el-radio v-for="optionItem in item.options" :key="optionItem.value" :label="optionItem.value"
+                          :disabled="optionItem.disabled === true">
+                          {{ optionItem.label }}
+                        </el-radio>
+                      </template>
+                      <!-- //处理el-checkbox-group -->
+                      <template v-else-if="item.component === 'el-checkbox-group'">
+                        <el-checkbox v-for="optionItem in item.options" :key="optionItem.value"
+                          :label="optionItem.value" :disabled="optionItem.disabled === true">
+                          {{ optionItem.label }}
+                        </el-checkbox>
+                      </template>
+                    </template>
+                    <!-- 处理其他组件的简单文本/HTML插槽 -->
+                    <template v-else-if="item.slot && typeof item.slot === 'string'">
+                      <span v-if="isHtmlString(item.slot)" v-html="item.slot"></span>
+                      <span v-else>{{ item.slot }}</span>
+                    </template>
+                    <!-- 注意：对于 el-upload, slot 内容通常是触发按钮和提示，已包含在 props.slot 中 -->
+                  </component>
+                  <!-- v-if="isInputWithValue(tab,item) && !isHidden(tab,item)" -->
+                  <div v-if="item.valueState" style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                    绑定的值 (formData.{{tab.name}}{{item.valueName}}): {{ formData[tab.name][item.valueName] }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </van-tab>
+        </van-tabs>
+      </div>
+    </div>
+  </div>
+  <div class="attribute-none" v-else>
+    <el-empty description="当前没有选择组件或该组建暂无属性"></el-empty>
+  </div>
+</div>

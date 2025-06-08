@@ -1,0 +1,58 @@
+/*
+ * BEM Styles for the CanvasDrag Component
+ */
+
+/* Block: The main container for the draggable canvas */
+.canvas-drag {
+  width: 100%;
+  height: 100%;
+  /* background-color: #f0f2f5; */
+  padding: 10px;
+  box-sizing: border-box;
+  /*  */
+  border: 1px dashed #ccc;
+  border-top: none;
+  border-bottom: none;
+  /* 建议加上，避免 padding 影响总宽高 */
+}
+
+/* Element: The status indicator text */
+.canvas-drag__status {
+  margin-bottom: 10px;
+  color: #606266;
+  font-size: 14px;
+}
+
+/* Element: Each draggable item */
+.canvas-drag__item {
+  padding: 6px;
+  background-color: #fdfdfd;
+  margin-bottom: 10px;
+  cursor: move;
+  border: 1px dashed transparent;
+  /* 添加一个透明边框，防止 hover 和 chosen 时跳动 */
+  transition: background-color 0.2s, border-color 0.2s;
+  /* 添加过渡效果 */
+}
+
+.canvas-drag__item:hover {
+  background-color: #f1f1f1;
+  border-color: #dcdfe6;
+  /* hover 时显示虚线边框 */
+}
+
+/* Modifier: The state of an item when it is being chosen/dragged */
+/* 注意：BEM 推荐将 Modifier 和 Element 类名写在一起，以提高选择器权重和明确性 */
+.canvas-drag__item--chosen {
+  background-color: #f0f8ff;
+  /* 选中时给一个淡蓝色背景 */
+  border: solid 2px #3089dc !important;
+  /* draggable 可能会覆盖，所以保留 !important */
+}
+
+/* 
+   如果 draggable 的 !important 权重过高，可以尝试更高权重的选择器，
+   但通常 .class--modifier 已经足够。
+   例如:
+   .canvas-drag .canvas-drag__item--chosen { ... }
+*/

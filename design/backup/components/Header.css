@@ -1,0 +1,91 @@
+.header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 55px;
+  border-bottom: #666 0.5px dashed;
+}
+
+.left-title {
+  padding-left: 10px;
+  flex: 1;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.left-title-version .el-tag {
+  font-size: 16px;
+}
+
+.left-title-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.title-box {
+  padding-left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.center-mode {
+  flex: 1;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-box {
+  text-align: center;
+  cursor: pointer;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+.mode-box:hover,
+.mode-box:active {
+  background-color: #F2F2F2;
+}
+
+.mode-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.mode-content-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.mode-content-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.mode-content-text:hover {
+  color: #000;
+}
+
+.right-btn {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.button-box {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 5px;
+}

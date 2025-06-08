@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Vue2 Draggable - Final Fixed Version</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+  <style>
+    body {
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      background-color: #f4f5f7;
+    }
+
+    #app {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .drag-container {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+    }
+
+    .drag-list {
+      flex: 1;
+      border: 1px solid #ebeef5;
+      padding: 15px;
+      border-radius: 4px;
+      background-color: #fcfcfc;
+      transition: background-color 0.3s;
+      /* 
+        **********************************************
+        *          唯一的、关键的 CSS 修改点          *
+        *  为列表容器设置一个最小高度，防止其在空内容时塌陷 *
+        **********************************************
+      */
+      min-height: 300px;
+    }
+
+    .drag-list:hover {
+      background-color: #f5f7fa;
+    }
+
+    .drag-item {
+      cursor: grab;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .05);
+      transition: all 0.3s ease;
+    }
+
+    .drag-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+    }
+
+    .item-done {
+      text-decoration: line-through;
+      color: #909399;
+      background-color: #f0f2f5;
+      border-color: #e9e9eb;
+    }
+
+    .ghost-style {
+      opacity: 0.5;
+      background: #c8ebfb;
+      border: 1px dashed #409eff;
+    }
+
+    pre {
+      background-color: #fafafa;
+      border: 1px solid #eaeaea;
+      padding: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <h2 style="text-align: center; margin-bottom: 30px;">拖拽问题最终修复版 (最简修改)</h2>
+
+    <div class="drag-container">
+      <todo-list :tasks="todoTasks" @change="handleListChange"></todo-list>
+      <done-list :tasks="doneTasks" @change="handleListChange"></done-list>
+    </div>
+
+    <!-- 数据监控部分保持不变 -->
+    <div style="margin-top: 40px; text-align: center;">
+      <h3>父组件实时数据</h3>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <h4>待办任务 (todoTasks)</h4>
+          <pre>{{ JSON.stringify(todoTasks, null, 2) }}</pre>
+        </el-col>
+        <el-col :span="12">
+          <h4>已完成任务 (doneTasks)</h4>
+          <pre>{{ JSON.stringify(doneTasks, null, 2) }}</pre>
+        </el-col>
+      </el-row>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuedraggable@2.24.3/dist/vuedraggable.umd.min.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+  <script>
+    // --- 通用的列表子组件定义 ---
+    const TaskListComponent = {
+      props: {
+        title: { type: String, required: true },
+        tasks: { type: Array, required: true },
+        itemClass: { type: String, default: '' }
+      },
+      template: `
+        <div class="drag-list">
+          <h3><i :class="title === '待办事项' ? 'el-icon-tickets' : 'el-icon-success'"></i> {{ title }}</h3>
+          <draggable
+            :list="tasks"
+            group="my-tasks"
+            animation="300"
+            ghost-class="ghost-style"
+            style="height: 100%;"
+            @change="$emit('change', $event)" 
+          >
+            <div v-for="task in tasks" :key="task.id" class="drag-item" :class="itemClass">
+              {{ task.text }}
+            </div>
+          </draggable>
+        </div>
+      `
+    };
+
+    // --- Vue 根实例 ---
+    new Vue({
+      el: '#app',
+      data: {
+        todoTasks: [
+          { id: 1, text: "把所有任务拖到右边" },
+          { id: 2, text: "观察左边列表依然可以接收新任务" },
+        ],
+        doneTasks: [
+          { id: 4, text: "初始任务" }
+        ]
+      },
+      components: {
+        'todo-list': {
+          extends: TaskListComponent,
+          props: { title: { default: '待办事项' } }
+        },
+        'done-list': {
+          extends: TaskListComponent,
+          props: { title: { default: '已完成' }, itemClass: { default: 'item-done' } }
+        },
+        'draggable': window.vuedraggable
+      },
+      methods: {
+        // 合并成一个处理器，因为逻辑是通用的
+        handleListChange (event) {
+          console.log('A list has changed:', event);
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

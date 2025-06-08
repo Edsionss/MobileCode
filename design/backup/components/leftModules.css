@@ -1,0 +1,72 @@
+.components-content {
+  max-width: 350px;
+  height: 100%;
+}
+
+.components-content .content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.components-content .content .content-module,
+.components-content .content .content-detail {
+  display: flex;
+}
+
+.components-content .content .content-module {
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 10px;
+  width: 50px;
+  align-items: center;
+  border-right: #ccc 0.5px dashed;
+}
+
+.components-content .content .content-module .module-item {
+  cursor: pointer;
+  font-size: 20px;
+  padding: 8px;
+}
+
+.components-content .content .content-module .module-item .item-icon {}
+
+.components-content .content .content-module .module-item .item-icon i {
+  font-weight: bolder !important;
+}
+
+.components-content .content .content-detail {
+  width: 300px;
+  border-right: #ccc 0.5px dashed;
+}
+
+.components-content .content .content-detail .detail-header {
+  display: flex;
+  height: 30px;
+  width: 100%;
+  align-items: center;
+  border-bottom: #ccc 0.5px dashed;
+  padding: 5px;
+}
+
+.components-content .content .content-detail .detail-header .header-left-title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: bold;
+  justify-content: left;
+  display: flex;
+  padding-left: 15px;
+}
+
+.components-content .content .content-detail .detail-header .header-right-tools {
+  flex: 1;
+  font-size: 18px;
+  display: flex;
+  justify-content: right;
+  font-weight: bold;
+  gap: 8px;
+}
+
+.components-content .content .content-detail .detail-header .header-right-tools .tools-item {
+  cursor: pointer;
+}
