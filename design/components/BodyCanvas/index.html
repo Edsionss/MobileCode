@@ -1,0 +1,17 @@
+<!-- Block: canvas-drag -->
+<div class="canvas-drag">
+
+  <!-- Element: canvas-drag__status -->
+  <div class="canvas-drag__status">{{drag ? '拖拽中' : '拖拽停止'}}</div>
+  <!--chosen-class 现在应用的是带 Modifier 的类名 -->
+  <draggable v-model="myArray" force-fallback="true" group="itxst" animation="1000" @start="onStart" @end="onEnd"
+    chosen-class="canvas-drag__item--chosen">
+    <transition-group>
+      <!-- Element: canvas-drag__item -->
+      <div class="canvas-drag__item" v-for="element in myArray" :key="element.id">
+        {{element.name}}
+      </div>
+    </transition-group>
+  </draggable>
+
+</div>

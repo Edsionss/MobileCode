@@ -1,0 +1,56 @@
+.attribute-container {
+  width: 400px;
+  border-left: #ccc 0.5px dashed;
+  border-right: #ccc 0.5px dashed;
+  margin-left: 10px;
+  height: 100%;
+
+}
+
+.attribute-container .attribute-header {
+  height: 30px;
+  width: 100%;
+  border-bottom: #ccc 0.5px dashed;
+}
+
+.attribute-container .attribute-main .attribute-tabs .dynamic-item-wrapper {
+  border-top: #ccc 0.5px dashed;
+}
+
+.attribute-container .attribute-main .attribute-tabs .dynamic-item-wrapper-main {
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+}
+
+.attribute-container .attribute-main .attribute-tabs .dynamic-item-wrapper .components-label {
+  min-width: 90px;
+  margin-right: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  text-align: right;
+}
+
+.attribute-container .attribute-main .attribute-tabs .dynamic-item-wrapper .components-label .label-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 2px;
+}
+
+.attribute-container .attribute-main .attribute-tabs .dynamic-item-wrapper .components-label label {
+  min-width: 70px;
+  margin-right: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.attribute-container .attribute-main .attribute-tabs .dynamic-item-wrapper .components-content {
+  min-width: calc(100% - 90px - 8px);
+}
+
+input[aria-hidden="true"] {
+  display: none !important;
+}

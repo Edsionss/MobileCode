@@ -1,0 +1,31 @@
+<div class="core-panel">
+  <div class="core-panel__container">
+    <van-tabs color="#409EFF" v-model:active="groupName" @click="defaultClick">
+      <van-tab v-for="group in componentModule.group" :title="group.label" :name="group.name" :key="group.name">
+        <div class="core-panel__main">
+          <div class="core-panel__item" v-for="children in group.group" :key="children.name">
+            <div class="core-panel__item-header" @click="foldItem(children)">
+              <div class="core-panel__header-label">
+                {{children.label}}
+              </div>
+              <div class="core-panel__header-icon">
+                <el-icon :class="show?'el-icon-arrow-down':'el-icon-arrow-up'"></el-icon>
+              </div>
+            </div>
+            <div class="core-panel__item-content" v-show="show">
+              <draggable v-model="children.children" :group="{ name: 'itxst', pull: 'clone', put: false }"
+                force-fallback="true" animation="1000" @start="onStart" @end="onEnd" :sort="false"
+                chosen-class="core-panel__dragg__item" class="core-panel__drag-wrapper">
+                <transition-group tag="div" class="core-panel__drag-group">
+                  <ol class="core-panel__components" v-for="(item,index) in children.children" :key="item.name+index">
+                    {{item.label}}
+                  </ol>
+                </transition-group>
+              </draggable>
+            </div>
+          </div>
+        </div>
+      </van-tab>
+    </van-tabs>
+  </div>
+</div>

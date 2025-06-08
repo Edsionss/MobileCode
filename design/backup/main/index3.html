@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Vue 2 动态组件 (el-select 选项已修正)</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .dynamic-item-wrapper {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #f0f0f0;
+      border-radius: 4px;
+    }
+
+    .dynamic-item-wrapper>label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <h2>动态渲染组件列表 (el-select 选项已修正)</h2>
+    <p style="color: red; font-weight: bold;">静态测试输入框:
+      <el-input v-model="staticTestValue" placeholder="静态测试"></el-input>
+      静态值: {{ staticTestValue }}
+    </p>
+    <hr>
+    <div v-for="(item, index) in content" :key="item.valueName || 'item-' + index" class="dynamic-item-wrapper">
+      <label v-if="item.props && item.props.label">{{ item.props.label }}</label>
+
+      <component :is="item.component" v-bind="getProcessedProps(item)" v-on="item.events"
+        :value="isInputWithValue(item) ? formData[item.valueName] : undefined"
+        @input="componentEmittedInput($event, item)">
+        <!-- 专门为 el-select 渲染 el-option -->
+        <template v-if="item.component === 'el-select' && item.options && Array.isArray(item.options)">
+          <!-- 修改变量名避免与外部item冲突 -->
+          <el-option v-for="optionItem in item.options" :key="optionItem.value" :label="optionItem.label"
+            :value="optionItem.value" :disabled="optionItem.disabled === true"> <!-- 明确判断布尔值 -->
+          </el-option>
+        </template>
+
+        <!-- 处理其他组件的简单文本/HTML插槽 -->
+        <template v-else-if="item.slot && typeof item.slot === 'string'">
+          {{ item.slot }}
+        </template>
+        <template v-else-if="item.slot && item.slot.html">
+          <span v-html="item.slot.html"></span> <!-- 注意XSS风险 -->
+        </template>
+      </component>
+      <div v-if="isInputWithValue(item)" style="font-size: 0.8em; color: #666; margin-top: 5px;">
+        绑定的值 (formData.{{item.valueName}}): {{ formData[item.valueName] }}
+      </div>
+    </div>
+
+    <hr style="margin: 20px 0;">
+    <h3>表单数据 (formData) 预览:</h3>
+    <pre>{{ formData }}</pre>
+
+    <el-button type="primary" @click="logFormData" style="margin-top: 10px;">打印表单数据到控制台</el-button>
+    <el-button @click="addNewSelect" style="margin-top: 10px;">添加一个新Select</el-button>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: function () {
+        return {
+          staticTestValue: '静态测试OK',
+          formData: {},
+          content: [
+            {
+              component: 'el-input',
+              valueName: 'name',
+              defaultValue: '默认文本值',
+              props: { label: '名称', placeholder: '请输入名称', clearable: true },
+              events: { change: function (val) { console.log('[Event] 名称 Input "change":', val); } },
+            },
+            {
+              component: 'el-select',
+              valueName: 'category',
+              defaultValue: 'option1', // 确保 defaultValue 与某个 option 的 value 匹配
+              props: { label: '类别', placeholder: '请选择类别', clearable: true },
+              options: [ // 使用 options 数组来定义选项
+                { label: '类别一 (值: option1)', value: 'option1' },
+                { label: '类别二 (值: option2)', value: 'option2' },
+                { label: '类别三 (禁用)', value: 'option3', disabled: true },
+                { label: '类别四 (值: option4)', value: 'option4' }
+              ],
+              events: { change: function (val) { console.log('[Event] 类别 Select "change":', val); } }
+            },
+            {
+              component: 'el-switch',
+              valueName: 'isActive',
+              defaultValue: false,
+              props: { label: '激活状态' },
+              events: {}
+            },
+            {
+              component: 'el-button',
+              props: { type: 'success', icon: 'el-icon-check' },
+              events: { click: function () { alert('动态按钮被点击！'); } },
+              slot: '保存'
+            }
+          ],
+          nextItemId: 1,
+          nextSelectId: 1
+        };
+      },
+      created: function () {
+        this.content.forEach(item => {
+          if (item.valueName) {
+            this.$set(this.formData, item.valueName, item.defaultValue);
+          }
+        });
+      },
+      methods: {
+        isInputWithValue: function (itemConfig) {
+          const inputComponents = ['el-input', 'el-select', 'el-switch', 'el-input-number', 'el-color-picker'];
+          return itemConfig && itemConfig.component && itemConfig.valueName && inputComponents.includes(itemConfig.component);
+        },
+        componentEmittedInput: function (inputValue, itemConfig) {
+          if (this.isInputWithValue(itemConfig)) {
+            this.handleActualInputValueChange(itemConfig.valueName, inputValue);
+          }
+        },
+        handleActualInputValueChange: function (valueName, newValue) {
+          this.$set(this.formData, valueName, newValue);
+        },
+        logFormData: function () {
+          console.log('Current formData:', JSON.parse(JSON.stringify(this.formData)));
+        },
+        getProcessedProps: function (itemConfig) {
+          const props = { ...itemConfig.props };
+          delete props.label;
+          return props;
+        },
+        addNewSelect: function () { // 示例：添加一个新的 select
+          const newIdSuffix = this.nextSelectId++;
+          const newItemValueName = `newSelect${newIdSuffix}`;
+
+          this.$set(this.formData, newItemValueName, 'a'); // 初始化 formData
+
+          this.content.push({
+            component: 'el-select',
+            valueName: newItemValueName,
+            defaultValue: 'a',
+            props: {
+              label: `新下拉框 ${newIdSuffix}`,
+              placeholder: '请选择',
+              clearable: true,
+            },
+            options: [
+              { label: `选项A - ${newIdSuffix}`, value: 'a' },
+              { label: `选项B - ${newIdSuffix}`, value: 'b' },
+              { label: `选项C - ${newIdSuffix}`, value: 'c' },
+            ],
+            events: {
+              change: function (val) { console.log(`[Event] ${newItemValueName} Select "change":`, val); }
+            }
+          });
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

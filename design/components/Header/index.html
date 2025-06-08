@@ -1,0 +1,43 @@
+<div class="header-panel">
+  <!-- 左侧区域 -->
+  <div class="header-panel__left-section">
+    <div class="header-panel__icon"><img :src="icon" alt=""></div>
+    <div class="header-panel__title-group">
+      <div class="header-panel__title-item" v-for="item in titleList" :key="item.id">
+        {{ item.label }}
+      </div>
+    </div>
+    <div class="header-panel__version"><el-tag type="primary">V {{version}}</el-tag></div>
+  </div>
+
+  <!-- 中间模式切换区域 -->
+  <div class="header-panel__mode-switcher">
+    <!-- 
+      这里是一个很好的使用 Modifier 的例子。
+      你可以通过 :class 绑定一个 active 状态的修饰符。
+      例如: :class="{'header-panel__mode-item--active': item.id === currentModeId}"
+    -->
+    <div class="header-panel__mode-item" v-for="item in modeList" :key="item.id">
+      <div class="header-panel__mode-content">
+        <div class="header-panel__mode-icon"><img :src="item.icon" alt=""></div>
+        <div class="header-panel__mode-label">
+          {{ item.label }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧操作按钮区域 -->
+  <div class="header-panel__actions">
+    <div class="header-panel__actions-group">
+      <div class="header-panel__action-item" v-for="item in buttonList" :key="item.id">
+        <el-button :type="item.type || 'primary'" :icon="item.icon||'el-icon-thumb'" :disabled="item.disabled||false"
+          :plain="item.plain||false" :round="item.round||false" :circle="item.circle||false" :size="item.size||'medium'"
+          :loading="item.loading||false" :loading-text="item.loadingText||'加载中'"
+          @click="item.click||defaultClick(item)">
+          {{item.label}}
+        </el-button>
+      </div>
+    </div>
+  </div>
+</div>
