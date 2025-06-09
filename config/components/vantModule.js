@@ -1,6 +1,6 @@
 import dict from '@modules/components/Vant.js'
 
-const VantList = {
+const vantModule = {
   defaultGroup: 'base',
   group: [
     {
@@ -14,9 +14,11 @@ const VantList = {
           children: [
             {
               label: '输入框',
-              icon: '',
-              tag: 'field',
-              name: ''
+              tag: 'field'
+            },
+            {
+              label: '计数器',
+              tag: 'stepper'
             }
           ]
         }
@@ -36,7 +38,7 @@ const VantList = {
     }
   ]
 }
-VantList.group.forEach(group => {
+vantModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {
       if (dict[child.tag]) {
@@ -45,4 +47,4 @@ VantList.group.forEach(group => {
     })
   })
 })
-export default VantList
+export default vantModule

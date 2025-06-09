@@ -3,7 +3,7 @@ import global from './global/index.js'
 import header from './components/header.js'
 import bodyCanvas from './components/bodyCanvas.js'
 import leftModules from './components/leftModules.js'
-import componentModule from './components/componentModule.js'
+import vantModule from './components/vantModule.js'
 import dataSource from './components/dataSource.js'
 import help from './components/help.js'
 import template from './components/template.js'
@@ -22,7 +22,7 @@ const config = {
   Element,
   Vant,
   global,
-  componentModule,
+  vantModule,
   dataSource,
   help,
   template,
