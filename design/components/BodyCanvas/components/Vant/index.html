@@ -1,0 +1,9 @@
+<!-- Block: canvas-drag -->
+<div class="Vant-Panel__container">
+  <div class="Vant-Panel__main">
+    <!-- <van-form @submit="onSubmit"></van-form> -->
+    <component v-for="(component,index) in componentsData" :is="component.component" :key=" component.id">
+      <template></template>
+    </component>
+  </div>
+</div>

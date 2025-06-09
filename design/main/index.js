@@ -51,7 +51,7 @@ var app = new Vue({
   computed: {},
   methods: {
     dragComponents(item) {
-      console.log(item)
+      // console.log(item)
     },
     changeMode(item) {
       // console.log('当前模式', item)

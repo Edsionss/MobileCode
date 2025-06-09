@@ -1,4 +1,6 @@
-export default {
+import dict from '@modules/components/Vant.js'
+
+const VantList = {
   defaultGroup: 'base',
   group: [
     {
@@ -13,31 +15,7 @@ export default {
             {
               label: '输入框',
               icon: '',
-              tag: '',
-              name: ''
-            },
-            {
-              label: '输入框',
-              icon: '',
-              tag: '',
-              name: ''
-            },
-            {
-              label: '输入框',
-              icon: '',
-              tag: '',
-              name: ''
-            },
-            {
-              label: '输入框',
-              icon: '',
-              tag: '',
-              name: ''
-            },
-            {
-              label: '输入框',
-              icon: '',
-              tag: '',
+              tag: 'field',
               name: ''
             }
           ]
@@ -47,12 +25,24 @@ export default {
     {
       name: 'special',
       label: '特色组件',
-      icon: 'el-icon-menu'
+      icon: 'el-icon-menu',
+      group: []
     },
     {
       name: 'custom',
       label: '自定组件',
-      icon: 'el-icon-menu'
+      icon: 'el-icon-menu',
+      group: []
     }
   ]
 }
+VantList.group.forEach(group => {
+  group.group.forEach(item => {
+    item.children = item.children.map(child => {
+      if (dict[child.tag]) {
+        return (child = dict[child.tag](child))
+      }
+    })
+  })
+})
+export default VantList

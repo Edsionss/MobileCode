@@ -1,14 +1,7 @@
 import main from '@config/main.js'
 const { bodyCanvas, componentLoader, utils, Vant } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
-// import ElementCanvas from './components/Element/index.js'
-// import LayuiCanvas from './components/Layui/index.js'
-import VantCanvas from './components/Vant/index.js'
-// import WotDesignCanvas from './components/WotDesign/index.js'
-// Vue.component('Element', ElementCanvas)
-// Vue.component('Layui', LayuiCanvas)
-Vue.component('vant-canvas', VantCanvas)
-// Vue.component('WotDesign', WotDesignCanvas)
+import './components/BodyCanvas/index.css'
 const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
   template: `<div>Loading...</div>`,
@@ -31,21 +24,22 @@ const bodyCanvasComponent = {
   watch: {},
   methods: {
     onStart(e) {
-      // console.log('onStart', e)
+      this.drag = true
+      console.log('onStart', e)
     },
     onEnd(e) {
       this.drag = false
-      // console.log('onEnd', e)
+      console.log('onEnd', e)
     },
     onClone(e) {
-      // console.log('onClone', e)
+      console.log('onClone', e)
     },
     onAddItem(event) {
-      // console.log('onAddItem', event)
+      console.log('onAddItem', event)
     },
     dragChange(item) {
-      // console.log('change', item)
-      // console.log(this.dragComponents)
+      console.log('change', item)
+      console.log(this.dragComponents)
     }
   }
 }
