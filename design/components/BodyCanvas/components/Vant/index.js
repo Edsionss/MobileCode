@@ -5,32 +5,53 @@ const VantCanvas = {
   name: 'VantCanvas',
   template: `<div>Loading...</div>`,
   components: {},
-  props: {
-    componentsList: {
-      type: Array,
-      default: () => []
-    }
-  },
+  props: {},
+  inject: ['configComponentsAttr'],
   data() {
     return {
-      drag: false,
-      componentsData: this.componentsList,
-      formType: ['field']
+      componentsData: [],
+      formData: {}
     }
   },
   created() {},
   computed: {},
-  watch: {
-    componentsList(val) {
-      this.componentsData = val
-    }
-  },
+  watch: {},
   methods: {
-    handelForm() {
-      // this.componentsData.map(item => {
-      //   item.group = '表单'
-      //   item = { component: 'van-form', children: [item] }
-      // })
+    //添加表单的v-model值
+    handelComponentValue() {
+      this.componentsData.array.forEach(element => {
+        if (element.groupName === 'form') {
+          if (!this.formData.hasOwnProperty(element.id)) {
+            this.$set(element.id, this.formData, element.defaultValue)
+          }
+        }
+      })
+    },
+    //手动更新表单值
+    componentEmittedInput(inputValueOrFile, component) {
+      let newValue = inputValueOrFile
+      this.$set(this.formData, component.id, newValue)
+    },
+    onStart(e) {
+      // console.log('onStart', e)
+    },
+    onEnd(e) {
+      this.drag = false
+      // console.log('onEnd', e)
+    },
+    onClone(e) {
+      // console.log('onClone', e)
+    },
+    onAddItem(event) {
+      // console.log('onAddItem', event)
+    },
+    dragChange(item) {
+      if (item.added) {
+        this.configComponentsAttr(item.added.element)
+      }
+    },
+    clickComponents(component) {
+      this.configComponentsAttr(component)
     }
   }
 }

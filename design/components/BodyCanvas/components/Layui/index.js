@@ -1,45 +1,42 @@
 import main from '@config/main.js'
-const { bodyCanvas, componentLoader, utils, Vant } = main
+const { componentLoader, utils, Vant } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
-import './components/BodyCanvas/index.css'
-const bodyCanvasComponent = {
-  name: 'bodyCanvasComponent',
+const VantCanvas = {
+  name: 'VantCanvas',
   template: `<div>Loading...</div>`,
-  components: {
-    vuedraggable: window.vuedraggable //当前页面注册组件
-  },
-
+  components: {},
+  props: {},
   data() {
     return {
       drag: false,
-      dragComponents: []
+      componentsData: [],
+      formType: ['field']
     }
   },
-  computed: {
-    // renderComponents() {
-    //   // 这里可以根据实际的 schema 结构来调整
-    //   return this.schema.components || []
-    // }
-  },
+  created() {},
+  computed: {},
   watch: {},
   methods: {
+    handelForm() {},
     onStart(e) {
-      this.drag = true
-      console.log('onStart', e)
+      // console.log('onStart', e)
     },
     onEnd(e) {
       this.drag = false
-      console.log('onEnd', e)
+      // console.log('onEnd', e)
     },
     onClone(e) {
-      console.log('onClone', e)
+      // console.log('onClone', e)
     },
     onAddItem(event) {
-      console.log('onAddItem', event)
+      // console.log('onAddItem', event)
     },
     dragChange(item) {
-      console.log('change', item)
-      console.log(this.dragComponents)
+      // console.log('change', item)
+      // console.log(this.dragComponents)
+    },
+    configComponentsAttr(component) {
+      console.log('configComponentsAttr', component)
     }
   }
 }
@@ -48,4 +45,4 @@ const bodyCanvasComponent = {
 const templateUrl = new URL('index.html', import.meta.url).href
 const cssUrl = new URL('index.css', import.meta.url).href
 // 4. 关键：调用加载器，将自己包装成异步组件，然后导出
-export default createAsyncComponent(bodyCanvasComponent, templateUrl, cssUrl)
+export default createAsyncComponent(VantCanvas, templateUrl, cssUrl)

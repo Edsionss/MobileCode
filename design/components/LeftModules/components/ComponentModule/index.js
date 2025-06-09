@@ -43,7 +43,8 @@ const ComponentModule = {
         group.group.map(groupItem => {
           groupItem.children.map(child => {
             if ((child.id = item.id)) {
-              type = groupItem.label
+              child.groupLabel = groupItem.label
+              child.groupName = groupItem.name
             }
           })
         })
@@ -51,9 +52,10 @@ const ComponentModule = {
       let NewItem = {
         ...item,
         id: utils.generateUniqueId(),
-        group: type // 添加 groupType 属性
+        groupLabel: item.groupLabel, // 添加 groupType 属性
+        groupName: item.groupName
       }
-      console.log(NewItem)
+      console.log('add', NewItem)
 
       return NewItem
     }

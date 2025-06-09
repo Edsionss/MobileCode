@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vant动态表单渲染器</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vant/4.8.1/index.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f7f8fa;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 375px;
+      margin: 0 auto;
+      background-color: #fff;
+      min-height: 100vh;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .form-container {
+      padding: 16px;
+    }
+
+    .component-item {
+      margin-bottom: 16px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .component-header {
+      background-color: #f8f9fa;
+      padding: 12px 16px;
+      border-bottom: 1px solid #ebedf0;
+      font-size: 14px;
+      color: #646566;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .component-id {
+      font-size: 12px;
+      color: #969799;
+      background: #f2f3f5;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    /* 容器 для опций (радио, флажки) */
+    .options-container {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* 容器 для переключения */
+    .switch-container {
+      padding: 12px 16px;
+    }
+
+    .debug-info {
+      padding: 8px 16px;
+      background-color: #f0f1ff;
+      border-top: 1px solid #ebedf0;
+      font-size: 12px;
+      color: #646566;
+    }
+
+    .actions {
+      padding: 20px 16px;
+      background: white;
+      border-top: 1px solid #ebedf0;
+    }
+
+    .form-data-display {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .form-data-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #323233;
+    }
+
+    .form-data-content {
+      font-size: 12px;
+      color: #646566;
+      background: white;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="header">
+        <h1>Vant 动态表单渲染器</h1>
+      </div>
+
+      <div class="form-container">
+        <!-- 动态渲染组件 -->
+        <div v-for="item in componentData" :key="item.id" class="component-item">
+          <div class="component-header">
+            <span>{{ item.props.label || '组件' }}</span>
+            <span class="component-id">{{ item.id }}</span>
+          </div>
+
+          <!-- 渲染器逻辑 -->
+          <div class="component-body">
+            <!-- 标准输入框 -->
+            <van-field v-if="item.component === 'van-field'" v-bind="getProcessedProps(item)"
+              :model-value="formData[item.valueKey]" @update:model-value="updateFormData(item.valueKey, $event)" />
+
+            <!-- 选择器触发器 (伪装成输入框) -->
+            <van-field v-if="item.component === 'custom-picker' || item.component === 'custom-datepicker'"
+              v-bind="getProcessedProps(item)" :model-value="getPickerDisplayText(item)" readonly clickable
+              @click="showPicker(item)" />
+
+            <!-- 开关 -->
+            <div v-if="item.component === 'van-switch'" class="switch-container">
+              <van-switch v-bind="getProcessedProps(item)" :model-value="formData[item.valueKey]"
+                @update:model-value="updateFormData(item.valueKey, $event)" />
+            </div>
+
+            <!-- 单选框组 -->
+            <div v-if="item.component === 'van-radio-group'" class="options-container">
+              <van-radio-group v-bind="getProcessedProps(item)" :model-value="formData[item.valueKey]"
+                @update:model-value="updateFormData(item.valueKey, $event)">
+                <van-radio v-for="option in item.options" :key="option.value" :name="option.value">{{ option.text
+                  }}</van-radio>
+              </van-radio-group>
+            </div>
+
+            <!-- 复选框组 -->
+            <div v-if="item.component === 'van-checkbox-group'" class="options-container">
+              <van-checkbox-group v-bind="getProcessedProps(item)" :model-value="formData[item.valueKey]"
+                @update:model-value="updateFormData(item.valueKey, $event)">
+                <van-checkbox v-for="option in item.options" :key="option.value" :name="option.value" shape="square">{{
+                  option.text }}</van-checkbox>
+              </van-checkbox-group>
+            </div>
+          </div>
+
+
+          <div class="debug-info">
+            当前值: {{ JSON.stringify(formData[item.valueKey]) || '空' }}
+          </div>
+        </div>
+
+        <!-- 表单数据显示 -->
+        <div class="form-data-display">
+          <div class="form-data-title">当前表单数据：</div>
+          <div class="form-data-content">{{ JSON.stringify(formData, null, 2) }}</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <van-button type="primary" block @click="submitForm">提交表单</van-button>
+        <van-button block plain @click="resetForm" style="margin-top: 12px;">重置表单</van-button>
+      </div>
+    </div>
+
+    <!-- 统一的弹出层，用于所有选择器 -->
+    <van-popup v-model:show="pickerState.show" position="bottom" round>
+      <van-picker v-if="pickerState.type === 'picker'" :title="pickerState.title" :columns="pickerState.columns"
+        @confirm="onPickerConfirm" @cancel="onPickerCancel" />
+      <van-datetime-picker v-if="pickerState.type === 'datepicker'" :title="pickerState.title" type="date"
+        @confirm="onPickerConfirm" @cancel="onPickerCancel" />
+    </van-popup>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vant/4.8.1/vant.min.js"></script>
+
+  <script>
+    const { createApp, reactive, computed, toRefs } = Vue;
+
+    const app = createApp({
+      setup () {
+        // 传入的组件数据
+        const componentData = [
+          {
+            component: "van-field",
+            valueName: "name",
+            defaultValue: "王小明",
+            props: { label: "姓名", placeholder: "请输入姓名", clearable: true },
+            id: "CIGDS326"
+          },
+          {
+            component: "custom-picker", // 自定义类型，表示使用弹出式选择器
+            valueName: "gender",
+            defaultValue: "male",
+            props: { label: "性别", placeholder: "请选择性别", "right-icon": "arrow" },
+            id: "MRKKQ575",
+            pickerOptions: {
+              title: "选择性别",
+              columns: [
+                { text: '男', value: 'male' },
+                { text: '女', value: 'female' },
+                { text: '保密', value: 'secret' },
+              ]
+            }
+          },
+          {
+            component: "custom-datepicker", // 自定义类型，表示使用日期选择器
+            valueName: "birthdate",
+            defaultValue: "",
+            props: { label: "出生日期", placeholder: "请选择日期", "right-icon": "calender-o" },
+            id: "AVPGH129",
+            pickerOptions: {
+              title: "选择出生日期",
+            }
+          },
+          {
+            component: "van-switch",
+            valueName: "isMember",
+            defaultValue: false,
+            props: { label: "是否会员" },
+            id: "SWTCH991"
+          },
+          {
+            component: "van-radio-group",
+            valueName: "education",
+            defaultValue: "bachelor",
+            props: { label: "学历", direction: "horizontal" },
+            id: "RADIO110",
+            options: [
+              { text: '高中', value: 'highschool' },
+              { text: '大专', value: 'college' },
+              { text: '本科', value: 'bachelor' },
+            ]
+          },
+          {
+            component: "van-checkbox-group",
+            valueName: "hobbies",
+            defaultValue: ["coding"],
+            props: { label: "兴趣爱好", direction: "horizontal" },
+            id: "CHKBX120",
+            options: [
+              { text: '编程', value: 'coding' },
+              { text: '阅读', value: 'reading' },
+              { text: '游戏', value: 'gaming' },
+            ]
+          }
+        ];
+
+        // 统一为每个组件生成一个唯一的 valueKey，用于 formData
+        componentData.forEach(item => {
+          item.valueKey = `${item.valueName}_${item.id}`;
+        });
+
+        // 表单数据
+        const formData = reactive({});
+
+        // 初始化表单数据
+        const initFormData = () => {
+          componentData.forEach(item => {
+            formData[item.valueKey] = item.defaultValue;
+          });
+        };
+
+        // 处理组件属性 (移除我们自定义的属性)
+        const getProcessedProps = (item) => {
+          const props = { ...item.props };
+          delete props.attr;
+          delete props.tag;
+          return props;
+        };
+
+        // 更新表单数据
+        const updateFormData = (key, value) => {
+          formData[key] = value;
+        };
+
+        // 提交表单
+        const submitForm = () => {
+          vant.showToast({
+            message: '表单提交成功！',
+            type: 'success'
+          });
+          console.log('提交的表单数据:', JSON.parse(JSON.stringify(formData)));
+        };
+
+        // 重置表单
+        const resetForm = () => {
+          initFormData();
+          vant.showToast({
+            message: '表单已重置',
+            type: 'success'
+          });
+        };
+
+        // --- 选择器 (Picker) 相关逻辑 ---
+
+        const pickerState = reactive({
+          show: false,
+          type: 'picker', // 'picker' 或 'datepicker'
+          title: '',
+          columns: [],
+          currentTargetKey: null, // 当前操作的表单项的key
+        });
+
+        const showPicker = (item) => {
+          pickerState.currentTargetKey = item.valueKey;
+          pickerState.title = item.pickerOptions.title;
+
+          if (item.component === 'custom-datepicker') {
+            pickerState.type = 'datepicker';
+          } else {
+            pickerState.type = 'picker';
+            pickerState.columns = item.pickerOptions.columns;
+          }
+          pickerState.show = true;
+        };
+
+        const onPickerConfirm = ({ selectedValues, selectedOptions }) => {
+          let finalValue;
+          if (pickerState.type === 'datepicker') {
+            // 格式化日期
+            finalValue = selectedValues.join('-');
+          } else {
+            finalValue = selectedValues[0];
+          }
+          updateFormData(pickerState.currentTargetKey, finalValue);
+          pickerState.show = false;
+        };
+
+        const onPickerCancel = () => {
+          pickerState.show = false;
+        };
+
+        // 获取选择器类型字段的显示文本
+        const getPickerDisplayText = (item) => {
+          const value = formData[item.valueKey];
+          if (!value) return '';
+
+          if (item.component === 'custom-datepicker') {
+            return value; // 日期直接返回值
+          }
+
+          if (item.pickerOptions && item.pickerOptions.columns) {
+            const selectedOption = item.pickerOptions.columns.find(opt => opt.value === value);
+            return selectedOption ? selectedOption.text : '';
+          }
+          return '';
+        };
+
+
+        // 初始化
+        initFormData();
+
+        return {
+          componentData,
+          formData,
+          getProcessedProps,
+          updateFormData,
+          submitForm,
+          resetForm,
+          // Picker 相关
+          pickerState,
+          showPicker,
+          onPickerConfirm,
+          onPickerCancel,
+          getPickerDisplayText,
+        };
+      }
+    });
+
+    // 使用 Vant 组件
+    app.use(vant);
+    app.mount('#app');
+  </script>
+</body>
+
+</html>
