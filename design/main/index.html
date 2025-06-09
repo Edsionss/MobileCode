@@ -58,13 +58,12 @@
             </div>
           </div>
           <div class="design-layout__canvas-panel__body" v-else>
-            <canvas-component></canvas-component>
+            <canvas-component @component-selected="handleComponentSelected"></canvas-component>
           </div>
         </div>
         <!-- Element: attribute-panel -->
         <div class="design-layout__attribute-panel">
-          <attribute-component :group="currentGroup" :component="currentComponent"
-            :tab="currentTab"></attribute-component>
+          <attribute-component :component="currentComponent" :tab="currentTab" @component-props-updated="handleComponentPropsUpdate"></attribute-component>
         </div>
       </div>
     </div>
