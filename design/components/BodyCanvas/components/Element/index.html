@@ -13,7 +13,8 @@
         <!-- <div class="canvas-drag__item" v-for="(element,index) in myArray" :key="element.id">
           {{element.label}}
         </div> -->
-        <component is="vant-canvas" key="vant-canvas" :components-list="dragComponents"></component>
+        <component v-for="(element,index) in dragComponents" :is="element.component" :key="element.id"
+          :element="element" :index="index"></component>
       </transition-group>
     </draggable>
   </div>

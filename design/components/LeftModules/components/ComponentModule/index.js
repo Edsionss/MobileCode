@@ -38,10 +38,23 @@ const ComponentModule = {
     },
     // 添加新组件
     onClone(item) {
+      let type = ''
+      this.componentModule.group.map(group => {
+        group.group.map(groupItem => {
+          groupItem.children.map(child => {
+            if ((child.id = item.id)) {
+              type = groupItem.label
+            }
+          })
+        })
+      })
       let NewItem = {
         ...item,
-        id: utils.generateUniqueId()
+        id: utils.generateUniqueId(),
+        group: type // 添加 groupType 属性
       }
+      console.log(NewItem)
+
       return NewItem
     }
   }
