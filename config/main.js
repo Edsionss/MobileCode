@@ -10,7 +10,8 @@ import template from './components/template.js'
 import rightAttribute from './components/rightAttribute.js'
 import componentsAttrForm from './base/componentsAttrForm.js'
 import componentLoader from '../utils/componentLoader.js'
-import componentsDict from '../modules/componentsDict.js'
+import Element from '@/modules/components/Element.js'
+import Vant from '@/modules/components/Vant.js'
 const config = {
   header,
   bodyCanvas,
@@ -18,7 +19,8 @@ const config = {
   rightAttribute,
   componentsAttrForm,
   componentLoader,
-  componentsDict,
+  Element,
+  Vant,
   global,
   componentModule,
   dataSource,
