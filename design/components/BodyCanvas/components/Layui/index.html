@@ -1,21 +1,12 @@
 <!-- Block: canvas-drag -->
-<div class="canvas-drag">
 
-  <!-- Element: canvas-drag__status -->
-  <!-- <div class="canvas-drag__status">{{drag ? '拖拽中' : '拖拽停止'}}</div> -->
-  <!--chosen-class 现在应用的是带 Modifier 的类名 -->
-  <div class="canvas-drag__container">
-    <draggable v-model="dragComponents" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }"
-      animation="300" @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
-      chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
-      <transition-group tag="div" class="canvas-drag__item-group">
-        <!-- Element: canvas-drag__item -->
-        <!-- <div class="canvas-drag__item" v-for="(element,index) in myArray" :key="element.id">
-          {{element.label}}
-        </div> -->
-        <component v-for="(element,index) in dragComponents" :is="element.component" :key="element.id"
-          :element="element" :index="index"></component>
-      </transition-group>
-    </draggable>
-  </div>
-</div>
+<draggable v-model="componentsData" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }"
+  animation="300" @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
+  chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
+  <transition-group tag="div" class="canvas-drag__item-group">
+    <component @click="configComponentsAttr(component)" v-for="(component,index) in componentsData"
+      :is="component.component" :key=" component.id" v-bind="component.props">
+      <template></template>
+    </component>
+  </transition-group>
+</draggable>

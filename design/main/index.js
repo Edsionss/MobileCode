@@ -22,13 +22,14 @@ var app = new Vue({
   components: {},
   provide() {
     return {
-      dragComponents: this.dragComponents
+      dragComponents: this.dragComponents,
+      configComponentsAttr: this.configComponentsAttr
     }
   },
   data() {
     return {
-      currentGroup: 'form',
-      currentComponent: 'input',
+      currentGroup: '',
+      currentComponent: '',
       currentTab: 'attr',
       //画布
       canvas: {
@@ -50,8 +51,11 @@ var app = new Vue({
 
   computed: {},
   methods: {
-    dragComponents(item) {
-      // console.log(item)
+    dragComponents(item) {},
+    configComponentsAttr(component) {
+      console.log('config attr', component)
+      this.currentComponent = component.component
+      this.currentGroup = component.name
     },
     changeMode(item) {
       // console.log('当前模式', item)
