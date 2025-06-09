@@ -6,12 +6,12 @@
   <!--chosen-class 现在应用的是带 Modifier 的类名 -->
   <div class="canvas-drag__container">
     <draggable v-model="myArray" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }" animation="300"
-      @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" chosen-class="canvas-drag__item--chosen"
-      class="canvas-drag__content">
+      @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
+      chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
       <transition-group tag="div" class="canvas-drag__item-group">
         <!-- Element: canvas-drag__item -->
         <div class="canvas-drag__item" v-for="(element,index) in myArray" :key="element.id">
-          {{element.name}}
+          {{element.label}}
         </div>
       </transition-group>
     </draggable>

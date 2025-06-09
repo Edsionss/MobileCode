@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { bodyCanvas, componentLoader } = main
+const { bodyCanvas, componentLoader, utils } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
@@ -10,33 +10,27 @@ const bodyCanvasComponent = {
   data() {
     return {
       drag: false,
-      myArray: [
-        { people: 'cn', id: 1123123, name: 'www.itxst.com' },
-        { people: 'cn', id: 2456456, name: 'www.baidu.com' },
-        { people: 'cn', id: 3456456, name: 'www.taobao.com' },
-        { people: 'us', id: 4564564, name: 'www.google.com' }
-      ]
+      myArray: []
     }
   },
-  watch: {
-    myArray() {
-      // console.log(this.myArray)
-    }
-  },
+  watch: {},
   methods: {
-    onStart() {
+    onStart(e) {
       this.drag = true
-      console.log(this.myArray, e)
+      console.log('onStart', e)
     },
-    onEnd() {
+    onEnd(e) {
       this.drag = false
-      console.log(this.myArray, e)
+      console.log('onEnd', e)
     },
     onClone(e) {
-      console.log(this.myArray, e)
+      console.log('onClone', e)
     },
     onAddItem(event) {
-      console.log('一个新项被添加!', event)
+      console.log('onAddItem', event)
+    },
+    dragChange(item) {
+      console.log('change', item)
     }
   }
 }

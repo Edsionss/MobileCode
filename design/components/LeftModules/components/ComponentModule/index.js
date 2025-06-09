@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { componentLoader, componentModule } = main
+const { componentLoader, componentModule, utils } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 const ComponentModule = {
   name: 'ComponentModule',
@@ -28,7 +28,7 @@ const ComponentModule = {
     foldItem(item) {
       this.show = !this.show
     },
-    onStart() {},
+    onStart(e) {},
     onEnd(array, event) {
       if (event.pullMode === 'clone') {
         if (typeof this.dragComponents === 'function') {
@@ -36,8 +36,13 @@ const ComponentModule = {
         }
       }
     },
-    onClone(e) {
-      console.log('onClone', e)
+    // 添加新组件
+    onClone(item) {
+      let NewItem = {
+        ...item,
+        id: utils.generateUniqueId()
+      }
+      return NewItem
     }
   }
 }

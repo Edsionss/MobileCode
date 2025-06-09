@@ -15,7 +15,7 @@
             <div class="core-panel__item-content" v-show="show">
               <draggable v-model="children.children" :group="{ name: 'itxst', pull: 'clone', put: false }"
                 force-fallback="true" animation="300" @start="onStart" @end="onEnd(children,$event)" :sort="false"
-                @onClone="onClone" chosen-class="core-panel__dragg__item" class="core-panel__drag-wrapper">
+                :clone="onClone" chosen-class="core-panel__dragg__item" class="core-panel__drag-wrapper">
                 <transition-group tag="div" class="core-panel__drag-group">
                   <ol class="core-panel__components" v-for="(item,index) in children.children" :key="item.id">
                     {{item.label}}
