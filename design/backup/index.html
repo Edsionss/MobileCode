@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Vue2 Draggable - Final Fixed Version</title>
+  <title>Vue2 Draggable - Clone with Unique ID (Fixed)</title>
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 
   <style>
@@ -35,13 +35,8 @@
       border-radius: 4px;
       background-color: #fcfcfc;
       transition: background-color 0.3s;
-      /* 
-        **********************************************
-        *          唯一的、关键的 CSS 修改点          *
-        *  为列表容器设置一个最小高度，防止其在空内容时塌陷 *
-        **********************************************
-      */
       min-height: 300px;
+      /* 保持最小高度 */
     }
 
     .drag-list:hover {
@@ -59,14 +54,14 @@
       transition: all 0.3s ease;
     }
 
-    .drag-item:hover {
+    .source-item:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+      border-left: 3px solid #409eff;
     }
 
     .item-done {
-      text-decoration: line-through;
-      color: #909399;
+      /* 样式保持不变 */
       background-color: #f0f2f5;
       border-color: #e9e9eb;
     }
@@ -82,6 +77,8 @@
       border: 1px solid #eaeaea;
       padding: 10px;
       border-radius: 4px;
+      word-break: break-all;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -89,24 +86,33 @@
 <body>
 
   <div id="app">
-    <h2 style="text-align: center; margin-bottom: 30px;">拖拽问题最终修复版 (最简修改)</h2>
+    <h2 style="text-align: center; margin-bottom: 30px;">左侧向右侧无限克隆 (无重复Key错误)</h2>
 
     <div class="drag-container">
-      <todo-list :tasks="todoTasks" @change="handleListChange"></todo-list>
-      <done-list :tasks="doneTasks" @change="handleListChange"></done-list>
+      <!-- 
+        **********************************************
+        *      关键修改点 1: 传递 clone 处理函数       *
+        **********************************************
+      -->
+      <source-list :tasks="sourceTasks" :group-options="sourceGroupOptions" :clone-handler="handleClone"></source-list>
+
+      <!-- 目标列表不再需要特殊的 change 处理器来修改ID -->
+      <clone-target-list :tasks="clonedTasks" :group-options="targetGroupOptions"
+        @change="logChange"></clone-target-list>
+
     </div>
 
-    <!-- 数据监控部分保持不变 -->
+    <!-- 数据监控部分 -->
     <div style="margin-top: 40px; text-align: center;">
       <h3>父组件实时数据</h3>
       <el-row :gutter="20">
         <el-col :span="12">
-          <h4>待办任务 (todoTasks)</h4>
-          <pre>{{ JSON.stringify(todoTasks, null, 2) }}</pre>
+          <h4>源列表 (sourceTasks)</h4>
+          <pre>{{ JSON.stringify(sourceTasks, null, 2) }}</pre>
         </el-col>
         <el-col :span="12">
-          <h4>已完成任务 (doneTasks)</h4>
-          <pre>{{ JSON.stringify(doneTasks, null, 2) }}</pre>
+          <h4>克隆目标列表 (clonedTasks)</h4>
+          <pre>{{ JSON.stringify(clonedTasks, null, 2) }}</pre>
         </el-col>
       </el-row>
     </div>
@@ -123,53 +129,104 @@
       props: {
         title: { type: String, required: true },
         tasks: { type: Array, required: true },
-        itemClass: { type: String, default: '' }
+        itemClass: { type: String, default: '' },
+        groupOptions: { type: Object, required: true },
+        // **********************************************
+        // *       关键修改点 2: 接收 clone 处理函数       *
+        // **********************************************
+        cloneHandler: { type: Function, default: null }
       },
       template: `
         <div class="drag-list">
-          <h3><i :class="title === '待办事项' ? 'el-icon-tickets' : 'el-icon-success'"></i> {{ title }}</h3>
+          <h3><i :class="title === '源列表 (可克隆)' ? 'el-icon-document-copy' : 'el-icon-finished'"></i> {{ title }}</h3>
           <draggable
             :list="tasks"
-            group="my-tasks"
+            :group="groupOptions"
+            :clone="cloneHandler"
+            :add="add"
             animation="300"
             ghost-class="ghost-style"
             style="height: 100%;"
             @change="$emit('change', $event)" 
           >
             <div v-for="task in tasks" :key="task.id" class="drag-item" :class="itemClass">
-              {{ task.text }}
+              {{ task.text }} (ID: {{ task.id }})
             </div>
           </draggable>
         </div>
-      `
+      `,
+      methods: {
+
+        add (task) {
+          console.log(123123, add);
+
+        }
+      }
     };
 
     // --- Vue 根实例 ---
     new Vue({
       el: '#app',
       data: {
-        todoTasks: [
-          { id: 1, text: "把所有任务拖到右边" },
-          { id: 2, text: "观察左边列表依然可以接收新任务" },
+        sourceTasks: [
+          { id: 1, text: "需求分析" },
+          { id: 2, text: "UI/UX 设计" },
+          { id: 3, text: "前端开发" },
+          { id: 4, text: "后端开发" },
+          { id: 5, text: "测试" },
+          { id: 6, text: "部署" },
         ],
-        doneTasks: [
-          { id: 4, text: "初始任务" }
-        ]
+        clonedTasks: [
+          { id: 99, text: "这是一个已存在的任务" }
+        ],
+        sourceGroupOptions: {
+          name: 'my-tasks',
+          pull: 'clone',
+          put: false
+        },
+        targetGroupOptions: {
+          name: 'my-tasks'
+        },
+        nextId: 100
       },
       components: {
-        'todo-list': {
+        'source-list': {
           extends: TaskListComponent,
-          props: { title: { default: '待办事项' } }
+          props: {
+            title: { default: '源列表 (可克隆)' },
+            itemClass: { default: 'source-item' }
+          }
         },
-        'done-list': {
+        'clone-target-list': {
           extends: TaskListComponent,
-          props: { title: { default: '已完成' }, itemClass: { default: 'item-done' } }
+          props: {
+            title: { default: '克隆目标' },
+            itemClass: { default: 'item-done' }
+          }
         },
         'draggable': window.vuedraggable
       },
       methods: {
-        // 合并成一个处理器，因为逻辑是通用的
-        handleListChange (event) {
+        // **********************************************
+        // *     关键修改点 3: 实现 clone 处理函数      *
+        // **********************************************
+        handleClone (original) {
+          console.log("Cloning in progress for:", original);
+          // 创建一个新对象，而不是直接修改原始对象
+          // 使用扩展运算符(...)复制原始对象的所有属性
+          // 然后覆盖 id 属性为一个新的、唯一的值
+          const cloned = {
+            ...original,
+            id: this.nextId++
+          };
+
+          console.log("Returning new cloned object:", cloned);
+          // 返回这个全新的对象，vuedraggable会用它来添加到目标列表
+          return cloned;
+        },
+
+        // 这是一个通用的日志记录器，可以观察到 change 事件仍然在触发
+        logChange (event) {
           console.log('A list has changed:', event);
         }
       }

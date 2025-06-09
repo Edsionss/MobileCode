@@ -23,7 +23,8 @@ const config = {
   componentModule,
   dataSource,
   help,
-  template
+  template,
+  utils
 }
 for (const key in config) {
   let data = config[key]
