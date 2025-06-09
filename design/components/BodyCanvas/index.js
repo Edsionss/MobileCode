@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { bodyCanvas, componentLoader, utils } = main
+const { bodyCanvas, componentLoader, utils, Vant } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
@@ -7,10 +7,16 @@ const bodyCanvasComponent = {
   components: {
     vuedraggable: window.vuedraggable //当前页面注册组件
   },
+  computed: {
+    component() {
+      // 根据 schema.type 从字典中查找对应的组件
+      return Vant[this.schema.type] || null
+    }
+  },
   data() {
     return {
       drag: false,
-      myArray: []
+      schema: []
     }
   },
   watch: {},

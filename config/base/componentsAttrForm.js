@@ -1,4 +1,4 @@
-import dict from '@modules/componentsDict.js'
+import dict from '@modules/components/Element.js'
 const componentsAttrForm = [
   {
     group: 'layout',

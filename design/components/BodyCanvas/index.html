@@ -5,14 +5,21 @@
   <!-- <div class="canvas-drag__status">{{drag ? '拖拽中' : '拖拽停止'}}</div> -->
   <!--chosen-class 现在应用的是带 Modifier 的类名 -->
   <div class="canvas-drag__container">
-    <draggable v-model="myArray" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }" animation="300"
+    <draggable v-model="schema" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }" animation="300"
       @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
       chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
       <transition-group tag="div" class="canvas-drag__item-group">
         <!-- Element: canvas-drag__item -->
-        <div class="canvas-drag__item" v-for="(element,index) in myArray" :key="element.id">
+        <!-- <div class="canvas-drag__item" v-for="(element,index) in myArray" :key="element.id">
           {{element.label}}
-        </div>
+        </div> -->
+        <component :is="component" v-if="component" :config="schema" :form-data="formData">
+          <!-- 如果当前节点有子节点，则递归渲染它们。这里使用 default slot 将子节点传递给父组件。-->
+          <template v-if="schema.children && schema.children.length">
+            <SchemaRenderer v-for="childSchema in schema.children" :key="childSchema.id" :schema="childSchema"
+              :form-data="formData" />
+          </template>
+        </component>
       </transition-group>
     </draggable>
 
