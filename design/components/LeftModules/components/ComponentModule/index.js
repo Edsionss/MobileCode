@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { componentLoader, componentModule, utils } = main
+const { componentLoader, vantModule: componentModule, utils } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 const ComponentModule = {
   name: 'ComponentModule',
@@ -31,32 +31,29 @@ const ComponentModule = {
     onStart(e) {},
     onEnd(array, event) {
       if (event.pullMode === 'clone') {
-        if (typeof this.dragComponents === 'function') {
-          this.dragComponents(array.children[event.oldIndex])
-        }
+        this.dragComponents(array.children[event.oldIndex])
       }
     },
     // 添加新组件
     onClone(item) {
-      let type = ''
-      this.componentModule.group.map(group => {
-        group.group.map(groupItem => {
-          groupItem.children.map(child => {
-            if ((child.id = item.id)) {
-              child.groupLabel = groupItem.label
-              child.groupName = groupItem.name
+      let componentModule = _.cloneDeep(this.componentModule),
+        TItem = _.cloneDeep(item)
+      componentModule.group.map(group => {
+        group = group.group.map(groupItem => {
+          return groupItem.children.map(child => {
+            if ((child.id = TItem.id)) {
+              TItem.groupLabel = groupItem.label
+              TItem.groupName = groupItem.name
             }
           })
         })
       })
       let NewItem = {
-        ...item,
+        ...TItem,
         id: utils.generateUniqueId(),
-        groupLabel: item.groupLabel, // 添加 groupType 属性
-        groupName: item.groupName
+        groupLabel: TItem.groupLabel, // 添加 groupType 属性
+        groupName: TItem.groupName
       }
-      console.log('add', NewItem)
-
       return NewItem
     }
   }
