@@ -13,7 +13,7 @@ export default {
             {
               label: '输入框',
               icon: '',
-              tag: '',
+              tag: 'el-input', // TODO: Other tag values need to be filled in by the developer.
               name: ''
             },
             {

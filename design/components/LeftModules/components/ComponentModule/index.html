@@ -29,3 +29,28 @@
     </van-tabs>
   </div>
 </div>
+<style>
+.core-panel__dragg__item { /* Style for the item being dragged FROM the left panel */
+  background-color: #e0eaf8 !important; /* A light blue, distinct from canvas chosen */
+  border: 1px dashed #409EFF !important;
+  opacity: 0.8 !important;
+  color: #333 !important;
+  font-weight: bold;
+}
+.core-panel__components {
+  padding: 8px;
+  margin: 4px 0; /* Adjust margin */
+  border: 1px solid #eee;
+  background-color: #f9f9f9;
+  cursor: grab;
+  border-radius: 4px;
+  list-style: none; /* Remove ol default styling */
+  font-size: 14px; /* Example font size */
+  color: #333; /* Example text color */
+}
+.core-panel__components:hover {
+  background-color: #f0f0f0;
+  border-color: #409EFF; /* Highlight on hover */
+  color: #409EFF;
+}
+</style>

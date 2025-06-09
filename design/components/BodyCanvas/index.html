@@ -5,23 +5,47 @@
   <!-- <div class="canvas-drag__status">{{drag ? '拖拽中' : '拖拽停止'}}</div> -->
   <!--chosen-class 现在应用的是带 Modifier 的类名 -->
   <div class="canvas-drag__container">
-    <draggable v-model="schema" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }" animation="300"
-      @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
+    <div v-if="!schema || schema.length === 0" class="canvas-drag__empty-placeholder">
+      Drag components here to start building your page.
+    </div>
+    <draggable v-else v-model="schema" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }" animation="300"
+      @start="onStart" @end="onEnd" @add="onAddItem" @change="dragChange"
       chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
       <transition-group tag="div" class="canvas-drag__item-group">
-        <!-- Element: canvas-drag__item -->
-        <!-- <div class="canvas-drag__item" v-for="(element,index) in myArray" :key="element.id">
-          {{element.label}}
-        </div> -->
-        <component :is="component" v-if="component" :config="schema" :form-data="formData">
-          <!-- 如果当前节点有子节点，则递归渲染它们。这里使用 default slot 将子节点传递给父组件。-->
-          <template v-if="schema.children && schema.children.length">
-            <SchemaRenderer v-for="childSchema in schema.children" :key="childSchema.id" :schema="childSchema"
-              :form-data="formData" />
-          </template>
-        </component>
+        <!-- The v-for loop for components is inside here -->
+        <div v-for="element in schema" :key="element.id" class="canvas-drag__item" @click="selectComponent(element)" :class="{ 'canvas-drag__item--selected': element.id === selectedComponentId }">
+          <component :is="element.componentName" v-bind="element.props"></component>
+        </div>
       </transition-group>
     </draggable>
-
   </div>
+  <style>
+    /* Original .canvas-drag__item styles */
+    .canvas-drag__item {
+      padding: 10px;
+      margin: 5px;
+      border: 1px dashed #ccc;
+      background-color: #f9f9f9;
+    }
+    /* New styles from this subtask */
+    .canvas-drag__item--selected {
+      border: 2px solid #409EFF !important; /* Use !important to ensure override if needed */
+      box-shadow: 0 0 5px rgba(64, 158, 255, 0.5);
+    }
+    .canvas-drag__item--chosen { /* Style for the item being dragged over the canvas */
+      opacity: 0.7;
+      background-color: #cce5ff; /* Light blue, distinct from the source chosen item */
+    }
+    .canvas-drag__empty-placeholder {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      border: 2px dashed #ccc;
+      color: #999;
+      font-size: 16px;
+      margin: 10px;
+      text-align: center;
+    }
+  </style>
 </div>

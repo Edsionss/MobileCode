@@ -8,14 +8,8 @@ const rightAttributeComponent = {
   
   `,
   props: {
-    group: {
-      type: String,
-      default: 'form'
-    },
-    component: {
-      type: String,
-      default: 'input'
-    },
+    // group: { type: String, default: 'form' }, // We'll get group from component object
+    component: { type: Object, default: () => ({ componentName: 'input', groupName: 'form', props: {} }) }, // Expecting an object
     tab: {
       type: String,
       default: defaultTabs
@@ -49,18 +43,23 @@ const rightAttributeComponent = {
       if (!this.formData.hasOwnProperty(tabName) && tab.hasOwnProperty('content')) {
         //为每个 tab 初始化一个空对象
         this.$set(this.formData, tabName, {})
-        tabContent.forEach(item => {
-          if (item.valueName) {
-            // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
-            if (!this.formData[tabName].hasOwnProperty(item.valueName) && item.hasOwnProperty('defaultValue')) {
-              this.$set(this.formData[tabName], item.valueName, item.defaultValue)
+        if (tab.name === 'attr' && this.component && this.component.props) {
+          // Initialize formData.attr with the component's current props
+          this.$set(this.formData, 'attr', { ...this.component.props });
+        } else {
+          tabContent.forEach(item => {
+            if (item.valueName) {
+              // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
+              if (!this.formData[tabName].hasOwnProperty(item.valueName) && item.hasOwnProperty('defaultValue')) {
+                this.$set(this.formData[tabName], item.valueName, item.defaultValue)
+              }
+              // 特别处理 el-upload 的 fileList，如果它是 undefined，则初始化为空数组
+              if (item.component === 'el-upload' && this.formData[tabName][item.valueName] === undefined) {
+                this.$set(this.formData[tabName], item.valueName, [])
+              }
             }
-            // 特别处理 el-upload 的 fileList，如果它是 undefined，则初始化为空数组
-            if (item.component === 'el-upload' && this.formData[tabName][item.valueName] === undefined) {
-              this.$set(this.formData[tabName], item.valueName, [])
-            }
-          }
-        })
+          })
+        }
       }
     })
   },
@@ -70,14 +69,13 @@ const rightAttributeComponent = {
         // 为每个 tab 初始化属性 content
         this.componentsAttrForm.forEach(item => {
           // 检查 item.group 和 item.component 是否匹配当前的 group 和 component
-          if (item.group == this.group) {
-            const componentsList = item.components
+          if (item.group == this.component.groupName) { // Use this.component.groupName
+            const componentsList = item.components;
             componentsList.forEach(componentItem => {
-              if (componentItem.component == this.component) {
-                //如果匹配上则设置对应的属性表单
-                tab.content = componentItem.attr
+              if (componentItem.component == this.component.componentName) { // Use this.component.componentName
+                tab.content = componentItem.attr;
               }
-            })
+            });
           }
         })
       }
@@ -206,6 +204,41 @@ const rightAttributeComponent = {
   },
   mounted() {},
   watch: {
+    component: {
+      handler(newComponent, oldComponent) {
+        if (newComponent && newComponent.id !== (oldComponent ? oldComponent.id : null)) {
+          this.formData = {}; // Reset form data
+          this.currentTabName = this.tab; // Reset to default tab or keep current
+          this.tabs.forEach(tab => {
+            tab = this.handTabContent(tab); // Recalculate content for 'attr' tab
+            // Re-initialize formData for the new component's attributes
+            if (!this.formData.hasOwnProperty(tab.name) && tab.hasOwnProperty('content')) {
+              this.$set(this.formData, tab.name, {});
+              if (tab.name === 'attr' && this.component.props) {
+                // Pre-fill formData.attr with the component's current props
+                this.$set(this.formData, 'attr', { ...this.component.props });
+              } else {
+                 // Default initialization for other tabs or if props are not available
+                (tab.content || []).forEach(item => {
+                  if (item.valueName && !this.formData[tab.name].hasOwnProperty(item.valueName) && item.hasOwnProperty('defaultValue')) {
+                    this.$set(this.formData[tab.name], item.valueName, item.defaultValue);
+                  }
+                });
+              }
+            }
+          });
+        }
+      },
+      deep: true // May not be needed if only id/componentName changes trigger full refresh
+    },
+    'formData.attr': {
+      handler(newVal, oldVal) {
+        if (this.component && this.component.id && newVal) {
+          this.$emit('component-props-updated', { componentId: this.component.id, newProps: { ...newVal } });
+        }
+      },
+      deep: true
+    },
     // 新增：可以添加 watcher 来处理联动逻辑
     'formData.category'(newValue, oldValue) {
       console.log(`Category changed from ${oldValue} to ${newValue}`)

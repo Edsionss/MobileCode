@@ -40,7 +40,11 @@ const ComponentModule = {
     onClone(item) {
       let NewItem = {
         ...item,
-        id: utils.generateUniqueId()
+        id: utils.generateUniqueId(),
+        componentName: item.tag,
+        props: {},
+        children: [],
+        groupName: 'form' // Placeholder: This needs to be dynamically set
       }
       return NewItem
     }
