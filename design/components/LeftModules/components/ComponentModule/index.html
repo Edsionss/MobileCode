@@ -1,31 +1,44 @@
-<div class="core-panel">
-  <div class="core-panel__container">
-    <van-tabs color="#409EFF" v-model:active="groupName" @click="defaultClick">
-      <van-tab v-for="group in componentModule.group" :title="group.label" :name="group.name" :key="group.id">
-        <div class="core-panel__main">
-          <div class="core-panel__item" v-for="children in group.group" :key="children.id">
-            <div class="core-panel__item-header" @click="foldItem(children)">
-              <div class="core-panel__header-label">
-                {{children.label}}
-              </div>
-              <div class="core-panel__header-icon">
-                <el-icon :class="show?'el-icon-arrow-down':'el-icon-arrow-up'"></el-icon>
+<div class="framework-panel">
+  <div class="framework-panel__accordion">
+    <div v-for="framework in componentsArray" :key="framework.componentName" class="framework-panel__item">
+      <div class="framework-panel__header" @click="toggleFramework(framework.componentName)">
+        <span class="framework-panel__label">
+          <!-- <i :class="getFrameworkIcon(framework.componentName)"></i> -->
+          <i :class="framework.icon"></i>
+          {{ framework.componentName }}
+        </span>
+        <i
+          :class="['framework-panel__arrow', 'el-icon-arrow-down', { 'framework-panel__arrow--collapsed': activeFrameworkName !== framework.componentName }]"></i>
+      </div>
+      <div class="framework-panel__content" v-if="activeFrameworkName === framework.componentName">
+        <van-tabs color="#409EFF" v-model="activeTabs[framework.componentName]">
+          <van-tab v-for="group in framework.group" :title="group.label" :name="group.name" :key="group.name">
+            <div class="group-list">
+              <div class="group-list__item" v-for="children in group.group" :key="children.name">
+                <div class="group-list__header" @click="foldItem(framework.componentName, children.name)">
+                  <div class="group-list__label">{{ children.label }}</div>
+                  <i
+                    :class="['group-list__icon', 'el-icon-arrow-down', { 'group-list__icon--collapsed': !isGroupOpen(framework.componentName, children.name) }]"></i>
+                </div>
+                <div class="core-panel__item-content" v-show="isGroupOpen(framework.componentName, children.name)">
+                  <draggable :list="children.children" :group="{ name: 'itxst', pull: 'clone', put: false }"
+                    :force-fallback="true" :animation="300" :sort="false"
+                    :clone="item => onClone(item, children, framework)" chosen-class="drag-zone__item--chosen"
+                    class="drag-zone">
+                    <!-- <div class="drag-zone__group"> -->
+                    <transition-group tag="div" class="drag-zone__group">
+                      <div class="drag-zone__item" v-for="(item, index) in children.children" :key="item.id">
+                        {{ item.props.attr.label }}
+                      </div>
+                    </transition-group>
+                    <!-- </div> -->
+                  </draggable>
+                </div>
               </div>
             </div>
-            <div class="core-panel__item-content" v-show="show">
-              <draggable v-model="children.children" :group="{ name: 'itxst', pull: 'clone', put: false }"
-                force-fallback="true" animation="300" @start="onStart" @end="onEnd(children,$event)" :sort="false"
-                :clone="onClone" chosen-class="core-panel__dragg__item" class="core-panel__drag-wrapper">
-                <transition-group tag="div" class="core-panel__drag-group">
-                  <div class="core-panel__components" v-for="(item,index) in children.children" :key="item.id">
-                    {{item.props.attr.label}}
-                  </div>
-                </transition-group>
-              </draggable>
-            </div>
-          </div>
-        </div>
-      </van-tab>
-    </van-tabs>
+          </van-tab>
+        </van-tabs>
+      </div>
+    </div>
   </div>
 </div>
