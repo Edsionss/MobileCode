@@ -17,6 +17,11 @@ Vue.component('modules-component', leftModulesComponent)
 Vue.component('attribute-component', rightAttributeComponent)
 Vue.component('canvas-component', bodyCanvasComponent)
 
+// 将Vuex的辅助函数挂载到Vue原型上
+Vue.prototype.$mapState = Vuex.mapState
+Vue.prototype.$mapGetters = Vuex.mapGetters
+Vue.prototype.$mapMutations = Vuex.mapMutations
+Vue.prototype.$mapActions = Vuex.mapActions
 // 创建Vue实例
 var app = new Vue({
   el: '#app',
@@ -58,21 +63,25 @@ var app = new Vue({
   methods: {
     //组件属性保存
     componentAttrSave(tab, formData) {
-      console.log(tab, formData)
+      // console.log(tab, formData)
     },
+    // 拖拽组件
     dragComponents(item) {},
+    // 配置组件属性
     configComponentsAttr(component) {
       this.currentComponent = component.component
       this.currentGroup = component.name
       this.componentName = component.componentName
       this.attrKey = component.id
     },
+    // 切换模式
     changeMode(item) {
       // console.log('当前模式', item)
       this.canvas.currentMode = item.label
       this.canvas.currentModeItem = item
       this.canvas.currentModeStyle = this.calculationCanvasModeStyle()
     },
+    // 计算画布模式样式
     calculationCanvasModeStyle() {
       this.canvas.canvasWarning = false
       const vw = utils.getVW()
@@ -122,4 +131,4 @@ var app = new Vue({
 
   // 监听拖拽事件
 })
-console.log(app)
+console.log('Vue实例', app)

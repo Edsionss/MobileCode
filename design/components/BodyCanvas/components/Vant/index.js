@@ -14,15 +14,31 @@ const VantCanvas = {
     }
   },
   created() {},
-  computed: {},
-  watch: {},
+  computed: {
+    ...Vuex.mapState(['componentAttr'])
+  },
+  watch: {
+    componentAttr: {
+      handler(newVal) {
+        // console.log(newVal, this.componentsData, this.formData)
+        this.componentsData.forEach(component => {
+          if (component.id === newVal.componentId) {
+            component.props = newVal.props
+            this.$set(this.formData, component.id, newVal.value)
+          }
+        })
+        console.log('this.componentsData', this.componentsData)
+      },
+      deep: true
+    }
+  },
   methods: {
     //添加表单的v-model值
     handelComponentValue() {
-      this.componentsData.array.forEach(element => {
+      this.componentsData.forEach(element => {
         if (element.groupName === 'form') {
           if (!this.formData.hasOwnProperty(element.id)) {
-            this.$set(element.id, this.formData, element.defaultValue)
+            this.$set(this.formData, element.id, element.defaultValue)
           }
         }
       })
@@ -47,6 +63,7 @@ const VantCanvas = {
     },
     dragChange(item) {
       if (item.added) {
+        this.handelComponentValue()
         this.configComponentsAttr({ ...item.added.element, componentName: 'vant' })
       }
     },

@@ -64,12 +64,18 @@ const rightAttributeComponent = {
   },
   computed: {},
   methods: {
+    // 保存组件属性
     saveAttr(tab) {
-      // 这里可以添加保存逻辑，比如发送到服务器或更新状态
-      console.log(this.$store.state.fuck)
       // 提交 mutation 来更新 store 中的值
-      this.$store.commit('setComponentAttr', { ...this.formData[tab.name], tab })
-      this.$emit('attr-save', tab, this.formData[tab.name])
+      let setAttr = this.processSetAttrData({
+        ...this.formData[tab.name],
+        tab,
+        componentId: this.reloadKey,
+        tabName: tab.name
+      })
+      console.log('setAttr', setAttr)
+      this.$store.commit('setComponentAttr', setAttr)
+      this.$emit('attr-save', tab, setAttr)
     },
     initTabs() {
       this.tabs.forEach(tab => {
@@ -87,6 +93,7 @@ const rightAttributeComponent = {
         if (!this.formData.hasOwnProperty(tabName) && tab.hasOwnProperty('content')) {
           //为每个 tab 初始化一个空对象
           this.$set(this.formData, tabName, {})
+          // this.initFormDataForTab(tabContent, tabName)
           tabContent.forEach(item => {
             if (item.valueName) {
               // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
@@ -102,26 +109,98 @@ const rightAttributeComponent = {
         }
       })
     },
-    handTabContent(tab) {
-      if (tab.name == 'attr') {
-        // 为每个 tab 初始化属性 content
-        this.componentsAttrForm.forEach(componentItem => {
-          if (componentItem.componentName == this.componentName) {
-            let attr = componentItem.attr
-            attr.forEach(item => {
-              // 检查 item.group 和 item.component 是否匹配当前的 group 和 component
-              if (item.group == this.group) {
-                const componentsList = item.components
-                componentsList.forEach(components => {
-                  if (components.component == this.component) {
-                    //如果匹配上则设置对应的属性表单
-                    tab.content = components.attr
-                  }
-                })
-              }
-            })
+    /**
+     * 根据内嵌的 content 数组指令，重构数据对象。
+     * 将 isProps 为 true 的项所对应的顶层键值对移动到 props 对象中。
+     *
+     * @param {object} sourceData - 包含顶层属性和 tab.content 指令的原始数据对象。
+     * @returns {object} 返回一个经过重构的全新对象。
+     */
+    processSetAttrData(sourceData) {
+      // --- 步骤 1: 创建一个高效的查找映射 ---
+      // 这个映射将存储 { valueName: isProps (布尔值) } 的关系。
+      // 这样我们就不需要在每次循环时都去搜索整个 content 数组。
+      const valueNameMap = new Map()
+
+      // 安全地访问 content 数组，如果不存在则不执行。
+      if (sourceData && sourceData.tab && Array.isArray(sourceData.tab.content)) {
+        sourceData.tab.content.forEach(item => {
+          // 只处理有 valueName 的项。
+          if (item.valueName) {
+            // 使用 `!!item.isProps` 将任何值（true, undefined, null）都转换为明确的布尔值。
+            valueNameMap.set(item.valueName, !!item.isProps)
           }
         })
+      }
+
+      // --- 步骤 2: 初始化结果对象 ---
+      // 预先创建 props 子对象，用于存放需要移动的属性。
+      const result = {
+        props: {}
+      }
+
+      // --- 步骤 3: 遍历源数据的所有键，并进行分配 ---
+      for (const key in sourceData) {
+        // 这是一个好习惯，确保我们只处理对象自身的属性，而不是原型链上的。
+        if (Object.prototype.hasOwnProperty.call(sourceData, key)) {
+          // 使用映射来判断这个键的归属。
+          // `valueNameMap.get(key)` 的结果会是 true, false, 或 undefined。
+          if (valueNameMap.get(key) === true) {
+            // 情况 A: 这个键在指令中，并且 isProps 为 true。
+            // 将其键值对放入 result.props 中。
+            result.props[key] = sourceData[key]
+          } else {
+            // 情况 B: 任何其他情况。
+            // 包括：isProps 为 false 的项、不在指令中的项 (如 'tab', 'componentId')。
+            // 将其键值对保留在顶层。
+            result[key] = sourceData[key]
+          }
+        }
+      }
+
+      // --- 步骤 4: [可选但推荐] 清理 ---
+      // 如果没有任何属性被移入 props，那么这个空的 props 对象就没意义了，可以删掉。
+      if (Object.keys(result.props).length === 0) {
+        delete result.props
+      }
+
+      // --- 步骤 5: 返回重构后的新对象 ---
+      return result
+    },
+    handTabContent(tab) {
+      if (tab.name == 'attr') {
+        let vantAttrForm = this.componentsAttrForm[this.componentName]
+        if (vantAttrForm) {
+          let attr = vantAttrForm.attr
+          attr.forEach(item => {
+            if (item.group == this.group) {
+              let componentsList = item.components
+              componentsList.forEach(components => {
+                if (components.component == this.component) {
+                  tab.content = components.attr
+                }
+              })
+            }
+          })
+        }
+        // 为每个 tab 初始化属性 content
+        // this.componentsAttrForm.forEach(componentItem => {
+        //   if (componentItem.componentName == this.componentName) {
+        //     let attr = componentItem.attr
+        //     attr.forEach(item => {
+        //       // 检查 item.group 和 item.component 是否匹配当前的 group 和 component
+        //       if (item.group == this.group) {
+        //         const componentsList = item.components
+        //         componentsList.forEach(components => {
+        //           if (components.component == this.component) {
+        //             //如果匹配上则设置对应的属性表单
+        //             tab.content = components.attr
+        //           }
+        //         })
+        //       }
+        //     })
+        //   }
+        // })
       }
       return tab
     },

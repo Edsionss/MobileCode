@@ -8,21 +8,23 @@ import dataSource from './components/dataSource.js'
 import help from './components/help.js'
 import template from './components/template.js'
 import rightAttribute from './components/rightAttribute.js'
-import componentsAttrForm from './base/componentsAttrForm.js'
+import vantAttrForm from './base/AttributeForm/vant/attrForm.js'
 import componentLoader from '../utils/componentLoader.js'
-import Element from '@/modules/components/Element.js'
-import Vant from '@/modules/components/Vant.js'
+import componentsDict from '@modules/components/main.js'
 const config = {
   header,
   bodyCanvas,
   leftModules,
   rightAttribute,
-  componentsAttrForm,
+  componentsAttrForm: {
+    vant: utils.processComponentAttrConfig(vantAttrForm, componentsDict.Element)
+  },
   componentLoader,
-  Element,
-  Vant,
+  Element: componentsDict.Element,
+  Vant: componentsDict.Vant,
+  WotDesign: componentsDict.WotDesign,
   global,
-  vantModule,
+  vantModule: vantModule,
   dataSource,
   help,
   template,
@@ -32,6 +34,6 @@ for (const key in config) {
   let data = config[key]
   config[key] = utils.generateDataId(data)
 }
-console.log(config)
+console.log('config', config)
 
 export default config

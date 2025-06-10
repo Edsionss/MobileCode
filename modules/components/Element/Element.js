@@ -18,12 +18,13 @@ const ELEMENT_UI_COLORS = {
 
 // 核心辅助函数 (同上)
 function resolveAttrs(attr, defaultProps) {
-  const { name, value, events, slot, props: nestedProps, ...restProps } = attr || {}
+  // debugger
+  const { name, value, events, options, slot, props: nestedProps, ...restProps } = attr || {}
   let valueName = name || attr.valueName
   let defaultValue = value || attr.defaultValue
   const componentConfig = { valueName, defaultValue }
   const finalProps = { ...defaultProps, ...restProps, ...nestedProps }
-  return { componentConfig, finalProps, finalEvents: events, slot }
+  return { componentConfig, finalProps, finalEvents: events, slot, options }
 }
 
 const componentsDict = {
@@ -89,19 +90,26 @@ const componentsDict = {
       noMatchText: '无匹配数据',
       noDataText: '无数据'
     }
-    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    // const initOption = option => {
+    //   let slot = ''
+    //   option.map(item => {
+    //     slot += `<el-option  :label="${item.label}" :value="${item.value}"></el-option>`
+    //   })
+    //   return slot
+    // }
+
+    const { componentConfig, finalProps, finalEvents, slot, options } = resolveAttrs(attr, defaultProps)
     const finalDefaultValue = finalProps.multiple
       ? componentConfig.defaultValue || []
       : componentConfig.defaultValue ?? undefined
     return {
       component: 'el-select',
+      options: options,
       valueName: componentConfig.valueName || 'selectValue',
       defaultValue: finalDefaultValue,
       props: finalProps,
       events: finalEvents || { change: val => console.log(`[Select] change:`, val) },
-      slot:
-        slot ||
-        `<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>`
+      slot: slot //|| initOption(finalProps.option)
     }
   },
 

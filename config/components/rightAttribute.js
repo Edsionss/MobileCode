@@ -13,7 +13,7 @@ export default {
       { label: '高级', name: 'expert' }
     ],
     click(tab, vm) {
-      console.log(tab, vm)
+      // console.log(tab, vm)
     },
     defaultTabs: 'attr' // 默认选中属性标签
   }
