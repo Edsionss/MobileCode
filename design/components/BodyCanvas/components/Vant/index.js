@@ -63,6 +63,8 @@ const VantCanvas = {
     },
     dragChange(item) {
       if (item.added) {
+        console.log(item.added)
+
         this.handelComponentValue()
         this.configComponentsAttr({ ...item.added.element, componentName: 'vant' })
       }

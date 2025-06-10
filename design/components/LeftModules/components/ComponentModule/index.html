@@ -25,13 +25,11 @@
                     :force-fallback="true" :animation="300" :sort="false"
                     :clone="item => onClone(item, children, framework)" chosen-class="drag-zone__item--chosen"
                     class="drag-zone">
-                    <!-- <div class="drag-zone__group"> -->
                     <transition-group tag="div" class="drag-zone__group">
                       <div class="drag-zone__item" v-for="(item, index) in children.children" :key="item.id">
                         {{ item.props.attr.label }}
                       </div>
                     </transition-group>
-                    <!-- </div> -->
                   </draggable>
                 </div>
               </div>
