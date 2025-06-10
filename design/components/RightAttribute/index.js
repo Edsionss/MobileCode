@@ -60,11 +60,17 @@ const rightAttributeComponent = {
     },
     reloadKey() {
       this.initTabs()
-      console.log(this.reloadKey)
     }
   },
   computed: {},
   methods: {
+    saveAttr(tab) {
+      // 这里可以添加保存逻辑，比如发送到服务器或更新状态
+      console.log(this.$store.state.fuck)
+      // 提交 mutation 来更新 store 中的值
+      this.$store.commit('setComponentAttr', { ...this.formData[tab.name], tab })
+      this.$emit('attr-save', tab, this.formData[tab.name])
+    },
     initTabs() {
       this.tabs.forEach(tab => {
         //统一处理每个tabs里面的内容
@@ -101,7 +107,6 @@ const rightAttributeComponent = {
         // 为每个 tab 初始化属性 content
         this.componentsAttrForm.forEach(componentItem => {
           if (componentItem.componentName == this.componentName) {
-            console.log(123)
             let attr = componentItem.attr
             attr.forEach(item => {
               // 检查 item.group 和 item.component 是否匹配当前的 group 和 component

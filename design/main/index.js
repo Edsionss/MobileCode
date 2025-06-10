@@ -4,6 +4,7 @@ import leftModulesComponent from '@components/LeftModules/index.js'
 import rightAttributeComponent from '@components/RightAttribute/index.js'
 import bodyCanvasComponent from '@components/BodyCanvas/index.js'
 import utils from '@utils/index.js'
+import store from '@modules/store/index.js'
 //全局注册组件
 Vue.use(VueRouter)
 Vue.use(vant.Lazyload)
@@ -19,6 +20,7 @@ Vue.component('canvas-component', bodyCanvasComponent)
 // 创建Vue实例
 var app = new Vue({
   el: '#app',
+  store, // 使用Vuex状态管理
   components: {},
   provide() {
     return {
@@ -54,12 +56,16 @@ var app = new Vue({
 
   computed: {},
   methods: {
+    //组件属性保存
+    componentAttrSave(tab, formData) {
+      console.log(tab, formData)
+    },
     dragComponents(item) {},
     configComponentsAttr(component) {
       this.currentComponent = component.component
       this.currentGroup = component.name
       this.componentName = component.componentName
-      this.attrKey = utils.generateUniqueId()
+      this.attrKey = component.id
     },
     changeMode(item) {
       // console.log('当前模式', item)

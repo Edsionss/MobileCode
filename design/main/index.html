@@ -31,6 +31,7 @@
   <!-- 引入vue相关依赖 -->
   <script src="../../package/vue/vue.js"></script>
   <script src="../../package/router/vue-router.js"></script>
+  <script src="../../package/vuex/vuex.js"></script>
   <!-- 引入Vant -->
   <script src="../../package/Vant/vant.min.js"></script>
   <!-- 引入ElementUI -->
@@ -78,7 +79,7 @@
         <!-- Element: attribute-panel -->
         <div class="design-layout__attribute-panel">
           <attribute-component :group="currentGroup" :component="currentComponent" :tab="currentTab"
-            :component-name="componentName" :reload-key="attrKey"></attribute-component>
+            :component-name="componentName" :reload-key="attrKey" @attr-save="componentAttrSave"></attribute-component>
         </div>
       </div>
     </div>

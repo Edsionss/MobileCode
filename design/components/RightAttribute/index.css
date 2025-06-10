@@ -52,6 +52,14 @@
   /* 增加上下 padding 使其更舒适 */
 }
 
+.attribute-panel__property-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 8px;
+
+}
+
 /* Element: 属性项的标签 */
 .attribute-panel__label {
   flex-shrink: 0;
