@@ -18,7 +18,7 @@ const vantModule = {
               tag: 'field'
             },
             {
-              label: '计数器',
+              label: '按钮',
               tag: 'stepper'
             }
           ]
