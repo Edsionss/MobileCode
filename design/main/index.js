@@ -31,6 +31,9 @@ var app = new Vue({
       currentGroup: '',
       currentComponent: '',
       currentTab: 'attr',
+      componentName: '',
+      attrKey: '',
+
       //画布
       canvas: {
         currentMode: 'Phone',
@@ -53,9 +56,10 @@ var app = new Vue({
   methods: {
     dragComponents(item) {},
     configComponentsAttr(component) {
-      console.log('config attr', component)
       this.currentComponent = component.component
       this.currentGroup = component.name
+      this.componentName = component.componentName
+      this.attrKey = utils.generateUniqueId()
     },
     changeMode(item) {
       // console.log('当前模式', item)
