@@ -28,9 +28,6 @@ const ComponentModule = {
   },
   mounted() {},
   methods: {
-    generateUniqueId() {
-      return Date.now().toString(36) + Math.random().toString(36).substr(2)
-    },
     initComponentsState() {
       if (this.componentsArray.length === 0) return
       this.activeFrameworkName = this.componentsArray[0].componentName
@@ -69,7 +66,7 @@ const ComponentModule = {
     },
     onClone(originalItem, parentGroup, framework) {
       let newItem = _.cloneDeep(originalItem)
-      newItem.id = this.generateUniqueId()
+      newItem.id = utils.generateUniqueId()
       newItem.framework = framework.componentName
       newItem.groupName = parentGroup.name
       newItem.groupLabel = parentGroup.label

@@ -5,14 +5,15 @@
   chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
   <transition-group tag="div" class="canvas-drag__item-group">
     <!-- @contextmenu.prevent="$componentsContextmenu($event,component)" -->
-    <component @click="clickComponents(component)" v-for="(component,index) in componentsData" :is="component.component"
-      :key=" component.id" v-bind="component.props"
-      :value="component.groupName === 'form'? formData[component.id] : undefined"
+    <component v-if="component.framework!=='layui'" @click="clickComponents(component)"
+      v-for="(component,index) in componentsData" :is="component.component" :key=" component.id"
+      v-bind="component.props" :value="component.groupName === 'form'? formData[component.id] : undefined"
       @input="component.groupName === 'form'&& componentEmittedInput($event,component)">
       <template v-if="component.slot && typeof component.slot === 'string'">
         <span v-if="utils.isHtmlString(component.slot)" v-html="component.slot"></span>
         <span v-else>{{ component.slot }}</span>
       </template>
     </component>
+    <div v-else v-html="component.render" v-for="(component,index) in componentsData" :key=" component.id"></div>
   </transition-group>
 </draggable>
