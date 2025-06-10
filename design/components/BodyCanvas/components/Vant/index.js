@@ -47,11 +47,13 @@ const VantCanvas = {
     },
     dragChange(item) {
       if (item.added) {
-        this.configComponentsAttr(item.added.element)
+        this.configComponentsAttr({ ...item.added.element, componentName: 'vant' })
       }
     },
+    // 点击组件时，配置组件属性
+    // 这里的 component 是被点击的组件对象
     clickComponents(component) {
-      this.configComponentsAttr(component)
+      this.configComponentsAttr({ ...component, componentName: 'vant' })
     }
   }
 }

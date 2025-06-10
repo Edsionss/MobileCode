@@ -63,5 +63,9 @@ export default {
     }
     // 3. 如果是原始类型 (string, number, null等)，直接返回
     return data
+  },
+  // 简单判断是否包含 HTML 标签，用于 v-html
+  isHtmlString(str) {
+    return /<[a-z][\s\S]*>/i.test(str)
   }
 }

@@ -53,7 +53,7 @@
                       </template>
                     </template>
                     <template v-else-if="item.slot && typeof item.slot === 'string'">
-                      <span v-if="isHtmlString(item.slot)" v-html="item.slot"></span>
+                      <span v-if="utils.isHtmlString(item.slot)" v-html="item.slot"></span>
                       <span v-else>{{ item.slot }}</span>
                     </template>
 

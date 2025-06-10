@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { componentsAttrForm, rightAttribute, componentLoader } = main
+const { componentsAttrForm, rightAttribute, componentLoader, utils } = main
 const { tabs, click, defaultTabs } = rightAttribute.attrTabs
 const createAsyncComponent = componentLoader.createAsyncComponent
 const rightAttributeComponent = {
@@ -19,6 +19,14 @@ const rightAttributeComponent = {
     tab: {
       type: String,
       default: defaultTabs
+    },
+    componentName: {
+      type: String,
+      default: ''
+    },
+    reloadKey: {
+      type: String,
+      default: ''
     }
   },
   components: {},
@@ -27,6 +35,7 @@ const rightAttributeComponent = {
       tabs: tabs, // tabs配置
       currentTabName: this.tab, //  当前选中的标签
       click: click, // tabs配置默认点击事件处理函数
+      utils: utils, // 工具函数
       // content: `<el-input v-model="input" placeholder="请输入内容"></el-input>`,
       // input: '',
       formData: {}, // 用于存储表单数据
@@ -34,48 +43,76 @@ const rightAttributeComponent = {
     }
   },
   created() {
-    this.tabs.forEach(tab => {
-      //统一处理每个tabs里面的内容
-      tab = this.handTabContent(tab)
-      // 确保每个 tab 的 content 是一个数组
-      let tabName = tab.name,
-        tabLabel = tab.label,
-        tabContent = tab.content
-      if (!tabLabel || !tabName) {
-        this.returnErrorMsg('缺少tabs标签页中的label和name，请检查代码配置。')
-        return
-      }
-      // 初始化每个 tab 的 content
-      if (!this.formData.hasOwnProperty(tabName) && tab.hasOwnProperty('content')) {
-        //为每个 tab 初始化一个空对象
-        this.$set(this.formData, tabName, {})
-        tabContent.forEach(item => {
-          if (item.valueName) {
-            // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
-            if (!this.formData[tabName].hasOwnProperty(item.valueName) && item.hasOwnProperty('defaultValue')) {
-              this.$set(this.formData[tabName], item.valueName, item.defaultValue)
-            }
-            // 特别处理 el-upload 的 fileList，如果它是 undefined，则初始化为空数组
-            if (item.component === 'el-upload' && this.formData[tabName][item.valueName] === undefined) {
-              this.$set(this.formData[tabName], item.valueName, [])
-            }
-          }
-        })
-      }
-    })
+    this.initTabs() // 初始化 tabs
   },
+  mounted() {},
+  watch: {
+    // 新增：可以添加 watcher 来处理联动逻辑
+    'formData.category'(newValue, oldValue) {
+      console.log(`Category changed from ${oldValue} to ${newValue}`)
+      if (newValue === 'sports') {
+        // 当类别为体育时，自动设置年龄为25
+        if (this.formData.hasOwnProperty('age')) {
+          this.$set(this.formData, 'age', 25)
+          console.log('Age automatically set to 25 because category is sports.')
+        }
+      }
+    },
+    reloadKey() {
+      this.initTabs()
+      console.log(this.reloadKey)
+    }
+  },
+  computed: {},
   methods: {
+    initTabs() {
+      this.tabs.forEach(tab => {
+        //统一处理每个tabs里面的内容
+        tab = this.handTabContent(tab)
+        // 确保每个 tab 的 content 是一个数组
+        let tabName = tab.name,
+          tabLabel = tab.label,
+          tabContent = tab.content
+        if (!tabLabel || !tabName) {
+          this.returnErrorMsg('缺少tabs标签页中的label和name，请检查代码配置。')
+          return
+        }
+        // 初始化每个 tab 的 content
+        if (!this.formData.hasOwnProperty(tabName) && tab.hasOwnProperty('content')) {
+          //为每个 tab 初始化一个空对象
+          this.$set(this.formData, tabName, {})
+          tabContent.forEach(item => {
+            if (item.valueName) {
+              // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
+              if (!this.formData[tabName].hasOwnProperty(item.valueName) && item.hasOwnProperty('defaultValue')) {
+                this.$set(this.formData[tabName], item.valueName, item.defaultValue)
+              }
+              // 特别处理 el-upload 的 fileList，如果它是 undefined，则初始化为空数组
+              if (item.component === 'el-upload' && this.formData[tabName][item.valueName] === undefined) {
+                this.$set(this.formData[tabName], item.valueName, [])
+              }
+            }
+          })
+        }
+      })
+    },
     handTabContent(tab) {
       if (tab.name == 'attr') {
         // 为每个 tab 初始化属性 content
-        this.componentsAttrForm.forEach(item => {
-          // 检查 item.group 和 item.component 是否匹配当前的 group 和 component
-          if (item.group == this.group) {
-            const componentsList = item.components
-            componentsList.forEach(componentItem => {
-              if (componentItem.component == this.component) {
-                //如果匹配上则设置对应的属性表单
-                tab.content = componentItem.attr
+        this.componentsAttrForm.forEach(componentItem => {
+          if (componentItem.componentName == this.componentName) {
+            console.log(123)
+            let attr = componentItem.attr
+            attr.forEach(item => {
+              // 检查 item.group 和 item.component 是否匹配当前的 group 和 component
+              if (item.group == this.group) {
+                const componentsList = item.components
+                componentsList.forEach(components => {
+                  if (components.component == this.component) {
+                    //如果匹配上则设置对应的属性表单
+                    tab.content = components.attr
+                  }
+                })
               }
             })
           }
@@ -89,7 +126,6 @@ const rightAttributeComponent = {
       this.$message.error(errorMsg)
     },
     defaultClick() {
-      console.log(123)
       click && click(this.currentTabName, this)
     },
     //  判断是否为表单
@@ -171,10 +207,6 @@ const rightAttributeComponent = {
       }
       return events
     },
-    // 简单判断是否包含 HTML 标签，用于 v-html
-    isHtmlString(str) {
-      return /<[a-z][\s\S]*>/i.test(str)
-    },
     // 新增：条件隐藏/显示组件的方法
     isHidden(tab, itemConfig) {
       // 示例：如果 formData.category 是 'tech'，则隐藏 'age' 输入框
@@ -202,20 +234,6 @@ const rightAttributeComponent = {
         },
         events: {}
       })
-    }
-  },
-  mounted() {},
-  watch: {
-    // 新增：可以添加 watcher 来处理联动逻辑
-    'formData.category'(newValue, oldValue) {
-      console.log(`Category changed from ${oldValue} to ${newValue}`)
-      if (newValue === 'sports') {
-        // 当类别为体育时，自动设置年龄为25
-        if (this.formData.hasOwnProperty('age')) {
-          this.$set(this.formData, 'age', 25)
-          console.log('Age automatically set to 25 because category is sports.')
-        }
-      }
     }
   }
 }

@@ -9,7 +9,9 @@
       :key=" component.id" v-bind="component.props"
       :value="component.groupName === 'form'? formData[component.id] : undefined"
       @input="component.groupName === 'form'&& componentEmittedInput($event,component)">
-      <template></template>
+      <template v-if="component.slot">
+        <span v-if="isHtmlString(item.slot)" v-html="item.slot"></span>
+      </template>
     </component>
   </transition-group>
 </draggable>
