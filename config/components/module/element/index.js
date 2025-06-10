@@ -1,7 +1,8 @@
 import AllDict from '@modules/components/main.js'
 const vantModule = {
   defaultGroup: 'base',
-  componentName: 'vant',
+  componentName: 'element',
+  icon: 'el-icon-eleme',
   group: [
     {
       name: 'base',

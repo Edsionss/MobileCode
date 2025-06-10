@@ -1,96 +1,150 @@
-.core-panel__main {
-  border-top: 1px solid #ccc;
-}
+    /* Block: framework-panel */
+    .framework-panel {
+      width: 100%;
+      height: 100%;
+      background-color: #fff;
+    }
 
-/* --- 容器和标题样式 --- */
-.core-panel__item-header {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 10px;
-  border-bottom: 0.2px dashed #ccc;
-  display: flex;
-  align-items: center;
-}
+    /* Element: framework-panel__accordion (顶级手风琴容器) */
+    .framework-panel__accordion {
+      border-bottom: 1px solid #e4e7ed;
+    }
 
-.core-panel__header-label {
-  flex: 1;
-}
+    /* Element: framework-panel__item (每个UI框架项) */
+    .framework-panel__item {
+      border-top: 1px solid #e4e7ed;
+    }
 
-.core-panel__header-icon {
-  flex: 1;
-  display: flex;
-  justify-content: right;
-}
+    .framework-panel__item:first-child {
+      border-top: none;
+    }
 
-.core-panel__item-content {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
+    /* Element: framework-panel__header (框架项的头部) */
+    .framework-panel__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
+      cursor: pointer;
+      background-color: #fafafa;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background-color 0.2s;
+    }
 
-.core-panel__drag-wrapper {
-  padding: 10px;
-}
+    .framework-panel__header:hover {
+      background-color: #f5f5f5;
+    }
 
+    /* Element: framework-panel__label, framework-panel__arrow (头部内的元素) */
+    .framework-panel__label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-.core-panel__drag-group {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+    .framework-panel__arrow {
+      transition: transform 0.3s;
+    }
 
+    /* Modifier: framework-panel__arrow--collapsed (箭头的折叠状态) */
+    .framework-panel__arrow--collapsed {
+      transform: rotate(-90deg);
+    }
 
+    /* Element: framework-panel__content (框架项的内容区域) */
+    .framework-panel__content {
+      padding: 0 10px 10px 10px;
+    }
 
-/* --- 单个组件项的样式 --- */
-.core-panel__components {
-  /* flex: 0 0 calc(33.333% - 0px); */
-  width: 31%;
-  box-sizing: border-box;
-  padding: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 45px;
-  border: 1px solid #e9e9eb;
-  border-radius: 0.5rem;
-  font-size: 14px;
-  color: #303133;
-  /* 明确拖拽手势 */
-  /* cursor: grab;   */
-  cursor: move;
-  /* --- 动效核心：为所有变化的属性添加平滑过渡 --- */
-  transition: all 0.25s ease-in-out;
-  /* 添加一个透明边框，防止 hover 和 chosen 时跳动 */
-  transition: background-color 0.2s, border-color 0.2s;
-}
+    /* --- 内部组件分组样式 (依然遵循BEM，但以 'group-list' 为新Block) --- */
+    .group-list {
+      border-top: 1px solid #f0f0f0;
+    }
 
-/* --- 鼠标悬停时的动效 --- */
-.core-panel__components:hover {
-  /* 边框变为主题色 */
-  border-color: #409EFF;
-  /* 向上轻微移动，产生“浮起”效果 */
-  transform: translateY(-4px);
-  /* 添加一层精致的阴影，增强立体感 */
-  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.08),
-    0 9px 28px 0 rgba(0, 0, 0, 0.05),
-    0 12px 48px 16px rgba(0, 0, 0, 0.03);
-}
+    .group-list__item {
+      border-bottom: 1px solid #f0f0f0;
+    }
 
-/* 
-  vuedraggable 拖动时应用的 'chosen' class 的样式
-  可以自定义拖动项的外观
-*/
-.core-panel__dragg__item {
-  /* border: 2px dashed #409EFF;
-  box-shadow: 0 8px 20px rgba(64, 158, 255, 0.3); */
-  background-color: #f0f8ff;
-  /* 选中时给一个淡蓝色背景 */
-  border: solid 2px #3089dc !important;
-  /* draggable 可能会覆盖，所以保留 !important */
-}
+    .group-list__item:last-child {
+      border-bottom: none;
+    }
+
+    .group-list__header {
+      font-size: 14px;
+      color: #606266;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .group-list__label {
+      flex: 1;
+    }
+
+    .group-list__icon {
+      display: flex;
+      justify-content: right;
+      transition: transform 0.3s;
+    }
+
+    .group-list__icon--collapsed {
+      transform: rotate(-90deg);
+    }
+
+    .core-panel__item-content {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* --- 拖拽组件区域样式 (以 'drag-zone' 为新Block) --- */
+    .drag-zone {
+      padding: 10px 5px;
+    }
+
+    .drag-zone__group {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .drag-zone__item {
+      width: 48%;
+      box-sizing: border-box;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 40px;
+      border: 1px solid #e9e9eb;
+      border-radius: 0.5rem;
+      font-size: 14px;
+      color: #303133;
+      /* 明确拖拽手势 */
+      /* cursor: grab;   */
+      cursor: move;
+      /* --- 动效核心：为所有变化的属性添加平滑过渡 --- */
+      transition: all 0.25s ease-in-out;
+      /* 添加一个透明边框，防止 hover 和 chosen 时跳动 */
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .drag-zone__item:hover {
+      border-color: #409EFF;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Modifier: for vuedraggable's chosen class */
+    .drag-zone__item--chosen {
+      background-color: #f0f8ff;
+      /* 选中时给一个淡蓝色背景 */
+      border: solid 2px #3089dc !important;
+    }

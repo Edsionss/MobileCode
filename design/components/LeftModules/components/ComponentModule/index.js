@@ -1,60 +1,80 @@
 import main from '@config/main.js'
-const { componentLoader, vantModule: componentModule, utils } = main
+const { componentLoader, componentModule, utils } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 const ComponentModule = {
   name: 'ComponentModule',
-  props: {
-    componentsArray: {
-      type: Array,
-      default: function () {
-        return []
-      }
-    }
-  },
+  // props: { componentsArray: { type: Array, default: () => [] } },
   template: `
   `,
   inject: ['dragComponents'],
   data() {
     return {
-      componentModule: componentModule,
-      groupName: '',
-      show: true
+      componentsArray: componentModule,
+      activeFrameworkName: '',
+      activeTabs: {},
+      groupShowStates: {}
     }
   },
-  created() {},
+  watch: {
+    componentsArray: {
+      handler() {
+        this.initComponentsState()
+      },
+      deep: true
+    }
+  },
+  created() {
+    this.initComponentsState()
+  },
   mounted() {},
   methods: {
-    defaultClick() {},
-    foldItem(item) {
-      this.show = !this.show
+    generateUniqueId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2)
     },
-    onStart(e) {},
-    onEnd(array, event) {
-      if (event.pullMode === 'clone') {
-        this.dragComponents(array.children[event.oldIndex])
-      }
-    },
-    // 添加新组件
-    onClone(item) {
-      let componentModule = _.cloneDeep(this.componentModule),
-        TItem = _.cloneDeep(item)
-      componentModule.group.map(group => {
-        group = group.group.map(groupItem => {
-          return groupItem.children.map(child => {
-            if ((child.id = TItem.id)) {
-              TItem.groupLabel = groupItem.label
-              TItem.groupName = groupItem.name
+    initComponentsState() {
+      if (this.componentsArray.length === 0) return
+      this.activeFrameworkName = this.componentsArray[0].componentName
+      this.componentsArray.forEach(framework => {
+        this.$set(this.activeTabs, framework.componentName, framework.defaultGroup)
+        if (framework.group) {
+          framework.group.forEach(g => {
+            if (g.group) {
+              g.group.forEach(subG => {
+                const key = `${framework.componentName}-${subG.name}`
+                this.$set(this.groupShowStates, key, true)
+              })
             }
           })
-        })
+        }
       })
-      let NewItem = {
-        ...TItem,
-        id: utils.generateUniqueId(),
-        groupLabel: TItem.groupLabel, // 添加 groupType 属性
-        groupName: TItem.groupName
+    },
+    toggleFramework(frameworkName) {
+      this.activeFrameworkName = this.activeFrameworkName === frameworkName ? '' : frameworkName
+    },
+    foldItem(frameworkName, groupName) {
+      const key = `${frameworkName}-${groupName}`
+      this.$set(this.groupShowStates, key, !this.groupShowStates[key])
+    },
+    isGroupOpen(frameworkName, groupName) {
+      const key = `${frameworkName}-${groupName}`
+      return this.groupShowStates[key]
+    },
+    getFrameworkIcon(name) {
+      const icons = {
+        ElementUI: 'el-icon-platform-eleme',
+        VantUI: 'el-icon-mobile-phone',
+        Layui: 'el-icon-monitor'
       }
-      return NewItem
+      return icons[name] || 'el-icon-menu'
+    },
+    onClone(originalItem, parentGroup, framework) {
+      let newItem = _.cloneDeep(originalItem)
+      newItem.id = this.generateUniqueId()
+      newItem.framework = framework.componentName
+      newItem.groupName = parentGroup.name
+      newItem.groupLabel = parentGroup.label
+      console.log('Cloned new item:', newItem)
+      return newItem
     }
   }
 }
