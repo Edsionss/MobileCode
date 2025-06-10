@@ -1,7 +1,7 @@
-import dict from '@modules/components/Vant.js'
-
+import AllDict from '@modules/components/main.js'
 const vantModule = {
   defaultGroup: 'base',
+  componentName: 'vant',
   group: [
     {
       name: 'base',
@@ -38,6 +38,7 @@ const vantModule = {
     }
   ]
 }
+let dict = AllDict.Vant
 vantModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {
