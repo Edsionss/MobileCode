@@ -1,0 +1,26 @@
+<draggable v-model="draggableList" force-fallback="true" group="itxst" animation="300"
+  chosen-class="canvas-drag__item--chosen" class="canvas-drag__content" handle=".drag-handle" @change="onDragChange">
+  <transition-group tag="div" class="canvas-drag__item-group">
+    <div class="canvas-item__content" v-for="config in draggableList" :key="config.id"
+      @click.stop="onComponentClick(config)" :class="{ 'is-selected': activeComponentId === config.id }">
+
+      <!-- 关键点：动态组件渲染 + 嵌套渲染 -->
+      <component :is="getComponentName(config.framework)" class="drag-handle" :config="config">
+        <!--
+              'vant-canvas' 或 'layui-canvas' 内部的 <slot> 将会渲染这里的内容。
+              如果当前组件是一个容器 (config.children 存在)，我们就在这里递归渲染另一个 NestedCanvas。
+            -->
+        <NestedCanvas v-if="config.children" :components-list="config.children" :active-component-id="activeComponentId"
+          @component-clicked="bubbleClick" @change="bubbleChange" />
+      </component>
+
+      <!-- 选中菜单的逻辑保持不变 -->
+      <div class="canvas-item__menu" v-if="activeComponentId === config.id">
+        <div class="canvas-item__menu-item" v-for="item in componentsMenu" :key="item.id"
+          @click.stop="clickMenu(item, config)">
+          <el-icon :class="item.icon"></el-icon>
+        </div>
+      </div>
+    </div>
+  </transition-group>
+</draggable>

@@ -1,0 +1,7 @@
+<!-- createAsyncComponent 加载的新模板内容 -->
+<div class="canvas-drag">
+  <div class="canvas-drag__container">
+    <NestedCanvas :components-list="dragComponents" :active-component-id="activeComponentId"
+      @component-clicked="onComponentClick" @change="onDragChange" />
+  </div>
+</div>
