@@ -21,15 +21,16 @@
                     :class="['group-list__icon', 'el-icon-arrow-down', { 'group-list__icon--collapsed': !isGroupOpen(framework.componentName, children.name) }]"></i>
                 </div>
                 <div class="core-panel__item-content" v-show="isGroupOpen(framework.componentName, children.name)">
-                  <draggable :list="children.children" :group="{ name: 'itxst', pull: 'clone', put: false }"
-                    :force-fallback="true" :animation="300" :sort="false"
-                    :clone="item => onClone(item, children, framework)" chosen-class="drag-zone__item--chosen"
-                    class="drag-zone">
-                    <transition-group tag="div" class="drag-zone__group">
-                      <div class="drag-zone__item" v-for="(item, index) in children.children" :key="item.id">
-                        {{ item.props.attr.label }}
-                      </div>
-                    </transition-group>
+                  <draggable
+                    :list="sourceComponents"
+                    :group="{ name: 'components-group', pull: 'clone', put: false }"
+                    :clone="cloneComponent"
+                    :sort="false"
+                    class="drag-zone"
+                  >
+                    <div v-for="element in sourceComponents" :key="element.type" class="drag-zone__item">
+                        {{ element.name }}
+                    </div>
                   </draggable>
                 </div>
               </div>

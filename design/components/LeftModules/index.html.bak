@@ -1,0 +1,41 @@
+<div class="components-panel">
+  <div class="components-panel__content">
+    <!-- 左侧模块栏 -->
+    <div class="components-panel__module-bar">
+      <div class="components-panel__module-item" v-for="(item,index) in module" :key="item.id"
+        :class="{ 'components-panel__module-item__active': currentModuleName === item.name }">
+        <div class="components-panel__module-icon" @click="defaultClick(item,index,'module')">
+          <el-tooltip class="item" effect="dark" :content="item.name" placement="right">
+            <div class="components-panel__module-icon-item">
+              <img v-if="item.src" :src="item.src" alt="">
+              <el-icon v-else :class="item.icon"></el-icon>
+              <div class="components-panel__module-icon-item-name">{{item.name}}</div>
+            </div>
+          </el-tooltip>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧详情面板 -->
+    <div class="components-panel__detail-pane" v-if="toolsIf">
+      <div class="components-panel__header">
+        <div class="components-panel__title">{{currentModuleName}}</div>
+        <div class="components-panel__tools-group">
+          <div class="components-panel__tool-item" v-for="(item,index) in tools"
+            @click="defaultClick(item,index,'tool')">
+            <el-tooltip class="item" effect="dark" :content="item.name" placement="bottom">
+              <el-icon :class="item.icon" :style="item.style"></el-icon>
+            </el-tooltip>
+          </div>
+        </div>
+      </div>
+      <div class="components-panel-search" v-if="currentModule.item && currentModule.item.search">
+        <el-input v-model="search" size="small" clearable :placeholder="'搜索'+currentModuleName"></el-input>
+      </div>
+      <div class="components-panel__main">
+        <!-- 详情主体内容 -->
+        <component v-if="currentModule.item && currentModule.item.tag" :is="currentModule.item.tag"></component>
+      </div>
+    </div>
+  </div>
+</div>

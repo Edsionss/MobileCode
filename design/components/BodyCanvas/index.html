@@ -3,22 +3,10 @@
     <!-- <component is="vant-canvas" key="vant-canvas"></component> -->
     <!-- <component is="vant-canvas" key="vant-canvas" :components-list="dragComponents"></component> -->
     <!-- 1. 添加 handle 属性 -->
-    <draggable v-model="dragComponents" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }"
-      animation="300" @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
-      chosen-class="canvas-drag__item--chosen" class="canvas-drag__content" handle=".drag-handle">
-      <transition-group tag="div" class="canvas-drag__item-group">
-        <div class="canvas-item__content " v-for="(config,index) in dragComponents" :key="config.id"
-          @click="clickComponents(config)" :class="{ 'is-selected': activeComponentId === config.id }">
-          <component :is="getComponentName(config.framework)" class="drag-handle" :config="config">
-          </component>
-          <div class="canvas-item__menu" v-if="activeComponentId === config.id">
-            <div class="canvas-item__menu-item" v-for="item in componentsMenu" :key="item.id"
-              @click.stop="clickMenu(item,config)">
-              <el-icon :class="item.icon"></el-icon>
-            </div>
-          </div>
-        </div>
-      </transition-group>
-    </draggable>
+    <draggable-area
+        :components="canvasComponents"
+        :active-id="activeComponentId"
+        @component-clicked="onComponentClick"
+    ></draggable-area>
   </div>
 </div>

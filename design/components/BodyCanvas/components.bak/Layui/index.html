@@ -1,0 +1,8 @@
+<div class="layui-panel__container">
+  <div class="layui-panel__form layui-form" v-if="config.groupName === 'form'" layui-filter="formdata">
+    <div class="layui-panel__item" :key="config.id" v-html="config.render"></div>
+  </div>
+  <div v-else class="layui-content">
+    <div class="layui-panel__item" :key="config.id" v-html="config.render"></div>
+  </div>
+</div>

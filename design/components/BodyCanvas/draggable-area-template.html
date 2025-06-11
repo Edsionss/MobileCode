@@ -1,0 +1,28 @@
+<template id="draggable-area-template">
+    <draggable
+        :list="components"
+        group="components-group"
+        class="container-drop-zone"
+    >
+        <div
+            v-for="element in components"
+            :key="element.id"
+            class="canvas-item"
+            :class="{
+                'is-container': isContainer(element),
+                'is-selected': activeId === element.id
+            }"
+            @click.stop="clickComponent(element)"
+        >
+            <component-wrapper :config="element">
+                <!-- 递归渲染子区域 -->
+                <draggable-area
+                    v-if="isContainer(element)"
+                    :components="element.children"
+                    :active-id="activeId"
+                    @component-clicked="bubbleClick"
+                ></draggable-area>
+            </component-wrapper>
+        </div>
+    </draggable>
+</template>
