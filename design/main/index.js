@@ -28,10 +28,7 @@ var app = new Vue({
   store, // 使用Vuex状态管理
   components: {},
   provide() {
-    return {
-      dragComponents: this.dragComponents,
-      configComponentsAttr: this.configComponentsAttr
-    }
+    return {}
   },
   data() {
     return {
@@ -61,22 +58,8 @@ var app = new Vue({
 
   computed: {},
   methods: {
-    //组件属性保存
-    componentAttrSave(tab, formData) {
-      // console.log(tab, formData)
-    },
-    // 拖拽组件
-    dragComponents(item) {},
-    // 配置组件属性
-    configComponentsAttr(component) {
-      this.currentComponent = component.component
-      this.currentGroup = component.name
-      this.componentName = component.componentName
-      this.attrKey = component.id
-    },
     // 切换模式
     changeMode(item) {
-      // console.log('当前模式', item)
       this.canvas.currentMode = item.label
       this.canvas.currentModeItem = item
       this.canvas.currentModeStyle = this.calculationCanvasModeStyle()

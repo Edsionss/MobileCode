@@ -6,7 +6,6 @@ const ComponentModule = {
   // props: { componentsArray: { type: Array, default: () => [] } },
   template: `
   `,
-  inject: ['dragComponents'],
   data() {
     return {
       componentsArray: componentModule,

@@ -61,7 +61,6 @@ const rightAttributeComponent = {
         componentId: this.componentId,
         tabName: tab.name
       })
-      console.log('setAttr', setAttr)
       this.$store.commit('setComponentAttr', setAttr)
       this.$emit('attr-save', tab, setAttr)
     },
