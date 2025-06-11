@@ -2,11 +2,15 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    componentAttr: {} // 当前组件属性
+    componentAttr: {}, // 当前组件属性
+    componentConfig: {} // 当前组件配置
   },
   mutations: {
     setComponentAttr(state, payload) {
-      state.componentAttr = payload
+      state.componentAttr = _.cloneDeep(payload)
+    },
+    setComponentConfig(state, payload) {
+      state.componentConfig = _.cloneDeep(payload)
     }
   },
   actions: {},

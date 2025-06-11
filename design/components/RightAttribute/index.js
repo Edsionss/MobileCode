@@ -5,30 +5,8 @@ const createAsyncComponent = componentLoader.createAsyncComponent
 const rightAttributeComponent = {
   name: 'rightAttributeComponent',
   template: `
-  
   `,
-  props: {
-    group: {
-      type: String,
-      default: 'form'
-    },
-    component: {
-      type: String,
-      default: 'input'
-    },
-    tab: {
-      type: String,
-      default: defaultTabs
-    },
-    componentName: {
-      type: String,
-      default: ''
-    },
-    reloadKey: {
-      type: String,
-      default: ''
-    }
-  },
+  props: {},
   components: {},
   data() {
     return {
@@ -36,41 +14,51 @@ const rightAttributeComponent = {
       currentTabName: this.tab, //  当前选中的标签
       click: click, // tabs配置默认点击事件处理函数
       utils: utils, // 工具函数
-      // content: `<el-input v-model="input" placeholder="请输入内容"></el-input>`,
-      // input: '',
       formData: {}, // 用于存储表单数据
-      componentsAttrForm: componentsAttrForm //  组件属性表单配置
+      componentsAttrForm: componentsAttrForm, //  组件属性表单配置
+      group: '', // 组件所属的组
+      component: '', // 组件名称
+      tab: defaultTabs, // 当前选中的 tab 名称
+      framework: '', // 组件框架名称
+      componentId: '' //  组件 id
     }
   },
   created() {
     this.initTabs() // 初始化 tabs
   },
   mounted() {},
-  watch: {
-    // 新增：可以添加 watcher 来处理联动逻辑
-    'formData.category'(newValue, oldValue) {
-      console.log(`Category changed from ${oldValue} to ${newValue}`)
-      if (newValue === 'sports') {
-        // 当类别为体育时，自动设置年龄为25
-        if (this.formData.hasOwnProperty('age')) {
-          this.$set(this.formData, 'age', 25)
-          console.log('Age automatically set to 25 because category is sports.')
-        }
-      }
-    },
-    reloadKey() {
-      this.initTabs()
-    }
+  computed: {
+    ...Vuex.mapState(['componentConfig'])
   },
-  computed: {},
+  watch: {
+    componentConfig: {
+      handler(val) {
+        ;({ framework: this.framework, groupName: this.group, id: this.componentId } = val)
+        this.component = val.props.attr.tag // 获取组件名称
+        // 更新当前组件名称和重载键
+        this.initTabs()
+      },
+      deep: true
+    }
+    // 新增：可以添加 watcher 来处理联动逻辑
+    // 'formData.category'(newValue, oldValue) {
+    //   console.log(`Category changed from ${oldValue} to ${newValue}`)
+    //   if (newValue === 'sports') {
+    //     // 当类别为体育时，自动设置年龄为25
+    //     if (this.formData.hasOwnProperty('age')) {
+    //       this.$set(this.formData, 'age', 25)
+    //       console.log('Age automatically set to 25 because category is sports.')
+    //     }
+    //   }
+    // },
+  },
   methods: {
     // 保存组件属性
     saveAttr(tab) {
-      // 提交 mutation 来更新 store 中的值
       let setAttr = this.processSetAttrData({
         ...this.formData[tab.name],
         tab,
-        componentId: this.reloadKey,
+        componentId: this.componentId,
         tabName: tab.name
       })
       console.log('setAttr', setAttr)
@@ -169,9 +157,9 @@ const rightAttributeComponent = {
     },
     handTabContent(tab) {
       if (tab.name == 'attr') {
-        let vantAttrForm = this.componentsAttrForm[this.componentName]
-        if (vantAttrForm) {
-          let attr = vantAttrForm.attr
+        let AttrForm = this.componentsAttrForm[this.framework]
+        if (AttrForm) {
+          let attr = AttrForm.attr
           attr.forEach(item => {
             if (item.group == this.group) {
               let componentsList = item.components
@@ -183,24 +171,6 @@ const rightAttributeComponent = {
             }
           })
         }
-        // 为每个 tab 初始化属性 content
-        // this.componentsAttrForm.forEach(componentItem => {
-        //   if (componentItem.componentName == this.componentName) {
-        //     let attr = componentItem.attr
-        //     attr.forEach(item => {
-        //       // 检查 item.group 和 item.component 是否匹配当前的 group 和 component
-        //       if (item.group == this.group) {
-        //         const componentsList = item.components
-        //         componentsList.forEach(components => {
-        //           if (components.component == this.component) {
-        //             //如果匹配上则设置对应的属性表单
-        //             tab.content = components.attr
-        //           }
-        //         })
-        //       }
-        //     })
-        //   }
-        // })
       }
       return tab
     },

@@ -70,7 +70,7 @@ const ComponentModule = {
       newItem.framework = framework.componentName
       newItem.groupName = parentGroup.name
       newItem.groupLabel = parentGroup.label
-      console.log('Cloned new item:', newItem)
+
       return newItem
     }
   }

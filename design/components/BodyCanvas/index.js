@@ -101,9 +101,9 @@ const bodyCanvasComponent = {
     },
     dragChange(item) {
       if (item.added) {
-        console.log(this.dragComponents)
-        // this.handelComponentValue()
-        this.configComponentsAttr({ ...item.added.element, componentName: 'vant' })
+        let newItem = item.added.element
+        this.$store.commit('setComponentConfig', newItem)
+        this.configComponentsAttr({ ...newItem, componentName: 'vant' })
       }
     },
     // 这里的 component 是被点击的组件对象

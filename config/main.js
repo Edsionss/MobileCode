@@ -10,6 +10,7 @@ import help from './components/help.js'
 import template from './components/template.js'
 import rightAttribute from './components/rightAttribute.js'
 import vantAttrForm from './base/AttributeForm/vant/attrForm.js'
+import layuiAttrForm from './base/AttributeForm/layui/index.js'
 import componentLoader from '../utils/componentLoader.js'
 import componentsDict from '@modules/components/main.js'
 const config = {
@@ -18,7 +19,8 @@ const config = {
   leftModules,
   rightAttribute,
   componentsAttrForm: {
-    vant: utils.processComponentAttrConfig(vantAttrForm, componentsDict.Element)
+    vant: utils.processComponentAttrConfig(vantAttrForm, componentsDict.Element),
+    layui: utils.processComponentAttrConfig(layuiAttrForm, componentsDict.Element)
   },
   componentLoader,
   Element: componentsDict.Element,
