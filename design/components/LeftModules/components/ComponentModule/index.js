@@ -10,7 +10,7 @@ const ComponentModule = {
   data() {
     return {
       componentsArray: componentModule,
-      activeFrameworkName: '',
+      activeFrameworkName: 'layui',
       activeTabs: {},
       groupShowStates: {}
     }
@@ -30,7 +30,7 @@ const ComponentModule = {
   methods: {
     initComponentsState() {
       if (this.componentsArray.length === 0) return
-      this.activeFrameworkName = this.componentsArray[0].componentName
+      // this.activeFrameworkName = this.componentsArray[0].componentName
       this.componentsArray.forEach(framework => {
         this.$set(this.activeTabs, framework.componentName, framework.defaultGroup)
         if (framework.group) {

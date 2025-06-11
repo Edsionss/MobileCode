@@ -2,11 +2,11 @@ import main from '@config/main.js'
 const { bodyCanvas, componentLoader, utils, Vant } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 // import ElementCanvas from './components/Element/index.js'
-// import LayuiCanvas from './components/Layui/index.js'
+import LayuiCanvas from './components/Layui/index.js'
 import VantCanvas from './components/Vant/index.js'
 // import WotDesignCanvas from './components/WotDesign/index.js'
 // Vue.component('Element', ElementCanvas)
-// Vue.component('Layui', LayuiCanvas)
+Vue.component('layui-canvas', LayuiCanvas)
 Vue.component('vant-canvas', VantCanvas)
 // Vue.component('WotDesign', WotDesignCanvas)
 // Vue.prototype.$componentsContextmenu = function (component, event) {
@@ -59,6 +59,7 @@ Vue.component('vant-canvas', VantCanvas)
 const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
   template: `<div>Loading...</div>`,
+  inject: ['configComponentsAttr'],
   components: {
     vuedraggable: window.vuedraggable //当前页面注册组件
   },
@@ -69,9 +70,54 @@ const bodyCanvasComponent = {
       dragComponents: []
     }
   },
-  computed: {},
-  watch: {},
-  methods: {}
+  computed: {
+    ...Vuex.mapState(['componentAttr'])
+  },
+  watch: {
+    componentAttr: {
+      handler(newVal) {
+        this.dragComponents.forEach(component => {
+          if (component.id === newVal.componentId) {
+            component.props = newVal.props
+          }
+        })
+      },
+      deep: true
+    }
+  },
+  methods: {
+    onStart(e) {
+      // console.log('onStart', e)
+    },
+    onEnd(e) {
+      this.drag = false
+      // console.log('onEnd', e)
+    },
+    onClone(e) {
+      // console.log('onClone', e)
+    },
+    onAddItem(event) {
+      // console.log('onAddItem', event)
+    },
+    dragChange(item) {
+      if (item.added) {
+        console.log(this.dragComponents)
+        // this.handelComponentValue()
+        this.configComponentsAttr({ ...item.added.element, componentName: 'vant' })
+      }
+    },
+    // 这里的 component 是被点击的组件对象
+    clickComponents(component) {
+      this.configComponentsAttr({ ...component, componentName: 'vant' })
+    },
+    getComponentName(name) {
+      const dict = {
+        vant: 'vant-canvas',
+        layui: 'layui-canvas'
+      }
+      return dict[name]
+    }
+  }
 }
 // 使用 import.meta.url 可以帮助我们构建一个相对于当前 JS 文件的路径
 // 这比硬编码 '..' 更健壮

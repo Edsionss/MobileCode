@@ -5,74 +5,50 @@ const VantCanvas = {
   name: 'VantCanvas',
   template: `<div>Loading...</div>`,
   components: {},
-  props: {},
-  inject: ['configComponentsAttr'],
+  props: {
+    config: {
+      type: Object,
+      required: true,
+      default: () => {}
+    }
+  },
   data() {
     return {
-      componentsData: [],
+      // config: {},
       formData: {}
     }
   },
-  created() {},
-  computed: {
-    ...Vuex.mapState(['componentAttr'])
+  created() {
+    this.handelComponentValue()
   },
+
   watch: {
-    componentAttr: {
-      handler(newVal) {
-        // console.log(newVal, this.componentsData, this.formData)
-        this.componentsData.forEach(component => {
-          if (component.id === newVal.componentId) {
-            component.props = newVal.props
-            this.$set(this.formData, component.id, newVal.value)
-          }
-        })
-        console.log('this.componentsData', this.componentsData)
-      },
-      deep: true
+    config() {
+      console.log(this.config)
+      this.handelComponentValue()
     }
   },
   methods: {
     //添加表单的v-model值
     handelComponentValue() {
-      this.componentsData.forEach(element => {
-        if (element.groupName === 'form') {
-          if (!this.formData.hasOwnProperty(element.id)) {
-            this.$set(this.formData, element.id, element.defaultValue)
-          }
+      // this.componentsData.forEach(element => {
+      //   if (element.groupName === 'form') {
+      //     if (!this.formData.hasOwnProperty(element.id)) {
+      //       this.$set(this.formData, element.id, element.defaultValue)
+      //     }
+      //   }
+      // })
+      let config = this.config
+      if (config.groupName === 'form') {
+        if (!this.formData.hasOwnProperty(config.id)) {
+          this.$set(this.formData, config.id, config.defaultValue)
         }
-      })
+      }
     },
     //手动更新表单值
     componentEmittedInput(inputValueOrFile, component) {
       let newValue = inputValueOrFile
       this.$set(this.formData, component.id, newValue)
-    },
-    onStart(e) {
-      // console.log('onStart', e)
-    },
-    onEnd(e) {
-      this.drag = false
-      // console.log('onEnd', e)
-    },
-    onClone(e) {
-      // console.log('onClone', e)
-    },
-    onAddItem(event) {
-      // console.log('onAddItem', event)
-    },
-    dragChange(item) {
-      if (item.added) {
-        console.log(item.added)
-
-        this.handelComponentValue()
-        this.configComponentsAttr({ ...item.added.element, componentName: 'vant' })
-      }
-    },
-    // 点击组件时，配置组件属性
-    // 这里的 component 是被点击的组件对象
-    clickComponents(component) {
-      this.configComponentsAttr({ ...component, componentName: 'vant' })
     }
   }
 }

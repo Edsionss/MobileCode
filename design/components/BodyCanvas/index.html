@@ -1,7 +1,17 @@
 <!-- Block: canvas-drag -->
 <div class="canvas-drag">
   <div class="canvas-drag__container">
-    <component is="vant-canvas" key="vant-canvas"></component>
+    <!-- <component is="vant-canvas" key="vant-canvas"></component> -->
     <!-- <component is="vant-canvas" key="vant-canvas" :components-list="dragComponents"></component> -->
+    <draggable v-model="dragComponents" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }"
+      animation="300" @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
+      chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
+      <transition-group tag="div" class="canvas-drag__item-group">
+        <div class="canvas-item__content" v-for="(config,index) in dragComponents" :key="config.id">
+          <component :is="getComponentName(config.framework)" :config="config">
+          </component>
+        </div>
+      </transition-group>
+    </draggable>
   </div>
 </div>

@@ -1,12 +1,8 @@
-<!-- Block: canvas-drag -->
-
-<draggable v-model="componentsData" force-fallback="true" :group="{ name: 'itxst', pull: true, put: true }"
-  animation="300" @start="onStart" @end="onEnd" @onClone="onClone" @add="onAddItem" @change="dragChange"
-  chosen-class="canvas-drag__item--chosen" class="canvas-drag__content">
-  <transition-group tag="div" class="canvas-drag__item-group">
-    <component @click="configComponentsAttr(component)" v-for="(component,index) in componentsData"
-      :is="component.component" :key=" component.id" v-bind="component.props">
-      <template></template>
-    </component>
-  </transition-group>
-</draggable>
+<div class="layui-panel__container">
+  <div class="layui-panel__form layui-form" v-if="config.groupName === 'form'" layui-filter="formdata">
+    <div class="layui-panel__item" :key="config.id" v-html="config.render"></div>
+  </div>
+  <div v-else class="layui-content">
+    <div class="layui-panel__item" :key="config.id" v-html="config.render"></div>
+  </div>
+</div>
