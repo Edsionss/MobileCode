@@ -70,11 +70,8 @@
         <!-- Element: canvas-panel -->
         <div class="design-layout__canvas-panel" :style="canvas.currentModeStyle">
 
-          <div class="design-layout__canvas-panel__warning" v-if="canvas.canvasWarning">
-            <div class="design-layout__canvas-panel__warning-title">
-              {{ canvas.canvasWarningTitle }}
-            </div>
-          </div>
+          <canvas-error-component v-if="canvas.canvasWarning"></canvas-error-component>
+
           <div class="design-layout__canvas-panel__body" v-else>
             <canvas-component></canvas-component>
           </div>

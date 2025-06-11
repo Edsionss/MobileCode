@@ -3,6 +3,7 @@ import headerComponent from '@components/Header/index.js'
 import leftModulesComponent from '@components/LeftModules/index.js'
 import rightAttributeComponent from '@components/RightAttribute/index.js'
 import bodyCanvasComponent from '@components/BodyCanvas/index.js'
+import canvasErrorComponent from '@components/CanvasError/index.js'
 import utils from '@utils/index.js'
 import store from '@modules/store/index.js'
 //全局注册组件
@@ -16,7 +17,7 @@ Vue.component('header-component', headerComponent)
 Vue.component('modules-component', leftModulesComponent)
 Vue.component('attribute-component', rightAttributeComponent)
 Vue.component('canvas-component', bodyCanvasComponent)
-
+Vue.component('canvas-error-component', canvasErrorComponent)
 // 将Vuex的辅助函数挂载到Vue原型上
 Vue.prototype.$mapState = Vuex.mapState
 Vue.prototype.$mapGetters = Vuex.mapGetters
@@ -43,7 +44,6 @@ var app = new Vue({
         currentMode: 'Phone',
         currentModeItem: {},
         canvasWarning: false,
-        canvasWarningTitle: '当前模式下，画布宽度小于最小画布宽度，请调整画布宽度',
         canvasWarningStyle: {
           width: '100%',
           height: '100%',
