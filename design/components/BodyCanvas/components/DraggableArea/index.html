@@ -1,0 +1,33 @@
+<draggable
+    :list="components"
+    group="components-group"
+    class="container-drop-zone"
+>
+    <div
+        v-for="element in components"
+        :key="element.id"
+        class="canvas-item"
+        :class="{
+            'is-container': isContainer(element),
+            'is-selected': activeId === element.id
+        }"
+        @click.stop="clickComponent(element)"
+    >
+        <component-wrapper
+            :config="element"
+            :is-selected="activeId === element.id"
+            :components-menu="componentsMenu"
+            :click-menu-fn="clickMenuFn"
+        >
+            <!-- Recursive rendering for child components -->
+            <draggable-area
+                v-if="isContainer(element)"
+                :components="element.children"
+                :active-id="activeId"
+                :components-menu="componentsMenu"
+                :click-menu-fn="clickMenuFn"
+                @component-clicked="bubbleClick"
+            ></draggable-area>
+        </component-wrapper>
+    </div>
+</draggable>

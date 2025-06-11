@@ -1,0 +1,27 @@
+<div>
+    <!-- 卡片容器 -->
+    <div v-if="config.type === 'card'" class="comp-card">
+        <div class="comp-card-header">{{ config.props.title }}</div>
+        <div class="comp-card-body">
+            <slot></slot> <!-- 儿子们放这里 -->
+        </div>
+    </div>
+    <!-- 表单容器 -->
+    <form v-else-if="config.type === 'form'" class="comp-form" @submit.prevent>
+        <slot></slot> <!-- 儿子们放这里 -->
+    </form>
+    <!-- 标题 -->
+    <h3 v-else-if="config.type === 'title'" class="comp-title">{{ config.props.text }}</h3>
+    <!-- 段落 -->
+    <p v-else-if="config.type === 'paragraph'" class="comp-paragraph">{{ config.props.text }}</p>
+    <!-- 输入框 -->
+    <input v-else-if="config.type === 'input'" class="comp-input" type="text" :placeholder="config.props.placeholder">
+    <!-- 按钮 -->
+    <button v-else-if="config.type === 'button'" class="comp-button">{{ config.props.text }}</button>
+    <!-- Component Menu -->
+    <div class="canvas-item__menu" v-if="isSelected">
+        <div class="canvas-item__menu-item" v-for="menuItem in componentsMenu" :key="menuItem.label" @click.stop="clickMenuFn(menuItem, config)">
+            <el-icon :class="menuItem.icon"></el-icon>
+        </div>
+    </div>
+</div>

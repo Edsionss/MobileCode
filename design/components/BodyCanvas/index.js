@@ -1,5 +1,5 @@
 import main from '@config/main.js';
-// Import the new HTML templates
+import DraggableArea from './components/DraggableArea/index.js';
 
 const { bodyCanvas, componentLoader, utils, Vant } = main; // Keep Vant if it's used by ComponentWrapper or specific components
 const createAsyncComponent = componentLoader.createAsyncComponent;
@@ -8,37 +8,8 @@ const createAsyncComponent = componentLoader.createAsyncComponent;
 // Vue.component('layui-canvas', LayuiCanvas);
 // Vue.component('vant-canvas', VantCanvas);
 
-// Define ComponentWrapper
-const ComponentWrapper = {
-  template: '#component-wrapper-template', // Use imported template
-props: ['config', 'isSelected', 'componentsMenu', 'clickMenuFn'],
-  // Add any methods or computed properties needed by ComponentWrapper here
-  // For example, if the component menu needs to be rendered here:
-  // data() { return { menu: main.bodyCanvas.menu }; }, // Assuming bodyCanvas is accessible
+}, // Assuming bodyCanvas is accessible
   // methods: { handleMenuClick(action, componentConfig) { ... } }
-};
-
-// Define DraggableArea
-const DraggableArea = {
-  name: 'DraggableArea', // Recursive component must have name
-  template: '#draggable-area-template', // Use imported template
-props: ['components', 'activeId', 'componentsMenu', 'clickMenuFn'],
-  components: {
-    'draggable': window.vuedraggable,
-    'component-wrapper': ComponentWrapper // Register ComponentWrapper
-  },
-  methods: {
-    isContainer: function(element) {
-      return element.children && Array.isArray(element.children);
-    },
-    clickComponent: function(element) {
-      this.$emit('component-clicked', element);
-    },
-    // bubbleClick is used to propagate the event from nested draggable-areas
-    bubbleClick: function(element) {
-      this.$emit('component-clicked', element);
-    }
-  }
 };
 
 const bodyCanvasComponent = {
