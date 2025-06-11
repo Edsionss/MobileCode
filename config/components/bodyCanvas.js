@@ -10,9 +10,9 @@ export default {
           type: 'warning'
         })
           .then(() => {
-            this.dragComponents.forEach((item, index) => {
+            this.canvasComponents.forEach((item, index) => {
               if (item.id == config.id) {
-                this.dragComponents.splice(index, 1)
+                this.canvasComponents.splice(index, 1)
                 this.$message({
                   type: 'success',
                   message: '删除成功!'
@@ -32,7 +32,7 @@ export default {
     //   label: '删除',
     //   icon: 'el-icon-delete',
     //   click: config => {
-    //     this.dragComponents.array.forEach(item, index => {
+    //     this.canvasComponents.array.forEach(item, index => {
     //       if (item.id == config.id) {
     //         components.splice(index, 1)
     //       }

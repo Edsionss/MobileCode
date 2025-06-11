@@ -1,7 +1,5 @@
 import main from '@config/main.js';
 // Import the new HTML templates
-import draggableAreaTemplate from './draggable-area-template.html';
-import componentWrapperTemplate from './component-wrapper-template.html';
 
 const { bodyCanvas, componentLoader, utils, Vant } = main; // Keep Vant if it's used by ComponentWrapper or specific components
 const createAsyncComponent = componentLoader.createAsyncComponent;
@@ -12,8 +10,8 @@ const createAsyncComponent = componentLoader.createAsyncComponent;
 
 // Define ComponentWrapper
 const ComponentWrapper = {
-  template: componentWrapperTemplate, // Use imported template
-  props: ['config'],
+  template: '#component-wrapper-template', // Use imported template
+props: ['config', 'isSelected', 'componentsMenu', 'clickMenuFn'],
   // Add any methods or computed properties needed by ComponentWrapper here
   // For example, if the component menu needs to be rendered here:
   // data() { return { menu: main.bodyCanvas.menu }; }, // Assuming bodyCanvas is accessible
@@ -23,8 +21,8 @@ const ComponentWrapper = {
 // Define DraggableArea
 const DraggableArea = {
   name: 'DraggableArea', // Recursive component must have name
-  template: draggableAreaTemplate, // Use imported template
-  props: ['components', 'activeId'],
+  template: '#draggable-area-template', // Use imported template
+props: ['components', 'activeId', 'componentsMenu', 'clickMenuFn'],
   components: {
     'draggable': window.vuedraggable,
     'component-wrapper': ComponentWrapper // Register ComponentWrapper
