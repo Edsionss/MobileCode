@@ -22,7 +22,9 @@ const LayuiCanvas = {
     this.$nextTick(() => {})
   },
   watch: {
-    config() {}
+    config() {
+      console.log(123123)
+    }
   },
   methods: {}
 }
