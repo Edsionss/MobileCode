@@ -59,7 +59,6 @@ Vue.component('vant-canvas', VantCanvas)
 const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
   template: `<div>Loading...</div>`,
-  // inject: ['configComponentsAttr'],
   components: {
     vuedraggable: window.vuedraggable //当前页面注册组件
   },
@@ -67,7 +66,9 @@ const bodyCanvasComponent = {
   data() {
     return {
       drag: false,
-      dragComponents: []
+      dragComponents: [],
+      activeComponentId: {},
+      componentsMenu: bodyCanvas.menu
     }
   },
   computed: {
@@ -104,12 +105,16 @@ const bodyCanvasComponent = {
       if (item.added) {
         let newItem = item.added.element
         this.$store.commit('setComponentConfig', newItem)
+        this.clickComponents(newItem)
       }
     },
     // 这里的 component 是被点击的组件对象
     clickComponents(component) {
-      this.$store.commit('setComponentConfig', newItem)
-      // this.configComponentsAttr({ ...component, componentName: 'vant' })
+      this.$store.commit('setComponentConfig', component)
+      this.activeComponentId = component.id
+    },
+    clickMenu(item, config) {
+      item.click && item.click.bind(this)(config)
     },
     getComponentName(name) {
       const dict = {

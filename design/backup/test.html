@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>极简组件操作边框原型</title>
+  <style>
+    /* --- 基础样式 --- */
+    body {
+      font-family: sans-serif;
+      background-color: #f0f2f5;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .canvas {
+      background-color: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      width: 400px;
+      margin: 20px auto;
+      /* 模拟画布 */
+      background-image: linear-gradient(to right, #eee 1px, transparent 1px),
+        linear-gradient(to bottom, #eee 1px, transparent 1px);
+      background-size: 15px 15px;
+    }
+
+    /* --- 组件包裹器 (核心) --- */
+    .component-wrapper {
+      position: relative;
+      /* 关键：为操作按钮提供定位参考 */
+      padding: 15px;
+      /* 给组件内容和边框留出空间 */
+      border: 2px dashed #ccc;
+      /* 未选中时的虚线边框 */
+      margin-bottom: 20px;
+      transition: border-color 0.3s;
+      /* 平滑的过渡效果 */
+    }
+
+    /* --- 悬停 (模拟选中) 状态 --- */
+    .component-wrapper:hover {
+      border-color: #007bff;
+      /* 边框变为蓝色实线 */
+      border-style: solid;
+    }
+
+    /* --- 操作按钮 (默认隐藏) --- */
+    .component-actions {
+      display: none;
+      /* 默认不显示 */
+      position: absolute;
+      /* 绝对定位 */
+      top: -15px;
+      /* 向上移动，显示在边框上 */
+      right: 10px;
+      background-color: #007bff;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      z-index: 10;
+    }
+
+    /* --- 悬停时显示操作按钮 --- */
+    .component-wrapper:hover .component-actions {
+      display: block;
+      /* 悬停时显示出来 */
+    }
+
+    /* --- 操作按钮中的链接样式 --- */
+    .component-actions a {
+      color: white;
+      text-decoration: none;
+      margin: 0 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .component-actions a:hover {
+      text-decoration: underline;
+    }
+
+    /* --- 模拟的组件内容 --- */
+    .user-component {
+      background-color: #f9f9f9;
+      padding: 20px;
+      text-align: left;
+    }
+
+    .user-component label {
+      margin-right: 10px;
+    }
+
+    .user-component input {
+      padding: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>极简组件操作边框</h1>
+  <p>将鼠标悬停在下方的组件上，即可查看选中效果。</p>
+
+  <div class="canvas">
+
+    <!-- 组件1 -->
+    <div class="component-wrapper">
+      <!-- 操作按钮 (使用普通字符) -->
+      <div class="component-actions">
+        <a title="移动">☰</a>
+        <a title="复制">❐</a>
+        <a title="删除">×</a>
+      </div>
+
+      <!-- 实际的组件内容 -->
+      <div class="user-component">
+        <label for="input1">姓名:</label>
+        <input type="text" id="input1" placeholder="鼠标悬停到这里...">
+      </div>
+    </div>
+
+    <!-- 组件2 -->
+    <div class="component-wrapper">
+      <!-- 操作按钮 -->
+      <div class="component-actions">
+        <a title="移动">☰</a>
+        <a title="复制">❐</a>
+        <a title="删除">×</a>
+      </div>
+
+      <!-- 实际的组件内容 -->
+      <div class="user-component">
+        <label for="input2">地址:</label>
+        <input type="text" id="input2" placeholder="或者悬停到这里...">
+      </div>
+    </div>
+
+  </div>
+
+</body>
+
+</html>

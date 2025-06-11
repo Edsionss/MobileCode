@@ -80,7 +80,6 @@ const rightAttributeComponent = {
         if (!this.formData.hasOwnProperty(tabName) && tab.hasOwnProperty('content')) {
           //为每个 tab 初始化一个空对象
           this.$set(this.formData, tabName, {})
-          // this.initFormDataForTab(tabContent, tabName)
           tabContent.forEach(item => {
             if (item.valueName) {
               // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
@@ -156,6 +155,9 @@ const rightAttributeComponent = {
     },
     handTabContent(tab) {
       if (tab.name == 'attr') {
+        tab.content = []
+        tab.contentNone = true
+        // 获取当前组件的属性表单配置
         let AttrForm = this.componentsAttrForm[this.framework]
         if (AttrForm) {
           let attr = AttrForm.attr
@@ -165,6 +167,7 @@ const rightAttributeComponent = {
               componentsList.forEach(components => {
                 if (components.component == this.component) {
                   tab.content = components.attr
+                  tab.contentNone = false // 有内容
                 }
               })
             }

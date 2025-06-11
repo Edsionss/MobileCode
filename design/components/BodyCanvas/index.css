@@ -60,6 +60,16 @@
   overflow: auto;
 }
 
+.canvas-item__content {
+  padding: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 10;
+  /* border: 1px dashed transparent; */
+  /* transition: all 0.2s ease-in-out; */
+  border-radius: 4px;
+  /* cursor: pointer; */
+}
 
 
 /* Modifier: The state of an item when it is being chosen/dragged */
@@ -67,9 +77,34 @@
 .canvas-drag__item--chosen {
   background-color: #f0f8ff;
   /* 选中时给一个淡蓝色背景 */
-  border: solid 2px #3089dc !important;
+  border: solid 2px #409eff !important;
   /* draggable 可能会覆盖，所以保留 !important */
 
+}
+
+/* 鼠标点击时给一个淡蓝色背景 */
+.canvas-item__content.is-selected {
+  border: 1px dashed #409EFF;
+  /* background-color: rgba(64, 158, 255, 0.1); */
+  /* box-shadow: 0 0 8px rgba(64, 158, 255, 0.5); */
+}
+
+.canvas-item__menu {
+  position: absolute;
+  left: -1px;
+  bottom: -10px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  background-color: #409eff;
+  /* padding: 3px; */
+  border-radius: 7px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  gap: 4px;
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  padding: 0 7px;
 }
 
 /* 
