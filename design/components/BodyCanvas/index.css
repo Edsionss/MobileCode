@@ -64,7 +64,7 @@
   padding: 10px;
   margin-bottom: 10px;
   position: relative;
-  z-index: 10;
+  z-index: 1;
   /* border: 1px dashed transparent; */
   /* transition: all 0.2s ease-in-out; */
   border-radius: 4px;
@@ -75,6 +75,7 @@
 /* Modifier: The state of an item when it is being chosen/dragged */
 /* 注意：BEM 推荐将 Modifier 和 Element 类名写在一起，以提高选择器权重和明确性 */
 .canvas-drag__item--chosen {
+  /* z-index: 9999; */
   background-color: #f0f8ff;
   /* 选中时给一个淡蓝色背景 */
   border: solid 2px #409eff !important;
@@ -85,6 +86,10 @@
 /* 鼠标点击时给一个淡蓝色背景 */
 .canvas-item__content.is-selected {
   border: 1px dashed #409EFF;
+  z-index: 10000;
+  /* 一个比默认值高的 z-index */
+  /* transform: none !important; */
+  /* 强制移除 transform，打破“监狱” */
   /* background-color: rgba(64, 158, 255, 0.1); */
   /* box-shadow: 0 0 8px rgba(64, 158, 255, 0.5); */
 }
@@ -93,7 +98,7 @@
   position: absolute;
   left: -1px;
   bottom: -10px;
-  z-index: 1000;
+  z-index: 10000;
   display: flex;
   align-items: center;
   background-color: #409eff;

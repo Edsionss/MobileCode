@@ -98,7 +98,10 @@ const layuiComponentDictionary = {
     // 动态生成 <option> 列表
     const optionsHtml = options
       .map(
-        opt => `<option value="${opt.value}" ${opt.value == selectedValue ? 'selected' : ''}>${opt.text}</option>`
+        opt =>
+          `<option value="${opt.value || opt.name}" ${
+            (opt.value || opt.name) == selectedValue ? 'selected' : ''
+          }>${opt.text || opt.label}</option>`
       )
       .join('')
 

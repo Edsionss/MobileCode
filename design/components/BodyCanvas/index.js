@@ -111,6 +111,8 @@ const bodyCanvasComponent = {
     // 这里的 component 是被点击的组件对象
     clickComponents(component) {
       this.$store.commit('setComponentConfig', component)
+      console.log('clickComponents', component)
+
       this.activeComponentId = component.id
     },
     clickMenu(item, config) {

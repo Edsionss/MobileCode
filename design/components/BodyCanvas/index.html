@@ -8,7 +8,7 @@
       chosen-class="canvas-drag__item--chosen" class="canvas-drag__content" handle=".drag-handle">
       <transition-group tag="div" class="canvas-drag__item-group">
         <div class="canvas-item__content " v-for="(config,index) in dragComponents" :key="config.id"
-          @click.prevent.stop="clickComponents(config)" :class="{ 'is-selected': activeComponentId === config.id }">
+          @click="clickComponents(config)" :class="{ 'is-selected': activeComponentId === config.id }">
           <component :is="getComponentName(config.framework)" class="drag-handle" :config="config">
           </component>
           <div class="canvas-item__menu" v-if="activeComponentId === config.id">

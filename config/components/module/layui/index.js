@@ -18,12 +18,12 @@ const layuiModule = {
               tag: 'input'
             },
             {
-              label: 'select',
+              label: '下拉选择框',
               tag: 'select',
               options: [
-                { label: '选项1', value: '1' },
-                { label: '选项2', value: '2' },
-                { label: '选项3', value: '3' }
+                { label: '选项1', name: '1' },
+                { label: '选项2', name: '2' },
+                { label: '选项3', name: '3' }
               ]
             }
           ]

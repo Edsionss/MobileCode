@@ -19,14 +19,20 @@ const LayuiCanvas = {
   },
   created() {},
   mounted() {
-    this.$nextTick(() => {})
+    this.$nextTick(() => {
+      this.renderForm()
+    })
   },
   watch: {
     config() {
-      console.log(123123)
+      this.renderForm()
     }
   },
-  methods: {}
+  methods: {
+    renderForm() {
+      layui.form.render()
+    }
+  }
 }
 // 使用 import.meta.url 可以帮助我们构建一个相对于当前 JS 文件的路径
 // 这比硬编码 '..' 更健壮
