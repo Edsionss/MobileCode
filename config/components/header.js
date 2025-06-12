@@ -1,7 +1,7 @@
 export default {
   titleList: [
     {
-      label: '移动低代码平台'
+      label: 'Stitcher'
     }
   ],
   modeList: [
@@ -62,6 +62,7 @@ export default {
       }
     }
   ],
-  version: '0.1.0',
-  icon: '../../assets/icon/svg/codeIcon.svg'
+  versionLabel: 'Beta',
+  version: '0.1.7',
+  icon: '../../assets/icon/svg/Stitcher.svg'
 }

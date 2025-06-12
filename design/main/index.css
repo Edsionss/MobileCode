@@ -11,7 +11,9 @@ body {
   /* 控制斑点的大小和间距 */
   /* background-position: 0px 0, 10px 10px; */
   /* 调整斑点的位置以形成网格 */
-  background-color: #ffffff;
+  /* background-color: #ffffff; */
+  /* background-color: #fffcfc; */
+  background-color: #fcfdff;
   background-image: radial-gradient(circle, #dcdcdc 1px, transparent 1px);
   background-size: 10px 10px;
 }

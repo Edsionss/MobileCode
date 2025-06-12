@@ -1,6 +1,6 @@
 import main from '@config/main.js'
 const { header, componentLoader } = main
-const { titleList, modeList, buttonList, version, icon, defaultMode } = header
+const { titleList, modeList, buttonList, version, icon, defaultMode, versionLabel } = header
 const createAsyncComponent = componentLoader.createAsyncComponent
 const headerComponent = {
   name: 'headerComponent',
@@ -28,6 +28,10 @@ const headerComponent = {
     chooseMode: {
       type: String,
       default: () => defaultMode
+    },
+    versionLabel: {
+      type: String,
+      default: () => versionLabel
     }
   },
   template: `
@@ -39,6 +43,7 @@ const headerComponent = {
       modeList: this.chooseModeList,
       buttonList: this.chooseButtonList,
       version: this.chooseVersion,
+      versionLabel: this.versionLabel,
       icon: this.chooseIcon,
       currentModeItem: {},
       currentMode: this.chooseMode
