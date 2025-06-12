@@ -1,0 +1,8 @@
+.drag-handle {
+  cursor: move;
+  box-sizing: border-box;
+  background-color: rgba(236, 245, 255, 0.5);
+  padding: 5px;
+  border: 1px dashed #5f676e;
+  /* border: 1px dashed #a0cfff; */
+}

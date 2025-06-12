@@ -3,24 +3,16 @@
   <transition-group tag="div" class="canvas-drag__item-group">
     <div class="canvas-item__content" v-for="config in draggableList" :key="config.id"
       @click.stop="onComponentClick(config)" :class="{ 'is-selected': activeComponentId === config.id }">
-
       <!-- 关键点：动态组件渲染 + 嵌套渲染 -->
       <component :is="getComponentName(config.framework)" class="drag-handle" :config="config">
-        <!--
-              'vant-canvas' 或 'layui-canvas' 内部的 <slot> 将会渲染这里的内容。
-              如果当前组件是一个容器 (config.children 存在)，我们就在这里递归渲染另一个 NestedCanvas。
-            -->
+        <!--'vant-canvas' 或 'layui-canvas' 内部的 <slot> 将会渲染这里的内容。如果当前组件是一个容器 (config.children 存在)，我们就在这里递归渲染另一个 NestedCanvas。-->
         <template v-if="config.children">
           <!-- 如果当前 config 是栅格布局 -->
-          <template v-if="config.tag === 'grid'">
-            <!-- 
-            遍历栅格的每一列的数据。
-            config.children 在栅格场景下应该是一个二维数组，例如 [[...col1_items], [...col2_items]]
-            当您从左侧拖拽一个新的栅格时，您的 cloneComponent 方法需要生成这样的初始结构。
-          -->
-            <!-- // 关键：将这个 NestedCanvas 实例放到名为 'col-slot-N' 的插槽里 -->
+          <template v-if="config.tag ==='lay-grid'">
+            <!-- 遍历栅格的每一列的数据。config.children 在栅格场景下应该是一个二维数组，例如 [[...col1_items], [...col2_items]]-->
+            <!-- 关键：将这个 NestedCanvas 实例放到名为 'col-slot-N' 的插槽里 -->
             <nested-canvas v-for="(colChildren, index) in config.children" :key="index"
-              :slot="getSlotNameForChild(index + 1)" :components-list.sync="colChildren"
+              :slot="getSlotNameForChild(index + 1)" :components-list.sync="config.children[index]"
               :active-component-id="activeComponentId" @component-clicked="bubbleClick"
               @change="event => onColChange(event, index)"></nested-canvas>
           </template>

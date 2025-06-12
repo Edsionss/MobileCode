@@ -5,8 +5,10 @@ const layoutComponents = {
       <div class="layui-card">
         <div class="layui-card-header">{{title||'卡片标题'}}</div>
         <div class="layui-card-body" style="min-height: 150px;">
+        <div class="layui-children-content">
           <!-- 这里是魔力插槽 -->
           <slot></slot>
+        </div>
         </div>
       </div>
     </div>
@@ -21,53 +23,54 @@ const layoutComponents = {
     `,
     props: []
   },
-  col: {
-    template: `
-      <div :class="baseClass">
-          <slot></slot>
-      </div>
-    `,
-    props: {
-      span: {
-        type: Number,
-        default: 6 // 默认占据6列
-      },
-      mode: {
-        type: String,
-        default: 'md' // 默认中等屏幕模式
-      }
-    },
-    computed: {
-      colClass() {
-        let baseClass = 'layui-col-'
-        return `${baseClass + this.mode + this.span}`
-      }
-    }
-  },
-  row: {
-    template: `
-      <div :class="rowClass">
-        <slot></slot>
-      </div>
-    `,
-    props: {
-      gap: {
-        type: Number,
-        default: 10 // 默认间距为7
-      }
-    },
-    computed: {
-      rowClass() {
-        let baseClass = 'layui-row '
-        return `${baseClass + 'layui-col-space' + this.gap}`
-      }
-    }
-  },
+  // col: {
+  //   template: `
+  //     <div :class="baseClass">
+  //         <slot></slot>
+  //     </div>
+  //   `,
+  //   props: {
+  //     span: {
+  //       type: Number,
+  //       default: 6 // 默认占据6列
+  //     },
+  //     mode: {
+  //       type: String,
+  //       default: 'md' // 默认中等屏幕模式
+  //     }
+  //   },
+  //   computed: {
+  //     colClass() {
+  //       let baseClass = 'layui-col-'
+  //       return `${baseClass + this.mode + this.span}`
+  //     }
+  //   }
+  // },
+  // row: {
+  //   template: `
+  //     <div :class="rowClass">
+  //       <slot></slot>
+  //     </div>
+  //   `,
+  //   props: {
+  //     gap: {
+  //       type: Number,
+  //       default: 10 // 默认间距为7
+  //     }
+  //   },
+  //   computed: {
+  //     rowClass() {
+  //       let baseClass = 'layui-row '
+  //       return `${baseClass + 'layui-col-space' + this.gap}`
+  //     }
+  //   }
+  // },
   grid: {
     template: `
       <div :class="gridRowClass">
         <div v-for="i in colsArray" :key="i" :class="gridColClass(i)">
-          <div class="layui-col-content"> <!-- 新增一层内容包裹，以避免间距影响 -->
+          <div class="layui-children-content">
+           <!-- 新增一层内容包裹，以避免间距影响 -->
             <slot :name="'col-slot-' + i"></slot>
           </div>
         </div>
@@ -104,7 +107,7 @@ const layoutComponents = {
         return ['layui-col', `layui-col-${breakpoint}${span}`]
       }
     },
-    props: ['span', 'gap', 'mode', 'config']
+    props: ['config']
   }
 }
 const registeredComponents = {}
