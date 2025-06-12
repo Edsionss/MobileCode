@@ -18,9 +18,9 @@ const NestedCanvas = {
   },
   // 需要注册父组件拥有的所有动态组件
   components: {
-    draggable: window.vuedraggable,
-    'vant-canvas': VantCanvas, // 假设 VantCanvas 已在作用域中
-    'layui-canvas': LayuiCanvas // 假设 LayuiCanvas 已在作用域中
+    // draggable: window.vuedraggable
+    // 'vant-canvas': VantCanvas, // 假设 VantCanvas 已在作用域中
+    // 'layui-canvas': LayuiCanvas // 假设 LayuiCanvas 已在作用域中
   },
   template: `
     
@@ -28,6 +28,7 @@ const NestedCanvas = {
   data() {
     // 你的菜单数据应该从配置中获取
     return {
+      draggableList: [],
       componentsMenu: [
         /* ... 你的菜单配置 ... */
       ]
@@ -35,17 +36,22 @@ const NestedCanvas = {
   },
   computed: {
     // vuedraggable 的 v-model 需要一个带 setter 的计算属性才能正确工作
-    draggableList: {
-      get() {
-        return this.componentsList
-      },
-      set(newValue) {
-        // 当列表变化时，我们不能直接修改 props，而是通过事件通知父组件更新数据
-        this.$emit('update:componentsList', newValue)
-      }
-    }
+    // draggableList: {
+    //   get() {
+    //     return this.componentsList
+    //   },
+    //   set(newValue) {
+    //     // 当列表变化时，我们不能直接修改 props，而是通过事件通知父组件更新数据
+    //     this.$emit('update:componentsList', newValue)
+    //   }
+    // }
+    // ...Vuex.mapState(['componentAttr'])
   },
   methods: {
+    // 生成与 LayuiCanvas 中对应的插槽名
+    getSlotNameForChild(index) {
+      return `col-slot-${index}`
+    },
     getComponentName(name) {
       const dict = {
         vant: 'vant-canvas',
@@ -80,4 +86,4 @@ const NestedCanvas = {
 const templateUrl = new URL('index.html', import.meta.url).href
 const cssUrl = new URL('index.css', import.meta.url).href
 // 4. 关键：调用加载器，将自己包装成异步组件，然后导出
-export default createAsyncComponent(bodyCanvasComponent, templateUrl, cssUrl)
+export default createAsyncComponent(NestedCanvas, templateUrl, cssUrl)

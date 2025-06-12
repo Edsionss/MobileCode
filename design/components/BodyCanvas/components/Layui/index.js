@@ -1,10 +1,11 @@
 import main from '@config/main.js'
 const { componentLoader, utils } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
+import layoutComponents from './components.js'
 const LayuiCanvas = {
   name: 'LayuiCanvas',
   template: `<div>Loading...</div>`,
-  components: {},
+  components: { ...layoutComponents },
   props: {
     config: {
       type: Object,
@@ -19,9 +20,7 @@ const LayuiCanvas = {
   },
   created() {},
   mounted() {
-    this.$nextTick(() => {
-      this.renderForm()
-    })
+    this.renderForm()
   },
   watch: {
     config() {
@@ -30,7 +29,9 @@ const LayuiCanvas = {
   },
   methods: {
     renderForm() {
-      layui.form.render()
+      this.$nextTick(() => {
+        layui.form.render()
+      })
     }
   }
 }

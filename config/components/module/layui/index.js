@@ -10,6 +10,20 @@ const layuiModule = {
       icon: 'el-icon-menu',
       group: [
         {
+          name: 'layout',
+          label: '布局组件',
+          children: [
+            {
+              label: '栅格布局',
+              tag: 'grid'
+            },
+            {
+              label: '卡片容器',
+              tag: 'card'
+            }
+          ]
+        },
+        {
           label: '表单',
           name: 'form',
           children: [
@@ -48,14 +62,28 @@ let dict = AllDict.layui
 layuiModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {
-      if (dict[child.tag]) {
-        return (child = {
-          defaultValue: '',
-          props: { attr: { label: child.label, tag: child.tag } },
-          render: dict[child.tag](child),
-          valueName: ''
-        })
+      let extend = {}
+      if (item.name === 'layout') {
+        extend = {
+          children: []
+        }
+        if (child.tag === 'grid') {
+          extend.children = Array.from({ length: child.cols || 2 }, () => [])
+        }
       }
+      if (dict[child.tag]) {
+        extend = {
+          render: dict[child.tag](child)
+        }
+      }
+      return (child = {
+        ...child,
+        ...extend,
+        defaultValue: '',
+        props: { attr: { label: child.label, tag: child.tag } },
+        valueName: '',
+        tag: 'lay-' + child.tag
+      })
     })
   })
 })

@@ -1,4 +1,3 @@
-import componentsDict from '@modules/components/main.js'
 export default {
   // 生成唯一ID（5个大写字母 + 3个数字）
   generateUniqueId() {

@@ -1,8 +1,9 @@
 <div class="layui-panel__container">
-  <div class="layui-panel__form layui-form" v-if="config.groupName === 'form'" layui-filter="formdata">
-    <div class="layui-panel__item" :key="config.id" v-html="config.render"></div>
-  </div>
-  <div v-else class="layui-content">
-    <div class="layui-panel__item" :key="config.id" v-html="config.render"></div>
-  </div>
+  <component v-if="config.children" :is="config.tag" :config="config" class="layui-panel__item">
+    <slot></slot>
+  </component>
+  <lay-form v-else-if="config.groupName=='form'">
+    <div class="layui-panel__item" v-html="config.render"></div>
+  </lay-form>
+  <div v-else class="layui-panel__item" v-html="config.render"></div>
 </div>

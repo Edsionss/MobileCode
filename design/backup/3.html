@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>【正确方案】使用 LayUI 原生栅格 Class</title>
+  <!-- 1. 引入依赖 (与之前相同) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.2/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.8/dist/css/layui.css">
+  <script src="https://unpkg.com/layui@2.9.8/dist/layui.js"></script>
+
+  <style>
+    /* 所有辅助样式与上一版本完全相同 */
+    body {
+      font-family: sans-serif;
+      background-color: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 20px;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .panel {
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .05);
+    }
+
+    .components-panel {
+      width: 280px;
+      padding: 15px;
+    }
+
+    .canvas-panel {
+      flex-grow: 1;
+      padding: 15px;
+    }
+
+    h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #e4e7ed;
+      padding-bottom: 10px;
+    }
+
+    .component-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #f5f7fa;
+      cursor: move;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .component-item:hover {
+      border-color: #1E9FFF;
+      color: #1E9FFF;
+    }
+
+    .sortable-ghost {
+      opacity: 0.4;
+      background: #c8ebfb;
+      border-radius: 4px;
+    }
+
+    .canvas-item-wrapper {
+      position: relative;
+      padding: 2px;
+      margin-bottom: 10px;
+    }
+
+    .canvas-item-wrapper.is-selected {
+      background-color: rgba(255, 87, 34, 0.1);
+      box-shadow: 0 0 0 2px #FF5722 inset;
+    }
+
+    .drag-handle {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      cursor: move;
+      background: #1E9FFF;
+      color: white;
+      padding: 2px 5px;
+      font-size: 12px;
+      border-radius: 4px;
+      z-index: 10;
+      display: none;
+    }
+
+    .canvas-item-wrapper:hover .drag-handle {
+      display: block;
+    }
+
+    .is-selected .drag-handle {
+      background-color: #FF5722;
+    }
+
+    .drop-zone {
+      min-height: 60px;
+      padding: 5px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+      border: 1px dashed #ccc;
+    }
+
+    .layui-col-content .drop-zone {
+      border-style: dotted;
+    }
+
+    .layui-col-content {
+      min-height: 60px;
+      box-sizing: border-box;
+      background-color: rgba(236, 245, 255, 0.5);
+      height: 100%;
+      padding: 0;
+      /* 内边距由 layui-col-space 提供 */
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <!-- HTML 结构与上一版本完全相同 -->
+    <div class="main-layout">
+      <div class="panel components-panel">
+        <h3>组件库</h3>
+        <draggable :list="sourceComponents" :group="{ name: 'main-group', pull: 'clone', put: false }"
+          :clone="cloneComponent" :sort="false">
+          <div v-for="item in sourceComponents" :key="item.name" class="component-item">{{ item.name }}</div>
+        </draggable>
+      </div>
+      <div class="panel canvas-panel">
+        <h3>画布</h3>
+        <nested-canvas :components-list.sync="canvasComponents" :active-component-id="activeComponentId"
+          @component-clicked="onComponentClick"></nested-canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 组件模板定义 ==================== -->
+  <template id="nested-canvas-template">
+    <!-- 该模板与上一版本完全相同 -->
+    <draggable v-model="draggableList" group="main-group" class="drop-zone">
+      <div v-for="config in draggableList" :key="config.id" class="canvas-item-wrapper"
+        :class="{ 'is-selected': activeComponentId === config.id }" @click.stop="clickOnComponent(config)">
+        <div class="drag-handle">{{ config.name }}</div>
+        <div class="canvas-item-content">
+          <component is="layui-canvas" :config="config">
+            <template v-if="config.type === 'grid'">
+              <nested-canvas v-for="(colChildren, index) in config.children" :key="index"
+                :slot="'col-slot-' + (index + 1)" :components-list.sync="config.children[index]"
+                :active-component-id="activeComponentId" @component-clicked="bubbleClick"></nested-canvas>
+            </template>
+            <nested-canvas v-else-if="isContainer(config)" :components-list.sync="config.children"
+              :active-component-id="activeComponentId" @component-clicked="bubbleClick"></nested-canvas>
+          </component>
+        </div>
+      </div>
+    </draggable>
+  </template>
+
+  <template id="layui-canvas-template">
+    <!-- 【核心修正】模板现在只绑定动态计算的 class -->
+    <div>
+      <div v-if="config.type === 'grid'" :class="gridRowClass">
+        <div v-for="i in colsArray" :key="i" :class="gridColClass(i)">
+          <div class="layui-col-content"> <!-- 新增一层内容包裹，以避免间距影响 -->
+            <slot :name="'col-slot-' + i"></slot>
+          </div>
+        </div>
+      </div>
+      <div v-else v-html="getRenderHtml()"></div>
+    </div>
+  </template>
+
+  <!-- ==================== Vue 脚本 ==================== -->
+  <script>
+    // ---------- 1. 定义 LayuiCanvas 组件 ----------
+    const LayuiCanvas = {
+      name: 'LayuiCanvas',
+      template: '#layui-canvas-template',
+      props: ['config'],
+      // 【核心修正】所有计算属性都用来生成正确的 Class 名称
+      computed: {
+        colsArray () {
+          const cols = this.config.props.cols || 1;
+          return Array.from({ length: cols }, (_, i) => i + 1);
+        },
+        gridRowClass () {
+          const gap = this.config.props.gap;
+          let classes = ['layui-row'];
+          if (gap !== undefined && gap >= 0) {
+            // LayUI 的间距 class 是 layui-col-spaceN
+            classes.push(`layui-col-space${gap}`);
+          }
+          return classes;
+        }
+      },
+      // mounted () { this.renderLayuiElements(); },
+      // updated () { this.renderLayuiElements(); },
+      methods: {
+        // 【核心修正】这个方法现在只拼接 Class 字符串
+        gridColClass (i) {
+          const cols = this.config.props.cols || 1;
+          // 计算每列应该占的栅格数
+          let span = Math.floor(12 / cols);
+
+          // 处理无法均分的情况，例如 7 列，将余数加到前面的列上
+          const remainder = 12 % cols;
+          if (i <= remainder) {
+            span += 1;
+          }
+
+          // 拼接 LayUI 的栅格 Class，例如 'layui-col-md6'
+          // 未来可以从 config.props 中读取响应式断点，如 'xs', 'sm', 'lg'
+          const breakpoint = this.config.props.breakpoint || 'md';
+          return ['layui-col', `layui-col-${breakpoint}${span}`];
+        },
+        getRenderHtml () {
+          if (!this.config.render) return '';
+          return this.config.render.replace('<!-- slot -->', '<slot></slot>');
+        },
+        renderLayuiElements () {
+          this.$nextTick(() => {
+            if (window.layui && window.layui.element) {
+              layui.element.render(null, `lay-filter-${this.config.id}`);
+            }
+          });
+        }
+      }
+    };
+
+    // ---------- 2. 定义 NestedCanvas 递归组件 (无任何改动) ----------
+    const NestedCanvas = {
+      name: 'NestedCanvas',
+      template: '#nested-canvas-template',
+      components: { 'draggable': vuedraggable, 'layui-canvas': LayuiCanvas },
+      props: ['componentsList', 'activeComponentId'],
+      computed: {
+        draggableList: {
+          get () { return this.componentsList; },
+          set (newValue) { this.$emit('update:componentsList', newValue); }
+        }
+      },
+      methods: {
+        isContainer (config) { return Array.isArray(config.children); },
+        clickOnComponent (config) { this.$emit('component-clicked', config); },
+        bubbleClick (config) { this.$emit('component-clicked', config); }
+      }
+    };
+
+    // ---------- 3. 创建主 Vue 实例 (无任何改动) ----------
+    new Vue({
+      el: '#app',
+      components: { 'nested-canvas': NestedCanvas },
+      data: {
+        sourceComponents: [
+          { name: '栅格：一行两列', type: 'grid', props: { cols: 2, gap: 10 } },
+          { name: '栅格：一行三列', type: 'grid', props: { cols: 3, gap: 15 } },
+          { name: '栅格：一行四列', type: 'grid', props: { cols: 4, gap: 20 } },
+          { name: '栅格：一行七列(演示不均分)', type: 'grid', props: { cols: 7, gap: 5 } },
+          { name: '卡片', type: 'container', render: `<div class="layui-card"><div class="layui-card-header">卡片标题</div><div class="layui-card-body"><!-- slot --></div></div>` },
+          { name: '折叠面板(手风琴)', type: 'container', render: `<div class="layui-collapse" lay-accordion><div class="layui-colla-item"><h2 class="layui-colla-title">杜甫</h2><div class="layui-colla-content"><!-- slot --></div></div><div class="layui-colla-item"><h2 class="layui-colla-title">李白</h2><div class="layui-colla-content"><p>...</p></div></div></div>` },
+          { name: 'LayUI 按钮', type: 'atomic', render: '<button type="button" class="layui-btn">一个按钮</button>' },
+          { name: 'LayUI 进度条', type: 'atomic', render: `<div class="layui-progress layui-progress-big" lay-showpercent="true"><div class="layui-progress-bar layui-bg-green" lay-percent="50%"></div></div>` }
+        ],
+        canvasComponents: [],
+        activeComponentId: null,
+      },
+      created () { layui.use(['element', 'form'], () => console.log('LayUI modules loaded.')); },
+      methods: {
+        cloneComponent (original) {
+          const newId = 'comp-' + Date.now() + Math.random().toString(36).substr(2, 5);
+          const newComponent = { ...JSON.parse(JSON.stringify(original)), id: newId };
+          const isContainer = (comp) => comp.type === 'grid' || (comp.render && comp.render.includes('<!-- slot -->'));
+
+          if (isContainer(original)) {
+            if (original.type === 'grid') {
+              newComponent.children = Array.from({ length: original.props.cols || 1 }, () => []);
+            } else {
+              newComponent.children = [];
+            }
+          } else {
+            delete newComponent.children;
+          }
+
+          if (newComponent.render) {
+            newComponent.render = newComponent.render.replace('>', ` lay-filter="lay-filter-${newId}">`);
+          }
+          console.log(newComponent);
+
+          return newComponent;
+        },
+        onComponentClick (config) {
+          this.activeComponentId = config.id;
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
