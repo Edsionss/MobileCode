@@ -1,7 +1,6 @@
 import utils from '@utils/index.js'
 import global from './global/index.js'
 import header from './components/header.js'
-import bodyCanvas from './components/bodyCanvas.js'
 import leftModules from './components/leftModules.js'
 // import vantModule from './components/vantModule.js'
 import componentModule from './components/module/main.js'
@@ -13,9 +12,9 @@ import vantAttrForm from './base/AttributeForm/vant/attrForm.js'
 import layuiAttrForm from './base/AttributeForm/layui/index.js'
 import componentLoader from '../utils/componentLoader.js'
 import componentsDict from '@modules/components/main.js'
+import componentsMenu from './components/componentsMenu.js'
 const config = {
   header,
-  bodyCanvas,
   leftModules,
   rightAttribute,
   componentsAttrForm: {
@@ -31,6 +30,7 @@ const config = {
   dataSource,
   help,
   template,
+  componentsMenu,
   utils
 }
 for (const key in config) {

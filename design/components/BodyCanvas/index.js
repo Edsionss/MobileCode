@@ -1,6 +1,5 @@
 import main from '@config/main.js'
-const { bodyCanvas, componentLoader } = main
-const createAsyncComponent = componentLoader.createAsyncComponent
+const createAsyncComponent = main.componentLoader.createAsyncComponent
 
 // 引入你的组件
 import LayuiCanvas from './components/Layui/index.js'
@@ -22,8 +21,7 @@ const bodyCanvasComponent = {
     return {
       // 这是最顶层的、唯一的组件数据源
       dragComponents: [],
-      activeComponentId: null, // 从对象简化为 null
-      componentsMenu: bodyCanvas.menu
+      activeComponentId: null // 从对象简化为 null
     }
   },
   computed: {
@@ -70,16 +68,12 @@ const bodyCanvasComponent = {
       if (item.added) {
         let newItem = item.added.element
         // 确保新拖入的容器有一个空的 children 数组
-        // if (newItem.children && !Array.isArray(newItem.children)) {
-        //   newItem.children = []
-        // }
         console.log('一个项目被添加到了列表中:', newItem)
         // 选中新添加的组件
         this.$store.commit('setComponentConfig', newItem)
         this.activeComponentId = newItem.id
       }
     }
-    // 你原来的 onStart, onEnd 等方法可以移除了，因为 draggable 实例已不在这个组件里直接管理
   }
 }
 

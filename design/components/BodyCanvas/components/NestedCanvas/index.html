@@ -12,7 +12,7 @@
             <!-- 遍历栅格的每一列的数据。config.children 在栅格场景下应该是一个二维数组，例如 [[...col1_items], [...col2_items]]-->
             <!-- 关键：将这个 NestedCanvas 实例放到名为 'col-slot-N' 的插槽里 -->
             <nested-canvas v-for="(colChildren, index) in config.children" :key="index"
-              :slot="getSlotNameForChild(index + 1)" :components-list.sync="config.children[index]"
+              :slot="'col-slot-' + (index + 1)" :components-list.sync="config.children[index]"
               :active-component-id="activeComponentId" @component-clicked="bubbleClick"
               @change="event => onColChange(event, index)"></nested-canvas>
           </template>

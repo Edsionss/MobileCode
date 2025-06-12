@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { componentLoader, utils } = main
+const { componentLoader, utils, componentsMenu } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 // 这个组件会自我引用以实现嵌套
 const NestedCanvas = {
@@ -28,30 +28,25 @@ const NestedCanvas = {
   data() {
     // 你的菜单数据应该从配置中获取
     return {
-      draggableList: [],
-      componentsMenu: [
-        /* ... 你的菜单配置 ... */
-      ]
+      // draggableList: [],
+      componentsMenu: componentsMenu.menu
     }
   },
   computed: {
     // vuedraggable 的 v-model 需要一个带 setter 的计算属性才能正确工作
-    // draggableList: {
-    //   get() {
-    //     return this.componentsList
-    //   },
-    //   set(newValue) {
-    //     // 当列表变化时，我们不能直接修改 props，而是通过事件通知父组件更新数据
-    //     this.$emit('update:componentsList', newValue)
-    //   }
-    // }
+    draggableList: {
+      get() {
+        return this.componentsList
+      },
+      set(newValue) {
+        // 当列表变化时，我们不能直接修改 props，而是通过事件通知父组件更新数据
+        this.$emit('update:componentsList', newValue)
+        this.$store.commit('setComponentsList', newValue)
+      }
+    }
     // ...Vuex.mapState(['componentAttr'])
   },
   methods: {
-    // 生成与 LayuiCanvas 中对应的插槽名
-    getSlotNameForChild(index) {
-      return `col-slot-${index}`
-    },
     getComponentName(name) {
       const dict = {
         vant: 'vant-canvas',
@@ -75,9 +70,12 @@ const NestedCanvas = {
     bubbleChange(event) {
       this.$emit('change', event)
     },
+    onColChange(event, index) {
+      this.$emit('change', event)
+    },
     clickMenu(item, config) {
       // 在这里处理菜单点击，或者同样通过事件冒泡
-      console.log('菜单项被点击:', item.icon, '作用于组件:', config.id)
+      item.click && item.click.bind(this)(item, config, this.componentsList)
     }
   }
 }
