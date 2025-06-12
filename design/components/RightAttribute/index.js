@@ -33,6 +33,9 @@ const rightAttributeComponent = {
   watch: {
     componentConfig: {
       handler(val) {
+        if (!val) {
+          return this.initTabs()
+        }
         ;({ framework: this.framework, groupName: this.group, id: this.componentId } = val)
         this.component = val.props.attr.tag // 获取组件名称
         // 更新当前组件名称和重载键

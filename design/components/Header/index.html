@@ -12,11 +12,6 @@
 
   <!-- 中间模式切换区域 -->
   <div class="header-panel__mode-switcher">
-    <!-- 
-      这里是一个很好的使用 Modifier 的例子。
-      你可以通过 :class 绑定一个 active 状态的修饰符。
-      例如: :class="{'header-panel__mode-item--active': item.id === currentModeId}"
-    -->
     <div class="header-panel__mode-item" v-for="item in modeList" @click="changeMode(item)" :key="item.id"
       :class="{'header-panel__mode-item--active': item.label === currentMode}">
       <div class=" header-panel__mode-content">

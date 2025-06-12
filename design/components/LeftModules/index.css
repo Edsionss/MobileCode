@@ -74,7 +74,7 @@
 /* Element: 详情面板的头部 */
 .components-panel__header {
   display: flex;
-  height: 30px;
+  height: 45px;
   width: 100%;
   align-items: center;
   border-bottom: #ccc 0.5px dashed;

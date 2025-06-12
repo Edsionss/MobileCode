@@ -25,7 +25,8 @@ const bodyCanvasComponent = {
     }
   },
   computed: {
-    ...Vuex.mapState(['componentAttr'])
+    ...Vuex.mapState(['componentAttr']),
+    canvasStyle() {}
   },
   watch: {
     // 这个 watcher 逻辑需要调整以支持在嵌套结构中查找组件
@@ -61,7 +62,10 @@ const bodyCanvasComponent = {
       this.$store.commit('setComponentConfig', component)
       this.activeComponentId = component.id
     },
-
+    clickPage() {
+      this.$store.commit('setComponentConfig', null)
+      this.activeComponentId = null
+    },
     // 这是新的 change 处理器，由 vuedraggable 的 change 事件触发
     onDragChange(item) {
       // `added` 事件对于新组件拖入最重要
