@@ -41,7 +41,6 @@ const NestedCanvas = {
       set(newValue) {
         // 当列表变化时，我们不能直接修改 props，而是通过事件通知父组件更新数据
         this.$emit('update:componentsList', newValue)
-        this.$store.commit('setComponentsList', newValue)
       }
     }
     // ...Vuex.mapState(['componentAttr'])

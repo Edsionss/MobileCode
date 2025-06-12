@@ -56,7 +56,10 @@ export default {
     {
       label: '导出',
       type: 'warning',
-      icon: 'el-icon-download'
+      icon: 'el-icon-download',
+      click() {
+        console.log(this.$store.state)
+      }
     }
   ],
   version: '0.1.0',

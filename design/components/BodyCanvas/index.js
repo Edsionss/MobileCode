@@ -14,9 +14,7 @@ Vue.component('nested-canvas', NestedCanvas)
 const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
   template: ``,
-  components: {
-    // 注册递归组件，这样模板才能使用它
-  },
+  components: {},
   data() {
     return {
       // 这是最顶层的、唯一的组件数据源
@@ -29,6 +27,12 @@ const bodyCanvasComponent = {
     canvasStyle() {}
   },
   watch: {
+    dragComponents: {
+      handler(newVal) {
+        this.$store.commit('setComponentsList', newVal)
+      },
+      deep: true
+    },
     // 这个 watcher 逻辑需要调整以支持在嵌套结构中查找组件
     componentAttr: {
       handler(newVal) {
@@ -72,7 +76,7 @@ const bodyCanvasComponent = {
       if (item.added) {
         let newItem = item.added.element
         // 确保新拖入的容器有一个空的 children 数组
-        console.log('一个项目被添加到了列表中:', newItem)
+        // console.log('一个项目被添加到了列表中:', newItem, this.dragComponents)
         // 选中新添加的组件
         this.$store.commit('setComponentConfig', newItem)
         this.activeComponentId = newItem.id

@@ -73,7 +73,7 @@ const headerComponent = {
     },
     defaultClick(item) {
       console.log('默认点击事件', item)
-      item.click && item.click(item).bind(this)
+      item.click && item.click.bind(this)(item)
     },
     loadData() {
       this.currentModeItem = this.modeList.find(item => item.label === this.currentMode)
