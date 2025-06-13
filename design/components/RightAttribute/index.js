@@ -40,6 +40,7 @@ const rightAttributeComponent = {
         this.component = val.props.attr.tag // 获取组件名称
         // 更新当前组件名称和重载键
         this.initTabs()
+        console.log(this.tabs)
       },
       deep: true
     }
@@ -69,6 +70,7 @@ const rightAttributeComponent = {
     },
     initTabs() {
       this.tabs.forEach(tab => {
+        debugger
         //统一处理每个tabs里面的内容
         tab = this.handTabContent(tab)
         // 确保每个 tab 的 content 是一个数组

@@ -9,7 +9,7 @@ const ComponentModule = {
   data() {
     return {
       componentsArray: componentModule,
-      activeFrameworkName: 'layui',
+      activeFrameworkName: 'vant', // 默认激活的框架名称
       activeTabs: {},
       groupShowStates: {}
     }
