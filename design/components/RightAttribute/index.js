@@ -70,7 +70,6 @@ const rightAttributeComponent = {
     },
     initTabs() {
       this.tabs.forEach(tab => {
-        debugger
         //统一处理每个tabs里面的内容
         tab = this.handTabContent(tab)
         // 确保每个 tab 的 content 是一个数组
