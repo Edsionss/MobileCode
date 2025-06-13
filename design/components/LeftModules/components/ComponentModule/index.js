@@ -44,22 +44,15 @@ const ComponentModule = {
         }
       })
     },
-    toggleFramework(frameworkName) {
-      this.activeFrameworkName = this.activeFrameworkName === frameworkName ? '' : frameworkName
-    },
-    foldItem(frameworkName, groupName) {
-      const key = `${frameworkName}-${groupName}`
-      this.$set(this.groupShowStates, key, !this.groupShowStates[key])
-    },
-    isGroupOpen(frameworkName, groupName) {
-      const key = `${frameworkName}-${groupName}`
-      return this.groupShowStates[key]
-    },
-    getFrameworkIcon(name) {
-      const icons = {
-        ElementUI: 'el-icon-platform-eleme',
-        VantUI: 'el-icon-mobile-phone',
-        Layui: 'el-icon-monitor'
+    // 添加新组件
+    onClone(item) {
+      let NewItem = {
+        ...item,
+        id: utils.generateUniqueId(),
+        componentName: item.tag,
+        props: {},
+        children: [],
+        groupName: 'form' // Placeholder: This needs to be dynamically set
       }
       return icons[name] || 'el-icon-menu'
     },

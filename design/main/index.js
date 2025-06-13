@@ -66,7 +66,19 @@ var app = new Vue({
       this.canvas.currentModeItem = item
       this.canvas.currentModeStyle = this.calculationCanvasModeStyle()
     },
-    // 计算画布模式样式
+    handleComponentSelected(selectedComponent) {
+      console.log('Component selected in main app:', selectedComponent)
+      this.currentComponent = selectedComponent // Store the whole object for now
+      // The RightAttribute panel's 'component' prop will receive this object.
+      // We will adjust RightAttribute to expect an object.
+      // this.currentGroup = selectedComponent.groupName; // Will use selectedComponent.groupName directly in RightAttribute
+      // this.currentTab = 'attr'; // Optionally reset to attr tab
+    },
+    handleComponentPropsUpdate(updateInfo) {
+      // Using $root as a simple event bus
+      this.$root.$emit('update-canvas-component-props', updateInfo)
+      console.log('Main app received props update, emitting via $root:', updateInfo)
+    },
     calculationCanvasModeStyle() {
       this.canvas.canvasWarning = false
       const vw = utils.getVW()
