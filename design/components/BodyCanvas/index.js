@@ -38,23 +38,23 @@ const bodyCanvasComponent = {
       handler(newVal) {
         console.log('componentAttr changed:', newVal)
         // 需要一个递归函数来在组件树中查找并更新组件
-        // const findAndApply = (components, id, props) => {
-        //   for (const component of components) {
-        //     if (component.id === id) {
-        //       // 使用 Vue.set 以确保响应性
-        //       this.$set(component, 'props', props)
-        //       return true // 找到了
-        //     }
-        //     // 如果有子节点，就递归查找
-        //     if (component.children && component.children.length > 0) {
-        //       if (findAndApply(component.children, id, props)) {
-        //         return true // 在子节点中找到了
-        //       }
-        //     }
-        //   }
-        //   return false // 在这个分支没找到
-        // }
-        // findAndApply(this.dragComponents, newVal.componentId, newVal.props)
+        const findAndApply = (components, id, props) => {
+          for (const component of components) {
+            if (component.id === id) {
+              // 使用 Vue.set 以确保响应性
+              this.$set(component, 'props', props)
+              return true // 找到了
+            }
+            // 如果有子节点，就递归查找
+            if (component.children && component.children.length > 0) {
+              if (findAndApply(component.children, id, props)) {
+                return true // 在子节点中找到了
+              }
+            }
+          }
+          return false // 在这个分支没找到
+        }
+        findAndApply(this.dragComponents, newVal.componentId, newVal.props)
       },
       deep: true
     }

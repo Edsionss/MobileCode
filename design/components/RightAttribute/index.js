@@ -37,10 +37,9 @@ const rightAttributeComponent = {
           return this.initTabs()
         }
         ;({ framework: this.framework, groupName: this.group, id: this.componentId } = val)
-        this.component = val.props.attr.tag // 获取组件名称
+        this.component = val.component || val.props.attr.tag // 获取组件名称
         // 更新当前组件名称和重载键
         this.initTabs()
-        console.log(this.tabs)
       },
       deep: true
     }
