@@ -62,7 +62,7 @@ export default {
       }
     }
   ],
-  versionLabel: 'Beta',
+  defaultVersionLabel: 'Beta',
   version: '0.1.7',
   icon: '../../assets/icon/svg/Stitcher.svg'
 }

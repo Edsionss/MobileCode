@@ -6,8 +6,9 @@
     </template>
   </component>
   <lay-form v-else-if="config.groupName=='form'">
+    <component :is="config.tag" :config="config" class="layui-panel__item" v-if="config.other"></component>
     <div class="layui-panel__item" v-html="config.render"></div>
   </lay-form>
+
   <div v-else class="layui-panel__item" v-html="config.render"></div>
-  <div id="demo1"></div>
 </div>

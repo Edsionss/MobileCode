@@ -23,48 +23,6 @@ const layoutComponents = {
     `,
     props: []
   },
-  // col: {
-  //   template: `
-  //     <div :class="baseClass">
-  //         <slot></slot>
-  //     </div>
-  //   `,
-  //   props: {
-  //     span: {
-  //       type: Number,
-  //       default: 6 // 默认占据6列
-  //     },
-  //     mode: {
-  //       type: String,
-  //       default: 'md' // 默认中等屏幕模式
-  //     }
-  //   },
-  //   computed: {
-  //     colClass() {
-  //       let baseClass = 'layui-col-'
-  //       return `${baseClass + this.mode + this.span}`
-  //     }
-  //   }
-  // },
-  // row: {
-  //   template: `
-  //     <div :class="rowClass">
-  //       <slot></slot>
-  //     </div>
-  //   `,
-  //   props: {
-  //     gap: {
-  //       type: Number,
-  //       default: 10 // 默认间距为7
-  //     }
-  //   },
-  //   computed: {
-  //     rowClass() {
-  //       let baseClass = 'layui-row '
-  //       return `${baseClass + 'layui-col-space' + this.gap}`
-  //     }
-  //   }
-  // },
   grid: {
     template: `
       <div :class="gridRowClass">
@@ -108,6 +66,30 @@ const layoutComponents = {
       }
     },
     props: ['config']
+  },
+  xmSelect: {
+    template: `
+      <div class="layui-form-item">
+        <label class="layui-form-label">{{config.label}}</label>
+        <div class="layui-input-block">
+          <div :id="config.id"></div>
+        </div>
+      </div>
+    `,
+    props: ['config'],
+    created() {},
+    mounted() {
+      this.$nextTick(() => {
+        let config = this.config
+        // 确保 xmSelect 已经加载
+        var xmSelectInit = xmSelect.render({
+          el: '#' + config.id,
+          data: config.options || []
+        })
+      })
+    },
+
+    methods: {}
   }
 }
 const registeredComponents = {}
