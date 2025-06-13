@@ -1,0 +1,77 @@
+body {
+  font-family: sans-serif;
+}
+
+/* 创建一个网格背景 */
+.design-layout {
+  /* background-color: white; */
+  /* 基础颜色 */
+  /* background-image: radial-gradient(circle, black 10%, transparent 10%), radial-gradient(circle, black 10%, transparent 10%); */
+  /* background-size: 10px 10px; */
+  /* 控制斑点的大小和间距 */
+  /* background-position: 0px 0, 10px 10px; */
+  /* 调整斑点的位置以形成网格 */
+  /* background-color: #ffffff; */
+  /* background-color: #fffcfc; */
+  background-color: #fcfdff;
+  background-image: radial-gradient(circle, #dcdcdc 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+/* 设计各板块的背景色 */
+.design-layout__header,
+.design-layout__components-panel,
+.design-layout__canvas-panel,
+.design-layout__attribute-panel {
+  background-color: white;
+}
+
+/* 布局中心 */
+.design-layout__body {
+  width: 100%;
+  height: calc(100vh - 57px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 各板块的绝对定位 */
+.design-layout__components-panel,
+.design-layout__canvas-panel,
+.design-layout__attribute-panel {
+  height: 100%;
+  overflow: auto;
+  position: absolute;
+  top: 0;
+}
+
+.design-layout__components-panel,
+.design-layout__attribute-panel {
+  border-bottom: 1px solid #ccc;
+  height: calc(100% - 2px);
+}
+
+/* 组件面板 */
+.design-layout__components-panel {
+  left: 0;
+
+}
+
+/* 画布面板 */
+.design-layout__canvas-panel {
+  top: 20px;
+  overflow: auto;
+  box-shadow: #0000001a 0 20px 25px -5px, #0000000a 0 10px 10px -5px;
+  cursor: pointer;
+}
+
+.design-layout__canvas-panel__body {
+  height: 100%;
+  width: 100%;
+}
+
+
+
+/* 属性面板 */
+.design-layout__attribute-panel {
+  right: 0;
+}
