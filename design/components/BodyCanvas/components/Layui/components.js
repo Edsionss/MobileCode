@@ -70,7 +70,7 @@ const layoutComponents = {
   xmSelect: {
     template: `
       <div class="layui-form-item">
-        <label class="layui-form-label">{{config.label}}</label>
+        <label class="layui-form-label">{{config.props.label}}</label>
         <div class="layui-input-block">
           <div :id="config.id"></div>
         </div>
@@ -80,11 +80,12 @@ const layoutComponents = {
     created() {},
     mounted() {
       this.$nextTick(() => {
-        let config = this.config
+        let config = this.config,
+          props = this.config.props
         // 确保 xmSelect 已经加载
         var xmSelectInit = xmSelect.render({
           el: '#' + config.id,
-          data: config.options || []
+          data: props.options || []
         })
       })
     },

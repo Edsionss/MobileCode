@@ -12,7 +12,7 @@ export default {
           id: 'row',
           label: '栅格',
           component: 'el-row',
-          attr: [
+          props: [
             {
               el: 'input',
               name: 'label',
@@ -30,7 +30,7 @@ export default {
       components: [
         {
           component: 'input',
-          attr: [
+          props: [
             {
               el: 'input',
               name: 'label',
@@ -53,9 +53,9 @@ export default {
             },
             {
               el: 'input',
-              name: 'clearable',
-              label: 'name',
-              tip: '变量名',
+              name: 'name',
+              label: '变量名',
+              // tip: '变量名',
               // value: true,
               events: {
                 change: function (val) {
@@ -66,7 +66,7 @@ export default {
             {
               el: 'input',
               name: 'defaultValue',
-              label: '默认值',
+              // label: '默认值',
               events: {
                 change: function (val) {
                   console.log('[Event] 姓名 Input "change":', val, this.currentTabName)

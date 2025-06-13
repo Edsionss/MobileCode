@@ -22,7 +22,8 @@ const layuiComponentDictionary = {
       type = 'text',
       disabled = false,
       readonly = false,
-      layVerify = ''
+      layVerify = '',
+      defaultValue = ''
     } = config
 
     return `
@@ -37,6 +38,7 @@ const layuiComponentDictionary = {
             autocomplete="off" 
             class="layui-input"
             lay-verify="${layVerify}"
+            value="${defaultValue}"
             ${disabled ? 'disabled' : ''}
             ${readonly ? 'readonly' : ''}
           >

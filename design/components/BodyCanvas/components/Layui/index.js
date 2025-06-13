@@ -1,4 +1,5 @@
 import main from '@config/main.js'
+import { Layui as layuiDict } from '@modules/components/main.js'
 const { componentLoader, utils } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 import layoutComponents from './components.js'
@@ -15,16 +16,34 @@ const LayuiCanvas = {
   },
   data() {
     return {
-      formData: {}
+      formData: {},
+      props: this.config.props
     }
   },
   created() {},
   mounted() {
     this.renderForm()
   },
+  computed: {
+    renderHtml() {
+      if (layuiDict[this.props.tag]) {
+        let extend = {}
+        if (this.config.groupName == 'form') {
+          extend = {
+            name: this.config.id
+          }
+        }
+        return layuiDict[this.props.tag]({ ...this.props, ...extend })
+      }
+    }
+  },
   watch: {
-    config() {
-      this.renderForm()
+    config: {
+      handler(val) {
+        this.renderForm()
+        this.$set(this.$data, 'props', this.config.props)
+      },
+      deep: true
     }
   },
   methods: {

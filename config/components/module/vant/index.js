@@ -44,7 +44,7 @@ vantModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {
       if (dict[child.tag]) {
-        return (child = dict[child.tag](child))
+        return (child = { ...dict[child.tag](child), _DEFAULT_CONFIG_PROPS: { ..._.cloneDeep(child) } })
       }
     })
   })

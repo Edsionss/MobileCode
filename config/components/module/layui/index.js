@@ -1,4 +1,3 @@
-import AllDict from '@modules/components/main.js'
 const layuiModule = {
   defaultGroup: 'base',
   componentName: 'layui',
@@ -68,7 +67,6 @@ const layuiModule = {
     }
   ]
 }
-let dict = AllDict.layui
 layuiModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {
@@ -81,19 +79,16 @@ layuiModule.group.forEach(group => {
           extend.children = Array.from({ length: child.cols || 2 }, () => [])
         }
       }
-      if (dict[child.tag]) {
-        extend = {
-          render: dict[child.tag](child)
-        }
-      }
-      return (child = {
-        ...child,
+      let result = {
         ...extend,
-        defaultValue: '',
-        props: { attr: { label: child.label, tag: child.tag } },
-        valueName: '',
+        props: { ...child, defaultValue: '' }
+      }
+      child = {
+        _DEFAULT_CONFIG_PROPS: { ..._.cloneDeep(result) },
+        ...result,
         tag: 'lay-' + child.tag
-      })
+      }
+      return child
     })
   })
 })

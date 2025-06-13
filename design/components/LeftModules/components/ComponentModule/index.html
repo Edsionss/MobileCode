@@ -27,7 +27,7 @@
                     class="drag-zone">
                     <transition-group tag="div" class="drag-zone__group">
                       <div class="drag-zone__item" v-for="(item, index) in children.children" :key="item.id">
-                        {{ item.props.attr.label }}
+                        {{ item.props.label }}
                       </div>
                     </transition-group>
                   </draggable>

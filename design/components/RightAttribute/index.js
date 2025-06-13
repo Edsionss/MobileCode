@@ -20,7 +20,8 @@ const rightAttributeComponent = {
       component: '', // 组件名称
       tab: defaultTabs, // 当前选中的 tab 名称
       framework: '', // 组件框架名称
-      componentId: '' //  组件 id
+      componentId: '', //  组件 id
+      componentProps: {} //组件属性
     }
   },
   created() {
@@ -29,15 +30,29 @@ const rightAttributeComponent = {
   mounted() {},
   computed: {
     ...Vuex.mapState(['componentConfig'])
+    // componentId() {
+    //   return this.componentConfig.id
+    // },
+    // component() {
+    //   return this.componentConfig.component
+    // },
+    // framework() {
+    //   return this.componentConfig.framework
+    // },
+    // group() {
+    //   return this.componentConfig.group
+    // }
   },
   watch: {
     componentConfig: {
       handler(val) {
-        if (!val) {
-          return this.initTabs()
-        }
-        ;({ framework: this.framework, groupName: this.group, id: this.componentId } = val)
-        this.component = val.component || val.props.attr.tag // 获取组件名称
+        ;({
+          framework: this.framework,
+          groupName: this.group,
+          id: this.componentId,
+          props: this.componentProps
+        } = val)
+        this.component = val.component || val.props?.tag // 获取组件名称
         // 更新当前组件名称和重载键
         this.initTabs()
       },
@@ -80,23 +95,27 @@ const rightAttributeComponent = {
           return
         }
         // 初始化每个 tab 的 content
-        if (!this.formData.hasOwnProperty(tabName) && tab.hasOwnProperty('content')) {
+        if (tab.hasOwnProperty('content')) {
           //为每个 tab 初始化一个空对象
-          this.$set(this.formData, tabName, {})
+          this.formData.hasOwnProperty(tabName) || this.$set(this.formData, tabName, {})
           tabContent.forEach(item => {
-            if (item.valueName) {
+            if (item.id) {
               // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
-              if (!this.formData[tabName].hasOwnProperty(item.valueName) && item.hasOwnProperty('defaultValue')) {
-                this.$set(this.formData[tabName], item.valueName, item.defaultValue)
+              let newKey = this.formValueName(item.valueName)
+              if (!this.formData[tabName].hasOwnProperty(newKey) && item.hasOwnProperty('defaultValue')) {
+                this.$set(this.formData[tabName], newKey, this.componentProps[item.valueName])
               }
               // 特别处理 el-upload 的 fileList，如果它是 undefined，则初始化为空数组
-              if (item.component === 'el-upload' && this.formData[tabName][item.valueName] === undefined) {
-                this.$set(this.formData[tabName], item.valueName, [])
+              if (item.component === 'el-upload' && this.formData[tabName][newKey] === undefined) {
+                this.$set(this.formData[tabName], newKey, [])
               }
             }
           })
         }
       })
+    },
+    formValueName(valueName) {
+      return this.componentId + '_' + valueName
     },
     /**
      * 根据内嵌的 content 数组指令，重构数据对象。
@@ -134,15 +153,17 @@ const rightAttributeComponent = {
         if (Object.prototype.hasOwnProperty.call(sourceData, key)) {
           // 使用映射来判断这个键的归属。
           // `valueNameMap.get(key)` 的结果会是 true, false, 或 undefined。
-          if (valueNameMap.get(key) === true) {
+          //移除多余的唯一标识
+          let newKey = key.replace(this.componentId + '_', '')
+          if (valueNameMap.get(newKey) === true) {
             // 情况 A: 这个键在指令中，并且 isProps 为 true。
             // 将其键值对放入 result.props 中。
-            result.props[key] = sourceData[key]
+            result.props[newKey] = sourceData[key]
           } else {
             // 情况 B: 任何其他情况。
             // 包括：isProps 为 false 的项、不在指令中的项 (如 'tab', 'componentId')。
             // 将其键值对保留在顶层。
-            result[key] = sourceData[key]
+            result[newKey] = sourceData[key]
           }
         }
       }
@@ -157,8 +178,11 @@ const rightAttributeComponent = {
       return result
     },
     handTabContent(tab) {
+      tab.content = []
+      if (!this.componentId) {
+        return tab
+      }
       if (tab.name == 'attr') {
-        tab.content = []
         tab.contentNone = true
         // 获取当前组件的属性表单配置
         let AttrForm = this.componentsAttrForm[this.framework]
@@ -222,7 +246,8 @@ const rightAttributeComponent = {
         // 特殊处理el-upload的onChange事件来同步fileList (如果不用.sync)
         // 更好的方式是在el-upload的props中配置onChange回调，直接操作this.formData[itemConfig.valueName]
         // 这里我们假设标准的input事件
-        this.handleActualInputValueChange(tab, itemConfig.valueName, valueToSet)
+        let valKey = this.formValueName(itemConfig.valueName)
+        this.handleActualInputValueChange(tab, valKey, valueToSet)
       }
     },
     //处理实际输入值变化并且更新表单中的值

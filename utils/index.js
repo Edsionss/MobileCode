@@ -118,7 +118,6 @@ export default {
         // 步骤C：调用辅助函数，分别转换 props 和 attr 数组。
         const transformedProps = transformArray(component.props, { isProps: true })
         const transformedAttr = transformArray(component.attr)
-
         // 步骤D：合并。将转换后的两个数组合并成一个，并赋值给 component.attr。
         // 使用展开运算符 `...` 是最现代和清晰的合并方式。
         component.attr = [...transformedProps, ...transformedAttr]

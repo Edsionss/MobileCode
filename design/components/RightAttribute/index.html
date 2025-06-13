@@ -11,7 +11,7 @@
               <!-- 单个属性/表单项 -->
               <div v-if="!tab.contentNone">
                 <div class="attribute-panel__property-item" v-for="(item, index) in tab.content"
-                  :key="item.valueName || item.component + '-' + index">
+                  :key="formValueName(item.valueName) || item.component + '-' + index">
                   <!-- 属性标签 -->
                   <div class="attribute-panel__label">
                     <el-tooltip v-if="item.props.tip" class="item" effect="dark" :content="item.props.tip||'没有任何提示'"
@@ -29,9 +29,9 @@
                   <!-- 属性的输入控件 -->
                   <div class="attribute-panel__control">
                     <component :is="item.component" v-bind="getProcessedProps(item)" v-on="getProcessedEvents(item)"
-                      :value="isInputWithValue(tab,item) ? formData[tab.name][item.valueName] : undefined"
+                      :value="isInputWithValue(tab,item) ? formData[tab.name][formValueName(item.valueName)] : undefined"
                       @input="componentEmittedInput($event, tab,item)"
-                      :file-list="item.component === 'el-upload' && item.valueName ? formData[tab.name][item.valueName] : undefined"
+                      :file-list="item.component === 'el-upload' && formValueName(item.valueName) ? formData[tab.name][formValueName(item.valueName)] : undefined"
                       v-if="!isHidden(tab,item)">
                       <template
                         v-if="item.options && Array.isArray(item.options) && (item.component === 'el-select' || item.component === 'el-radio-group' || item.component === 'el-checkbox-group')">
@@ -60,7 +60,8 @@
                     </component>
                     <!-- 调试信息 -->
                     <div v-if="item.valueState" class="attribute-panel__debug-info">
-                      绑定的值 (formData.{{tab.name}}{{item.valueName}}): {{ formData[tab.name][item.valueName] }}
+                      绑定的值 (formData.{{tab.name}}{{formValueName(item.valueName)}}): {{
+                      formData[tab.name][formValueName(item.valueName)] }}
                     </div>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import AllDict from '@modules/components/main.js'
+import { Layui } from '@modules/components/main.js'
 const layuiModule = {
   defaultGroup: 'base',
   componentName: 'echarts',
@@ -58,7 +58,7 @@ const layuiModule = {
     }
   ]
 }
-let dict = AllDict.layui
+let dict = Layui
 layuiModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {

@@ -5,7 +5,7 @@
     <div class="canvas-item__content" v-for="config in draggableList" :key="config.id"
       @click.stop="onComponentClick(config)" :class="{ 'is-selected': activeComponentId === config.id }">
       <!-- 关键点：动态组件渲染 + 嵌套渲染 -->
-      <div class="canvas-drag__item-label">{{ config.label||config.props.attr.label }}</div>
+      <div class="canvas-drag__item-label">{{ config.label||config.props.label }}</div>
       <component :is="getComponentName(config.framework)" class="canvas-drag__drag-handle" :config="config">
         <!--'vant-canvas' 或 'layui-canvas' 内部的 <slot> 将会渲染这里的内容。如果当前组件是一个容器 (config.children 存在)，我们就在这里递归渲染另一个 NestedCanvas。-->
         <template v-if="config.children">

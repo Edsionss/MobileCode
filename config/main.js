@@ -8,23 +8,24 @@ import dataSource from './components/dataSource.js'
 import help from './components/help.js'
 import template from './components/template.js'
 import rightAttribute from './components/rightAttribute.js'
-import vantAttrForm from './base/AttributeForm/vant/attrForm.js'
-import layuiAttrForm from './base/AttributeForm/layui/index.js'
+import vantAttrForm from './components/AttributeForm/vant/index.js'
+import layuiAttrForm from './components/AttributeForm/layui/index.js'
 import componentLoader from '../utils/componentLoader.js'
-import componentsDict from '@modules/components/main.js'
+import { Element, Vant, WotDesign, Layui } from '@modules/components/main.js'
 import componentsMenu from './components/componentsMenu.js'
 const config = {
   header,
   leftModules,
   rightAttribute,
   componentsAttrForm: {
-    vant: utils.processComponentAttrConfig(vantAttrForm, componentsDict.Element),
-    layui: utils.processComponentAttrConfig(layuiAttrForm, componentsDict.Element)
+    vant: utils.processComponentAttrConfig(vantAttrForm, Element),
+    layui: utils.processComponentAttrConfig(layuiAttrForm, Element)
   },
   componentLoader,
-  Element: componentsDict.Element,
-  Vant: componentsDict.Vant,
-  WotDesign: componentsDict.WotDesign,
+  Element,
+  Vant,
+  WotDesign,
+  Layui,
   global,
   componentModule,
   dataSource,

@@ -36,13 +36,13 @@ const bodyCanvasComponent = {
     // 这个 watcher 逻辑需要调整以支持在嵌套结构中查找组件
     componentAttr: {
       handler(newVal) {
-        console.log('componentAttr changed:', newVal)
         // 需要一个递归函数来在组件树中查找并更新组件
         const findAndApply = (components, id, props) => {
           for (const component of components) {
             if (component.id === id) {
               // 使用 Vue.set 以确保响应性
-              this.$set(component, 'props', props)
+              let newVal = Object.assign(_.cloneDeep(component.props), props)
+              this.$set(component, 'props', newVal)
               return true // 找到了
             }
             // 如果有子节点，就递归查找
@@ -67,7 +67,7 @@ const bodyCanvasComponent = {
       this.activeComponentId = component.id
     },
     clickPage() {
-      this.$store.commit('setComponentConfig', null)
+      this.$store.commit('setComponentConfig', {})
       this.activeComponentId = null
     },
     // 这是新的 change 处理器，由 vuedraggable 的 change 事件触发
