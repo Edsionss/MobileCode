@@ -6,6 +6,8 @@ import bodyCanvasComponent from '@components/BodyCanvas/index.js'
 import canvasErrorComponent from '@components/CanvasError/index.js'
 import utils from '@utils/index.js'
 import store from '@modules/store/index.js'
+//测试预览
+import previewData from './preview.js'
 //全局注册组件
 Vue.use(VueRouter)
 Vue.use(vant.Lazyload)
@@ -38,7 +40,7 @@ var app = new Vue({
       currentTab: 'attr',
       componentName: '',
       attrKey: '',
-
+      previewData: previewData,
       //画布
       canvas: {
         currentMode: 'Phone',

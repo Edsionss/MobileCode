@@ -15,6 +15,12 @@ const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
   template: ``,
   components: {},
+  props: {
+    previewData: {
+      type: Array,
+      default: () => []
+    }
+  },
   data() {
     return {
       // 这是最顶层的、唯一的组件数据源
@@ -25,6 +31,9 @@ const bodyCanvasComponent = {
   computed: {
     ...Vuex.mapState(['componentAttr']),
     canvasStyle() {}
+  },
+  created() {
+    this.dragComponents = this.previewData
   },
   watch: {
     dragComponents: {

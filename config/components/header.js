@@ -1,3 +1,5 @@
+import utils from '@utils/index.js'
+const { generateUniqueId, exportToFile } = utils
 export default {
   titleList: [
     {
@@ -51,7 +53,11 @@ export default {
     {
       label: '预览',
       type: 'primary',
-      icon: 'el-icon-view'
+      icon: 'el-icon-view',
+      click() {
+        window.open(`/design/main/preview.html??id=${generateUniqueId()}`, '_blank')
+        console.log(this.$store.state)
+      }
     },
     {
       label: '导出',
@@ -59,6 +65,8 @@ export default {
       icon: 'el-icon-download',
       click() {
         console.log(this.$store.state)
+        let data = _.cloneDeep(this.$store.state.componentsList)
+        exportToFile(data, 'page.js')
       }
     }
   ],
