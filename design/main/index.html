@@ -77,13 +77,12 @@
           <canvas-error-component v-if="canvas.canvasWarning"></canvas-error-component>
 
           <div class="design-layout__canvas-panel__body" v-else>
-            <canvas-component @component-selected="handleComponentSelected"></canvas-component>
+            <canvas-component></canvas-component>
           </div>
         </div>
         <!-- Element: attribute-panel -->
         <div class="design-layout__attribute-panel">
-          <attribute-component :component="currentComponent" :tab="currentTab"
-            @component-props-updated="handleComponentPropsUpdate"></attribute-component>
+          <attribute-component></attribute-component>
         </div>
       </div>
     </div>

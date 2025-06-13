@@ -6,14 +6,7 @@ const rightAttributeComponent = {
   name: 'rightAttributeComponent',
   template: `
   `,
-  props: {
-    // group: { type: String, default: 'form' }, // We'll get group from component object
-    component: { type: Object, default: () => ({ componentName: 'input', groupName: 'form', props: {} }) }, // Expecting an object
-    tab: {
-      type: String,
-      default: defaultTabs
-    }
-  },
+  props: {},
   components: {},
   data() {
     return {
@@ -32,56 +25,118 @@ const rightAttributeComponent = {
     }
   },
   created() {
-    this.tabs.forEach(tab => {
-      //统一处理每个tabs里面的内容
-      tab = this.handTabContent(tab)
-      // 确保每个 tab 的 content 是一个数组
-      let tabName = tab.name,
-        tabLabel = tab.label,
-        tabContent = tab.content
-      if (!tabLabel || !tabName) {
-        this.returnErrorMsg('缺少tabs标签页中的label和name，请检查代码配置。')
-        return
-      }
-      // 初始化每个 tab 的 content
-      if (!this.formData.hasOwnProperty(tabName) && tab.hasOwnProperty('content')) {
-        //为每个 tab 初始化一个空对象
-        this.$set(this.formData, tabName, {})
-        if (tab.name === 'attr' && this.component && this.component.props) {
-          // Initialize formData.attr with the component's current props
-          this.$set(this.formData, 'attr', { ...this.component.props })
-        } else {
+    this.initTabs() // 初始化 tabs
+  },
+  mounted() {},
+  computed: {
+    ...Vuex.mapState(['componentConfig'])
+    // componentId() {
+    //   return this.componentConfig.id
+    // },
+    // component() {
+    //   return this.componentConfig.component
+    // },
+    // framework() {
+    //   return this.componentConfig.framework
+    // },
+    // group() {
+    //   return this.componentConfig.group
+    // }
+  },
+  watch: {
+    componentConfig: {
+      handler(val) {
+        ;({
+          framework: this.framework,
+          groupName: this.group,
+          id: this.componentId,
+          props: this.componentProps
+        } = val)
+        this.component = val.component || val.props?.tag // 获取组件名称
+        // 更新当前组件名称和重载键
+        this.initTabs()
+      },
+      deep: true
+    }
+    // 新增：可以添加 watcher 来处理联动逻辑
+    // 'formData.category'(newValue, oldValue) {
+    //   console.log(`Category changed from ${oldValue} to ${newValue}`)
+    //   if (newValue === 'sports') {
+    //     // 当类别为体育时，自动设置年龄为25
+    //     if (this.formData.hasOwnProperty('age')) {
+    //       this.$set(this.formData, 'age', 25)
+    //       console.log('Age automatically set to 25 because category is sports.')
+    //     }
+    //   }
+    // },
+  },
+  methods: {
+    // 保存组件属性
+    saveAttr(tab) {
+      let setAttr = this.processSetAttrData({
+        ...this.formData[tab.name],
+        tab,
+        componentId: this.componentId,
+        tabName: tab.name
+      })
+      this.$store.commit('setComponentAttr', setAttr)
+      this.$emit('attr-save', tab, setAttr)
+    },
+    initTabs() {
+      this.tabs.forEach(tab => {
+        //统一处理每个tabs里面的内容
+        tab = this.handTabContent(tab)
+        // 确保每个 tab 的 content 是一个数组
+        let tabName = tab.name,
+          tabLabel = tab.label,
+          tabContent = tab.content
+        if (!tabLabel || !tabName) {
+          this.returnErrorMsg('缺少tabs标签页中的label和name，请检查代码配置。')
+          return
+        }
+        // 初始化每个 tab 的 content
+        if (tab.hasOwnProperty('content')) {
+          //为每个 tab 初始化一个空对象
+          this.formData.hasOwnProperty(tabName) || this.$set(this.formData, tabName, {})
           tabContent.forEach(item => {
-            if (item.valueName) {
+            if (item.id) {
               // 如果 formData 中还没有这个字段，则使用组件配置的 defaultValue 初始化
-              if (!this.formData[tabName].hasOwnProperty(item.valueName) && item.hasOwnProperty('defaultValue')) {
-                this.$set(this.formData[tabName], item.valueName, item.defaultValue)
+              let newKey = this.formValueName(item.valueName)
+              if (!this.formData[tabName].hasOwnProperty(newKey) && item.hasOwnProperty('defaultValue')) {
+                this.$set(this.formData[tabName], newKey, this.componentProps[item.valueName])
               }
               // 特别处理 el-upload 的 fileList，如果它是 undefined，则初始化为空数组
-              if (item.component === 'el-upload' && this.formData[tabName][item.valueName] === undefined) {
-                this.$set(this.formData[tabName], item.valueName, [])
+              if (item.component === 'el-upload' && this.formData[tabName][newKey] === undefined) {
+                this.$set(this.formData[tabName], newKey, [])
               }
             }
           })
         }
-      }
-    })
-  },
-  methods: {
-    handTabContent(tab) {
-      if (tab.name == 'attr') {
-        // 为每个 tab 初始化属性 content
-        this.componentsAttrForm.forEach(item => {
-          // 检查 item.group 和 item.component 是否匹配当前的 group 和 component
-          if (item.group == this.component.groupName) {
-            // Use this.component.groupName
-            const componentsList = item.components
-            componentsList.forEach(componentItem => {
-              if (componentItem.component == this.component.componentName) {
-                // Use this.component.componentName
-                tab.content = componentItem.attr
-              }
-            })
+      })
+    },
+    formValueName(valueName) {
+      return this.componentId + '_' + valueName
+    },
+    /**
+     * 根据内嵌的 content 数组指令，重构数据对象。
+     * 将 isProps 为 true 的项所对应的顶层键值对移动到 props 对象中。
+     *
+     * @param {object} sourceData - 包含顶层属性和 tab.content 指令的原始数据对象。
+     * @returns {object} 返回一个经过重构的全新对象。
+     */
+    processSetAttrData(sourceData) {
+      // --- 步骤 1: 创建一个高效的查找映射 ---
+      // 这个映射将存储 { valueName: isProps (布尔值) } 的关系。
+      // 这样我们就不需要在每次循环时都去搜索整个 content 数组。
+      const valueNameMap = new Map()
+
+      // 安全地访问 content 数组，如果不存在则不执行。
+      if (sourceData && sourceData.tab && Array.isArray(sourceData.tab.content)) {
+        sourceData.tab.content.forEach(item => {
+          // 只处理有 valueName 的项。
+          if (item.valueName) {
+            // 使用 `!!item.isProps` 将任何值（true, undefined, null）都转换为明确的布尔值。
+            valueNameMap.set(item.valueName, !!item.isProps)
           }
         })
       }
@@ -263,59 +318,6 @@ const rightAttributeComponent = {
         },
         events: {}
       })
-    }
-  },
-  mounted() {},
-  watch: {
-    component: {
-      handler(newComponent, oldComponent) {
-        if (newComponent && newComponent.id !== (oldComponent ? oldComponent.id : null)) {
-          this.formData = {} // Reset form data
-          this.currentTabName = this.tab // Reset to default tab or keep current
-          this.tabs.forEach(tab => {
-            tab = this.handTabContent(tab) // Recalculate content for 'attr' tab
-            // Re-initialize formData for the new component's attributes
-            if (!this.formData.hasOwnProperty(tab.name) && tab.hasOwnProperty('content')) {
-              this.$set(this.formData, tab.name, {})
-              if (tab.name === 'attr' && this.component.props) {
-                // Pre-fill formData.attr with the component's current props
-                this.$set(this.formData, 'attr', { ...this.component.props })
-              } else {
-                // Default initialization for other tabs or if props are not available
-                ;(tab.content || []).forEach(item => {
-                  if (
-                    item.valueName &&
-                    !this.formData[tab.name].hasOwnProperty(item.valueName) &&
-                    item.hasOwnProperty('defaultValue')
-                  ) {
-                    this.$set(this.formData[tab.name], item.valueName, item.defaultValue)
-                  }
-                })
-              }
-            }
-          })
-        }
-      },
-      deep: true // May not be needed if only id/componentName changes trigger full refresh
-    },
-    'formData.attr': {
-      handler(newVal, oldVal) {
-        if (this.component && this.component.id && newVal) {
-          this.$emit('component-props-updated', { componentId: this.component.id, newProps: { ...newVal } })
-        }
-      },
-      deep: true
-    },
-    // 新增：可以添加 watcher 来处理联动逻辑
-    'formData.category'(newValue, oldValue) {
-      console.log(`Category changed from ${oldValue} to ${newValue}`)
-      if (newValue === 'sports') {
-        // 当类别为体育时，自动设置年龄为25
-        if (this.formData.hasOwnProperty('age')) {
-          this.$set(this.formData, 'age', 25)
-          console.log('Age automatically set to 25 because category is sports.')
-        }
-      }
     }
   }
 }

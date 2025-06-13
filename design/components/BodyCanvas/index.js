@@ -13,27 +13,61 @@ Vue.component('nested-canvas', NestedCanvas)
 
 const bodyCanvasComponent = {
   name: 'bodyCanvasComponent',
-  template: `<div>Loading...</div>`,
-  components: {
-    vuedraggable: window.vuedraggable //当前页面注册组件
+  template: ``,
+  components: {},
+  props: {
+    previewData: {
+      type: Array,
+      default: () => []
+    }
   },
   data() {
     return {
-      drag: false,
-      schema: [],
-      selectedComponentId: null
+      // 这是最顶层的、唯一的组件数据源
+      dragComponents: [],
+      activeComponentId: null // 从对象简化为 null
     }
   },
+  computed: {
+    ...Vuex.mapState(['componentAttr']),
+    canvasStyle() {}
+  },
   created() {
-    this.$root.$on('update-canvas-component-props', this.handleRootPropsUpdate)
-    // Any other existing created hook logic
+    this.dragComponents = this.previewData
   },
-  beforeDestroy() {
-    // Assuming Vue 2 based on project structure
-    this.$root.$off('update-canvas-component-props', this.handleRootPropsUpdate)
-    // Any other existing beforeDestroy hook logic
+  watch: {
+    dragComponents: {
+      handler(newVal) {
+        this.$store.commit('setComponentsList', newVal)
+      },
+      deep: true
+    },
+    // 这个 watcher 逻辑需要调整以支持在嵌套结构中查找组件
+    componentAttr: {
+      handler(newVal) {
+        // 需要一个递归函数来在组件树中查找并更新组件
+        const findAndApply = (components, id, props) => {
+          for (const component of components) {
+            if (component.id === id) {
+              // 使用 Vue.set 以确保响应性
+              let newVal = Object.assign(_.cloneDeep(component.props), props)
+              this.$set(component, 'props', newVal)
+              return true // 找到了
+            }
+            // 如果有子节点，就递归查找
+            if (component.children && component.children.length > 0) {
+              if (findAndApply(component.children, id, props)) {
+                return true // 在子节点中找到了
+              }
+            }
+          }
+          return false // 在这个分支没找到
+        }
+        findAndApply(this.dragComponents, newVal.componentId, newVal.props)
+      },
+      deep: true
+    }
   },
-  watch: {},
   methods: {
     // 这是新的点击处理器，由 NestedCanvas 冒泡的事件触发
     onComponentClick(component) {
@@ -45,35 +79,16 @@ const bodyCanvasComponent = {
       this.$store.commit('setComponentConfig', {})
       this.activeComponentId = null
     },
-    onClone(e) {
-      console.log('onClone', e)
-    },
-    onAddItem(event) {
-      console.log('onAddItem', event)
-      console.log('Item added to schema:', this.schema)
-      // Optional: Automatically select the newly added component
-      // this.selectComponent(this.schema[event.newIndex]);
-      this.selectedComponentId = this.schema[event.newIndex].id
-    },
-    dragChange(item) {
-      console.log('change', item)
-    },
-    selectComponent(component) {
-      this.$emit('component-selected', component)
-      this.selectedComponentId = component.id
-      // Optional: add some visual indication for selection on the canvas itself
-      console.log('Selected component on canvas:', component)
-    },
-    handleRootPropsUpdate({ componentId, newProps }) {
-      const componentIndex = this.schema.findIndex(c => c.id === componentId)
-      if (componentIndex !== -1) {
-        // Update the props of the specific component in the schema array
-        // Vue.set is essential for adding reactive properties or updating array elements by index
-        // For updating an existing object's property reactively:
-        this.$set(this.schema[componentIndex], 'props', newProps)
-
-        // Log for verification
-        console.log('BodyCanvas schema updated for component ID:', componentId, this.schema[componentIndex])
+    // 这是新的 change 处理器，由 vuedraggable 的 change 事件触发
+    onDragChange(item) {
+      // `added` 事件对于新组件拖入最重要
+      if (item.added) {
+        let newItem = item.added.element
+        // 确保新拖入的容器有一个空的 children 数组
+        // console.log('一个项目被添加到了列表中:', newItem, this.dragComponents)
+        // 选中新添加的组件
+        this.$store.commit('setComponentConfig', newItem)
+        this.activeComponentId = newItem.id
       }
     }
   }
