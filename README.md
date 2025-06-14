@@ -154,5 +154,3 @@ npm run dev
 ## 许可证
 
 [待补充]
-
-# bigsea1017-project
