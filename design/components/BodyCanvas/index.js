@@ -4,11 +4,14 @@ const createAsyncComponent = main.componentLoader.createAsyncComponent
 // 引入你的组件
 import LayuiCanvas from './components/Layui/index.js'
 import VantCanvas from './components/Vant/index.js'
+import WotCanvas from './components/Wot/index.js'
+
 // ！！！引入新的递归组件！！！
 import NestedCanvas from './components/NestedCanvas/index.js' // 注意路径
 
 Vue.component('layui-canvas', LayuiCanvas)
 Vue.component('vant-canvas', VantCanvas)
+Vue.component('wot-canvas', WotCanvas)
 Vue.component('nested-canvas', NestedCanvas)
 
 const bodyCanvasComponent = {

@@ -95,7 +95,8 @@ const componentsDict = {
     const defaultProps = {
       // Picker 的 props 通常在弹窗时设置，这里留空或设置通用项
       title: '请选择',
-      'show-toolbar': true
+      'show-toolbar': true,
+      columns: ['选项1', '选项2', '选项3', '选项4', '选项5', '选项6', '选项7']
     }
     const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
     // Picker 本身不直接 v-model，而是通过事件更新外部值。
@@ -103,6 +104,39 @@ const componentsDict = {
     return {
       component: 'wd-picker',
       valueName: componentConfig.valueName || 'pickerValue',
+      defaultValue: componentConfig.defaultValue ?? '',
+      props: finalProps,
+      // Wot 的事件是 confirm, cancel, change
+      events: finalEvents || { confirm: val => console.log(`[Wot Picker] confirm:`, val) },
+      slot: slot || ''
+    }
+  },
+  selectPicker: attr => {
+    const defaultProps = {
+      // Picker 的 props 通常在弹窗时设置，这里留空或设置通用项
+      title: '请选择',
+      'show-toolbar': true,
+      columns: [
+        {
+          value: '101',
+          label: '男装'
+        },
+        {
+          value: '102',
+          label: '奢侈品'
+        },
+        {
+          value: '103',
+          label: '女装'
+        }
+      ]
+    }
+    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    // Picker 本身不直接 v-model，而是通过事件更新外部值。
+    // 这个工厂主要用于定义 Picker 的属性和事件。
+    return {
+      component: 'wd-select-picker',
+      valueName: componentConfig.valueName || 'selectPickerValue',
       defaultValue: componentConfig.defaultValue ?? '',
       props: finalProps,
       // Wot 的事件是 confirm, cancel, change

@@ -9,7 +9,7 @@ const ComponentModule = {
   data() {
     return {
       componentsArray: componentModule,
-      activeFrameworkName: 'vant', // 默认激活的框架名称
+      activeFrameworkName: 'wot', // 默认激活的框架名称
       activeTabs: {},
       groupShowStates: {}
     }

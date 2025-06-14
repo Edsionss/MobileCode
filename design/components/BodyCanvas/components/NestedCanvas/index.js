@@ -49,7 +49,8 @@ const NestedCanvas = {
     getComponentName(name) {
       const dict = {
         vant: 'vant-canvas',
-        layui: 'layui-canvas'
+        layui: 'layui-canvas',
+        wot: 'wot-canvas'
       }
       return dict[name]
     },

@@ -95,6 +95,18 @@ const Vant = {
       slot: slot || ''
     }
   },
+  picker: attr => {
+    const defaultProps = { title: '选择器', columns: [] }
+    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'van-picker',
+      valueName: componentConfig.valueName || 'pickerValue',
+      defaultValue: componentConfig.defaultValue ?? '',
+      props: finalProps,
+      events: finalEvents || { change: val => console.log(`[Picker] change:`, val) },
+      slot: slot || ''
+    }
+  },
 
   switch: attr => {
     const defaultProps = { size: '24px', activeValue: true, inactiveValue: false }

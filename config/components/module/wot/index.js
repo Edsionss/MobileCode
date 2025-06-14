@@ -1,7 +1,7 @@
-import AllDict from '@modules/components/main.js'
-const vantModule = {
+import { WotDesign } from '@modules/components/main.js'
+const wotDesignModule = {
   defaultGroup: 'base',
-  componentName: 'vant',
+  componentName: 'wot',
   icon: 'el-icon-mobile-phone',
   group: [
     {
@@ -15,27 +15,20 @@ const vantModule = {
           children: [
             {
               label: '输入框',
-              tag: 'field'
+              tag: 'input'
             },
             {
-              label: '计数器',
-              tag: 'stepper'
+              label: '数字输入框',
+              tag: 'inputNumber'
             },
             {
               label: '选择器',
               tag: 'picker'
             },
             {
-              label: '选择器1',
-              tag: 'fieldPicker'
+              label: '多功能选择器',
+              tag: 'selectPicker'
             }
-            // {
-            //   label: '时间选择器',
-            //   tag: 'datetime-picker'
-            // },
-            // {
-            //   label: '日期选择器',
-            //   tag: 'date-picker'
             // }
           ]
         }
@@ -55,8 +48,8 @@ const vantModule = {
     }
   ]
 }
-let dict = AllDict.Vant
-vantModule.group.forEach(group => {
+let dict = WotDesign
+wotDesignModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {
       if (dict[child.tag]) {
@@ -65,4 +58,4 @@ vantModule.group.forEach(group => {
     })
   })
 })
-export default vantModule
+export default wotDesignModule
