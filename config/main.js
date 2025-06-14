@@ -11,7 +11,7 @@ import rightAttribute from './components/rightAttribute.js'
 import vantAttrForm from './components/AttributeForm/vant/index.js'
 import layuiAttrForm from './components/AttributeForm/layui/index.js'
 import componentLoader from '../utils/componentLoader.js'
-import { Element, Vant, WotDesign, Layui } from '@modules/components/main.js'
+import { Element, Vant, Wot, Layui } from '@modules/components/main.js'
 import componentsMenu from './components/componentsMenu.js'
 const config = {
   header,
@@ -24,7 +24,7 @@ const config = {
   componentLoader,
   Element,
   Vant,
-  WotDesign,
+  Wot,
   Layui,
   global,
   componentModule,

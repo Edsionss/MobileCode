@@ -1,11 +1,11 @@
 import Element from '@modules/components/Element/Element.js'
 import Vant from '@modules/components/Vant/Vant.js'
-import WotDesign from '@modules/components/WotDesign/WotDesign.js'
+import Wot from '@modules/components/Wot/Wot.js'
 import Layui from '@modules/components/layui/index.js'
-export { Element, Vant, WotDesign, Layui }
+export { Element, Vant, Wot, Layui }
 export default {
   Element,
   Vant,
-  WotDesign,
+  Wot,
   Layui
 }

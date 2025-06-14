@@ -193,7 +193,7 @@ const componentsDict = {
     }
   },
 
-  // Wot Design 日期选择器
+  // Wot Design 日期时间选择器
   datetimePicker: attr => {
     const defaultProps = {
       type: 'date',

@@ -1,4 +1,4 @@
-import { WotDesign } from '@modules/components/main.js'
+import { Wot } from '@modules/components/main.js'
 const wotDesignModule = {
   defaultGroup: 'base',
   componentName: 'wot',
@@ -28,8 +28,12 @@ const wotDesignModule = {
             {
               label: '多功能选择器',
               tag: 'selectPicker'
-            }
-            // }
+            },
+            {
+              label: '日期时间选择器',
+              tag: 'datetimePicker'
+            },
+            {}
           ]
         }
       ]
@@ -48,13 +52,17 @@ const wotDesignModule = {
     }
   ]
 }
-let dict = WotDesign
+let dict = Wot
 wotDesignModule.group.forEach(group => {
   group.group.forEach(item => {
     item.children = item.children.map(child => {
       if (dict[child.tag]) {
         return (child = { ...dict[child.tag](child), _DEFAULT_CONFIG_PROPS: { ..._.cloneDeep(child) } })
       }
+      return console.error(
+        `[Wot] 组件 ${child.tag} 不存在,请重新查看wot的组件配置，配置文件路径为`,
+        import.meta.url
+      )
     })
   })
 })
