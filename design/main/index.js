@@ -41,6 +41,8 @@ var app = new Vue({
       componentName: '',
       attrKey: '',
       previewData: previewData,
+      // 添加主题相关数据
+      currentTheme: localStorage.getItem('theme') || 'light',
       //画布
       canvas: {
         currentMode: 'Phone',
@@ -55,11 +57,40 @@ var app = new Vue({
       }
     }
   },
-  created() {},
-  mounted() {},
-
+  created() {
+    // 初始化主题
+    this.initTheme()
+  },
+  mounted() {
+    // 监听系统主题变化
+    this.watchSystemTheme()
+  },
   computed: {},
   methods: {
+    // 初始化主题
+    initTheme() {
+      document.documentElement.setAttribute('data-theme', this.currentTheme)
+    },
+    // 切换主题
+    toggleTheme() {
+      this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light'
+      document.documentElement.setAttribute('data-theme', this.currentTheme)
+      localStorage.setItem('theme', this.currentTheme)
+    },
+    // 监听系统主题变化
+    watchSystemTheme() {
+      if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        const handleThemeChange = e => {
+          if (!localStorage.getItem('theme')) {
+            this.currentTheme = e.matches ? 'dark' : 'light'
+            this.initTheme()
+          }
+        }
+        mediaQuery.addListener(handleThemeChange)
+        handleThemeChange(mediaQuery)
+      }
+    },
     // 切换模式
     changeMode(item) {
       this.canvas.currentMode = item.label
@@ -113,7 +144,5 @@ var app = new Vue({
       return style
     }
   }
-
-  // 监听拖拽事件
 })
 console.log('Vue实例', app)

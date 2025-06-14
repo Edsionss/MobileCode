@@ -59,6 +59,10 @@
 
 <body>
   <div id="app">
+    <!-- 主题切换按钮 -->
+    <button class="theme-switch" @click="toggleTheme">
+      {{ currentTheme === 'light' ? '🌙 深色模式' : '☀️ 浅色模式' }}
+    </button>
     <!-- Block: design-layout -->
     <div class="design-layout">
       <!-- Element: header -->

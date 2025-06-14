@@ -1,20 +1,78 @@
+/* 主题变量 */
+:root {
+  /* 浅色主题 */
+  --theme-bg-color: #fcfdff;
+  --theme-panel-bg: #ffffff;
+  --theme-border-color: #ccc;
+  --theme-text-color: #333333;
+  --theme-grid-color: #dcdcdc;
+  --theme-shadow-color: #0000001a;
+  --theme-shadow-color-light: #0000000a;
+  --theme-scrollbar-thumb: #c1c1c1;
+  --theme-scrollbar-track: #f1f1f1;
+}
+
+/* 深色主题 */
+[data-theme="dark"] {
+  --theme-bg-color: #1a1a1a;
+  --theme-panel-bg: #2d2d2d;
+  --theme-border-color: #404040;
+  --theme-text-color: #ffffff;
+  --theme-grid-color: #404040;
+  --theme-shadow-color: #0000004d;
+  --theme-shadow-color-light: #00000033;
+  --theme-scrollbar-thumb: #4a4a4a;
+  --theme-scrollbar-track: #2d2d2d;
+}
+
+/* 全局过渡动画 */
+html {
+  transition: background-color 0.3s ease-in-out;
+}
+
+html * {
+  transition: background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out,
+    border-color 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-scrollbar-track);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-border-color);
+}
+
+/* Firefox滚动条样式 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-scrollbar-thumb) var(--theme-scrollbar-track);
+}
+
 body {
   font-family: sans-serif;
+  color: var(--theme-text-color);
+  background-color: var(--theme-bg-color);
 }
 
 /* 创建一个网格背景 */
 .design-layout {
-  /* background-color: white; */
-  /* 基础颜色 */
-  /* background-image: radial-gradient(circle, black 10%, transparent 10%), radial-gradient(circle, black 10%, transparent 10%); */
-  /* background-size: 10px 10px; */
-  /* 控制斑点的大小和间距 */
-  /* background-position: 0px 0, 10px 10px; */
-  /* 调整斑点的位置以形成网格 */
-  /* background-color: #ffffff; */
-  /* background-color: #fffcfc; */
-  background-color: #fcfdff;
-  background-image: radial-gradient(circle, #dcdcdc 1px, transparent 1px);
+  background-color: var(--theme-bg-color);
+  background-image: radial-gradient(circle, var(--theme-grid-color) 1px, transparent 1px);
   background-size: 10px 10px;
 }
 
@@ -23,7 +81,7 @@ body {
 .design-layout__components-panel,
 .design-layout__canvas-panel,
 .design-layout__attribute-panel {
-  background-color: white;
+  background-color: var(--theme-panel-bg);
 }
 
 /* 布局中心 */
@@ -46,21 +104,20 @@ body {
 
 .design-layout__components-panel,
 .design-layout__attribute-panel {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--theme-border-color);
   height: calc(100% - 2px);
 }
 
 /* 组件面板 */
 .design-layout__components-panel {
   left: 0;
-
 }
 
 /* 画布面板 */
 .design-layout__canvas-panel {
   top: 20px;
   overflow: auto;
-  box-shadow: #0000001a 0 20px 25px -5px, #0000000a 0 10px 10px -5px;
+  box-shadow: var(--theme-shadow-color) 0 20px 25px -5px, var(--theme-shadow-color-light) 0 10px 10px -5px;
   cursor: pointer;
 }
 
@@ -69,9 +126,39 @@ body {
   width: 100%;
 }
 
-
-
 /* 属性面板 */
 .design-layout__attribute-panel {
   right: 0;
+}
+
+/* 主题切换按钮样式 */
+.theme-switch {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: var(--theme-panel-bg);
+  border: 1px solid var(--theme-border-color);
+  color: var(--theme-text-color);
+  cursor: pointer;
+}
+
+.theme-switch:hover {
+  opacity: 0.8;
+}
+
+/* 优化Vant组件主题 */
+.van-tabs__nav {
+  background-color: var(--theme-panel-bg);
+  color: var(--theme-text-color);
+}
+
+.van-tab {
+  color: var(--theme-text-color);
+}
+
+.van-tab--active {
+  color: #409eff;
 }
