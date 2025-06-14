@@ -52,11 +52,15 @@ const headerComponent = {
     }
   },
   created() {
+    // 初始化主题
+    this.initTheme()
     // 初始化数据
     this.loadData()
   },
   // 监听拖拽事件
   mounted() {
+    // 监听系统主题变化
+    this.watchSystemTheme()
     // 监听窗口大小变化
     window.addEventListener(
       'resize',
@@ -70,6 +74,10 @@ const headerComponent = {
     window.removeEventListener('resize')
   },
   methods: {
+    // 初始化主题
+    initTheme() {
+      document.documentElement.setAttribute('data-theme', this.currentTheme)
+    },
     changeMode(item) {
       if (item.label === this.currentMode) {
         return
@@ -89,10 +97,22 @@ const headerComponent = {
     // 切换主题
     toggleTheme() {
       this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light'
-      this.$emit('toggleTheme', this.currentTheme)
-      return
       document.documentElement.setAttribute('data-theme', this.currentTheme)
       localStorage.setItem('theme', this.currentTheme)
+    },
+    // 监听系统主题变化
+    watchSystemTheme() {
+      if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        const handleThemeChange = e => {
+          if (!localStorage.getItem('theme')) {
+            this.currentTheme = e.matches ? 'dark' : 'light'
+            this.initTheme()
+          }
+        }
+        mediaQuery.addListener(handleThemeChange)
+        handleThemeChange(mediaQuery)
+      }
     }
   }
 }

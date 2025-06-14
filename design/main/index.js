@@ -45,7 +45,6 @@ var app = new Vue({
       attrKey: '',
       previewData: previewData,
       // 添加主题相关数据
-      currentTheme: '',
       //画布
       canvas: {
         currentMode: 'Phone',
@@ -60,39 +59,10 @@ var app = new Vue({
       }
     }
   },
-  created() {
-    // 初始化主题
-    this.initTheme()
-  },
-  mounted() {
-    this.$bus.$on('toggleTheme', currentTheme => {
-      this.currentTheme = _.cloneDeep(currentTheme)
-      this.toggleTheme()
-    })
-    // 监听系统主题变化
-    this.watchSystemTheme()
-  },
+  created() {},
+  mounted() {},
   computed: {},
   methods: {
-    // 初始化主题
-    initTheme() {
-      document.documentElement.setAttribute('data-theme', this.currentTheme)
-    },
-
-    // 监听系统主题变化
-    watchSystemTheme() {
-      if (window.matchMedia) {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-        const handleThemeChange = e => {
-          if (!localStorage.getItem('theme')) {
-            this.currentTheme = e.matches ? 'dark' : 'light'
-            this.initTheme()
-          }
-        }
-        mediaQuery.addListener(handleThemeChange)
-        handleThemeChange(mediaQuery)
-      }
-    },
     // 切换模式
     changeMode(item) {
       this.canvas.currentMode = item.label

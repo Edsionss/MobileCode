@@ -8,8 +8,8 @@
       </div>
     </div>
     <div class="header-panel__version"><el-tag type="primary">{{versionLabel}} {{version}}</el-tag></div>
-    <div class="header-panel__theme">
-      <el-icon :class="currentTheme==='light'?'el-icon-moon':'el-icon-sunny'" @click="toggleTheme"></el-icon>
+    <div class="header-panel__theme" @click="toggleTheme">
+      <el-icon :class="currentTheme==='light'?'el-icon-moon':'el-icon-sunny'"></el-icon>
       </button>
     </div>
   </div>
