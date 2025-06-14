@@ -1,93 +1,156 @@
-# bigsea1017-project
+# 移动端低代码设计器
 
+## 项目简介
 
+这是一个基于 Vue.js 的移动端低代码设计器项目，提供了可视化的组件拖拽、属性配置等功能，帮助开发者快速构建移动端页面。
 
-## Getting started
+## 技术栈
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- **前端框架**: Vue.js
+- **UI 组件库**:
+  - Element UI
+  - Vant UI
+  - WotDesign
+  - Layui
+- **状态管理**: Vuex
+- **路由管理**: Vue Router
+- **工具库**:
+  - Lodash
+  - Sortable.js
+  - Vuedraggable
+  - ECharts 5.6
+- **其他依赖**:
+  - xm-select
+  - contextmenu
+  - es-module-shims
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 项目结构
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/bigsea1017-group/bigsea1017-project.git
-git branch -M main
-git push -uf origin main
+├── assets/                    # 静态资源文件
+│   ├── images/               # 图片资源
+│   │   ├── logo/            # Logo图片
+│   │   └── backgrounds/     # 背景图片
+│   ├── icons/                # 图标资源
+│   │   ├── svg/             # SVG图标
+│   │   └── png/             # PNG图标
+│   └── styles/               # 全局样式文件
+│       ├── variables.less    # 样式变量
+│       ├── mixins.less      # 样式混入
+│       └── common.less      # 通用样式
+│
+├── config/                    # 配置文件
+│   ├── main.js               # 主配置文件
+│   ├── components/           # 组件配置
+│   │   ├── AttributeForm/    # 属性表单配置
+│   │   ├── module/          # 模块配置
+│   │   ├── header.js        # 头部配置
+│   │   ├── componentsMenu.js # 组件菜单配置
+│   │   ├── rightAttribute.js # 右侧属性配置
+│   │   ├── help.js          # 帮助配置
+│   │   ├── leftModules.js   # 左侧模块配置
+│   │   ├── template.js      # 模板配置
+│   │   └── dataSource.js    # 数据源配置
+│   └── global/              # 全局配置
+│       └── index.js         # 全局配置入口
+│
+├── design/                    # 设计器相关代码
+│   ├── main/                 # 主设计器页面
+│   │   ├── index.html        # 主页面HTML
+│   │   ├── index.js          # 主页面逻辑
+│   │   ├── index.css         # 主页面样式
+│   │   ├── preview.html      # 预览页面HTML
+│   │   └── preview.js        # 预览页面逻辑
+│   ├── preview/              # 预览相关代码
+│   ├── backup/               # 备份文件
+│   └── components/           # 设计器组件
+│       ├── Header/           # 头部组件
+│       ├── LeftModules/      # 左侧模块面板
+│       ├── BodyCanvas/       # 画布组件
+│       ├── RightAttribute/   # 右侧属性面板
+│       └── CanvasError/      # 画布错误提示
+│
+├── modules/                   # 功能模块
+│   ├── components/           # 业务组件
+│   └── store/               # Vuex状态管理
+│
+├── package/                   # 第三方依赖包
+│   ├── Vue/                  # Vue相关
+│   ├── Vuex/                # Vuex状态管理
+│   ├── Router/              # Vue Router
+│   ├── ElementUI/           # Element UI
+│   ├── Vant/                # Vant UI
+│   ├── WotDesign/           # WotDesign
+│   ├── Layui/               # Layui
+│   ├── Echarts/             # ECharts
+│   ├── Lodash/              # Lodash工具库
+│   ├── Sortable/            # Sortable.js
+│   ├── Vuedraggable/        # Vuedraggable
+│   ├── ContextMenu/         # 右键菜单
+│   ├── XmSelect/            # xm-select
+│   └── EsModule/            # ES模块支持
+│
+├── utils/                     # 工具函数
+│
+├── .vscode/                   # VS Code配置
+│
+├── index.html                 # 项目入口HTML
+├── package.json              # 项目依赖配置
+├── README.md                 # 项目说明文档
+└── .gitignore                # Git忽略文件
 ```
 
-## Integrate with your tools
+## 主要功能
 
-- [ ] [Set up project integrations](https://gitlab.com/bigsea1017-group/bigsea1017-project/-/settings/integrations)
+1. 组件拖拽设计
+2. 属性面板配置
+3. 模块化管理
+4. 画布编辑
+5. 错误提示
 
-## Collaborate with your team
+## 开发环境要求
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+- Node.js
+- 现代浏览器（支持 ES6+）
 
-## Test and Deploy
+## 快速开始
 
-Use the built-in continuous integration in GitLab.
+1. 克隆项目
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```bash
+git clone [项目地址]
+```
 
-***
+2. 安装依赖
 
-# Editing this README
+```bash
+npm install
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+3. 启动开发服务器
 
-## Suggestions for a good README
+```bash
+npm run dev
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## 项目特点
 
-## Name
-Choose a self-explaining name for your project.
+- 支持多种 UI 组件库
+- 可视化拖拽设计
+- 实时属性配置
+- 模块化架构
+- 完善的错误处理
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## 注意事项
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- 确保所有依赖包版本兼容
+- 遵循项目的代码规范
+- 注意浏览器兼容性
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 贡献指南
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+欢迎提交 Issue 和 Pull Request
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## 许可证
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+[待补充]
