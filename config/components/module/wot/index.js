@@ -32,8 +32,7 @@ const wotDesignModule = {
             {
               label: '日期时间选择器',
               tag: 'datetimePicker'
-            },
-            {}
+            }
           ]
         }
       ]
