@@ -30,6 +30,9 @@ var app = new Vue({
   el: '#app',
   store, // 使用Vuex状态管理
   components: {},
+  beforeCreate() {
+    Vue.prototype.$bus = this
+  },
   provide() {
     return {}
   },
@@ -42,7 +45,7 @@ var app = new Vue({
       attrKey: '',
       previewData: previewData,
       // 添加主题相关数据
-      currentTheme: localStorage.getItem('theme') || 'light',
+      currentTheme: '',
       //画布
       canvas: {
         currentMode: 'Phone',
@@ -62,6 +65,10 @@ var app = new Vue({
     this.initTheme()
   },
   mounted() {
+    this.$bus.$on('toggleTheme', currentTheme => {
+      this.currentTheme = _.cloneDeep(currentTheme)
+      this.toggleTheme()
+    })
     // 监听系统主题变化
     this.watchSystemTheme()
   },
@@ -71,12 +78,7 @@ var app = new Vue({
     initTheme() {
       document.documentElement.setAttribute('data-theme', this.currentTheme)
     },
-    // 切换主题
-    toggleTheme() {
-      this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light'
-      document.documentElement.setAttribute('data-theme', this.currentTheme)
-      localStorage.setItem('theme', this.currentTheme)
-    },
+
     // 监听系统主题变化
     watchSystemTheme() {
       if (window.matchMedia) {

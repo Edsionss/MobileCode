@@ -131,19 +131,7 @@ body {
   right: 0;
 }
 
-/* 主题切换按钮样式 */
-.theme-switch {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
-  padding: 8px 16px;
-  border-radius: 4px;
-  background-color: var(--theme-panel-bg);
-  border: 1px solid var(--theme-border-color);
-  color: var(--theme-text-color);
-  cursor: pointer;
-}
+
 
 .theme-switch:hover {
   opacity: 0.8;

@@ -46,7 +46,9 @@ const headerComponent = {
       versionLabel: this.defaultVersionLabel,
       icon: this.chooseIcon,
       currentModeItem: {},
-      currentMode: this.chooseMode
+      currentMode: this.chooseMode,
+      // 添加主题相关数据
+      currentTheme: localStorage.getItem('theme') || 'light'
     }
   },
   created() {
@@ -83,6 +85,14 @@ const headerComponent = {
     loadData() {
       this.currentModeItem = this.modeList.find(item => item.label === this.currentMode)
       this.$emit('change-mode', this.currentModeItem)
+    },
+    // 切换主题
+    toggleTheme() {
+      this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light'
+      this.$emit('toggleTheme', this.currentTheme)
+      return
+      document.documentElement.setAttribute('data-theme', this.currentTheme)
+      localStorage.setItem('theme', this.currentTheme)
     }
   }
 }
