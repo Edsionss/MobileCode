@@ -32,6 +32,92 @@ const wotDesignModule = {
             {
               label: '日期时间选择器',
               tag: 'datetimePicker'
+            },
+            {
+              label: '单选框',
+              tag: 'radio'
+            },
+            {
+              label: '复选框',
+              tag: 'checkbox'
+            },
+            {
+              label: '开关',
+              tag: 'switch'
+            },
+            {
+              label: '滑块',
+              tag: 'slider'
+            },
+            {
+              label: '评分',
+              tag: 'rate'
+            },
+            {
+              label: '上传',
+              tag: 'uploader'
+            }
+          ]
+        },
+        {
+          label: '布局',
+          name: 'layout',
+          children: [
+            {
+              label: '单元格',
+              tag: 'cell'
+            },
+            {
+              label: '单元格组',
+              tag: 'cellGroup'
+            },
+            {
+              label: '分割线',
+              tag: 'divider'
+            }
+          ]
+        },
+        {
+          label: '反馈',
+          name: 'feedback',
+          children: [
+            {
+              label: '弹出层',
+              tag: 'popup'
+            },
+            {
+              label: '对话框',
+              tag: 'dialog'
+            },
+            {
+              label: '轻提示',
+              tag: 'toast'
+            },
+            {
+              label: '加载',
+              tag: 'loading'
+            }
+          ]
+        },
+        {
+          label: '展示',
+          name: 'display',
+          children: [
+            {
+              label: '按钮',
+              tag: 'button'
+            },
+            {
+              label: '标签',
+              tag: 'tag'
+            },
+            {
+              label: '进度条',
+              tag: 'progress'
+            },
+            {
+              label: '图片',
+              tag: 'img'
             }
           ]
         }

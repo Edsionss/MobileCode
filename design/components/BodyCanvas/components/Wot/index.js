@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { componentLoader, utils, Vant } = main
+const { componentLoader, utils, Wot } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 const WotCanvas = {
   name: 'WotCanvas',
@@ -21,7 +21,11 @@ const WotCanvas = {
   created() {
     this.handelComponentValue()
   },
-
+  computed: {
+    utils() {
+      return utils
+    }
+  },
   watch: {
     config() {
       console.log(this.config)

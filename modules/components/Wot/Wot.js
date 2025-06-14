@@ -163,33 +163,57 @@ const componentsDict = {
   },
 
   radioGroup: attr => {
-    const defaultProps = { shape: 'circle' } // Wot Design 支持 shape
+    const defaultProps = {
+      shape: 'circle',
+      disabled: false,
+      value: '' // 添加value属性
+    }
     const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
     return {
       component: 'wd-radio-group',
-      valueName: componentConfig.valueName || 'radioValue',
+      valueName: componentConfig.valueName || 'radioGroupValue',
       defaultValue: componentConfig.defaultValue ?? '',
-      props: finalProps,
-      events: finalEvents || { change: val => console.log(`[Wot RadioGroup] change:`, val) },
-      // Wot Design 的 Radio 子组件 value 绑定在自身
-      slot:
-        slot || `<wd-radio v-for="item in options" :key="item.value" :value="item.value">{{item.label}}</wd-radio>`
+      props: {
+        ...finalProps,
+        modelValue: componentConfig.defaultValue ?? '',
+        value: finalProps.value || defaultProps.value // 确保value属性存在
+      },
+      events: finalEvents || {
+        change: val => console.log(`[Wot RadioGroup] change:`, val),
+        'update:modelValue': val => console.log(`[Wot RadioGroup] update:modelValue:`, val)
+      },
+      slot: slot || '',
+      // 添加provide配置
+      provide: {
+        radioGroup: {
+          value: componentConfig.defaultValue ?? '',
+          disabled: finalProps.disabled || false,
+          shape: finalProps.shape || 'circle',
+          onChange: val => console.log(`[Wot RadioGroup] change:`, val)
+        }
+      }
     }
   },
 
   checkboxGroup: attr => {
-    const defaultProps = { shape: 'square' }
+    const defaultProps = {
+      shape: 'square',
+      disabled: false
+    }
     const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
     return {
       component: 'wd-checkbox-group',
-      valueName: componentConfig.valueName || 'checkboxValues',
-      defaultValue: componentConfig.defaultValue || [],
-      props: finalProps,
-      events: finalEvents || { change: val => console.log(`[Wot CheckboxGroup] change:`, val) },
-      // Wot Design 的 Checkbox 子组件 value 绑定在自身
-      slot:
-        slot ||
-        `<wd-checkbox v-for="item in options" :key="item.value" :value="item.value">{{item.label}}</wd-checkbox>`
+      valueName: componentConfig.valueName || 'checkboxGroupValue',
+      defaultValue: componentConfig.defaultValue ?? [],
+      props: {
+        ...finalProps,
+        modelValue: componentConfig.defaultValue ?? [] // 添加modelValue绑定
+      },
+      events: finalEvents || {
+        change: val => console.log(`[Wot CheckboxGroup] change:`, val),
+        'update:modelValue': val => console.log(`[Wot CheckboxGroup] update:modelValue:`, val)
+      },
+      slot: slot || ''
     }
   },
 
@@ -339,6 +363,186 @@ const componentsDict = {
     const { finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
     return {
       component: 'wd-img',
+      valueName: null,
+      defaultValue: null,
+      props: finalProps,
+      events: finalEvents || {},
+      slot: slot || ''
+    }
+  },
+
+  // 添加更多表单组件
+  radio: attr => {
+    const defaultProps = {
+      shape: 'circle',
+      name: 'radio',
+      disabled: false,
+      value: '', // 添加value属性
+      label: '单选框' // 添加label属性
+    }
+    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-radio',
+      valueName: componentConfig.valueName || 'radioValue',
+      defaultValue: componentConfig.defaultValue ?? '',
+      props: {
+        ...finalProps,
+        modelValue: componentConfig.defaultValue ?? '',
+        value: finalProps.value || defaultProps.value // 确保value属性存在
+      },
+      events: finalEvents || {
+        change: val => console.log(`[Wot Radio] change:`, val),
+        'update:modelValue': val => console.log(`[Wot Radio] update:modelValue:`, val)
+      },
+      slot: slot || '单选框',
+      // 添加provide/inject配置
+      provide: {
+        radioGroup: {
+          value: componentConfig.defaultValue ?? '',
+          disabled: finalProps.disabled || false,
+          shape: finalProps.shape || 'circle',
+          onChange: val => console.log(`[Wot RadioGroup] change:`, val)
+        }
+      }
+    }
+  },
+
+  checkbox: attr => {
+    const defaultProps = {
+      shape: 'square',
+      name: 'checkbox', // 添加name属性
+      disabled: false
+    }
+    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-checkbox',
+      valueName: componentConfig.valueName || 'checkboxValue',
+      defaultValue: componentConfig.defaultValue ?? false,
+      props: {
+        ...finalProps,
+        modelValue: componentConfig.defaultValue ?? false // 添加modelValue绑定
+      },
+      events: finalEvents || {
+        change: val => console.log(`[Wot Checkbox] change:`, val),
+        'update:modelValue': val => console.log(`[Wot Checkbox] update:modelValue:`, val)
+      },
+      slot: slot || '复选框'
+    }
+  },
+
+  form: attr => {
+    const defaultProps = {
+      labelWidth: '80px',
+      labelPosition: 'right'
+    }
+    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-form',
+      valueName: componentConfig.valueName || 'formData',
+      defaultValue: componentConfig.defaultValue ?? {},
+      props: finalProps,
+      events: finalEvents || { submit: val => console.log(`[Wot Form] submit:`, val) },
+      slot: slot || ''
+    }
+  },
+
+  formItem: attr => {
+    const defaultProps = {
+      label: '表单项',
+      prop: ''
+    }
+    const { finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-form-item',
+      valueName: null,
+      defaultValue: null,
+      props: finalProps,
+      events: finalEvents || {},
+      slot: slot || ''
+    }
+  },
+
+  // 添加更多常用组件
+  cellGroup: attr => {
+    const defaultProps = {}
+    const { finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-cell-group',
+      valueName: null,
+      defaultValue: null,
+      props: finalProps,
+      events: finalEvents || {},
+      slot: slot || ''
+    }
+  },
+
+  popup: attr => {
+    const defaultProps = {
+      visible: false,
+      position: 'bottom',
+      round: true
+    }
+    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-popup',
+      valueName: componentConfig.valueName || 'popupVisible',
+      defaultValue: componentConfig.defaultValue ?? false,
+      props: finalProps,
+      events: finalEvents || { close: () => console.log('[Wot Popup] close') },
+      slot: slot || ''
+    }
+  },
+
+  dialog: attr => {
+    const defaultProps = {
+      title: '提示',
+      message: '这是一段内容',
+      showCancelButton: true,
+      visible: false // 添加visible属性
+    }
+    const { componentConfig, finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-dialog',
+      valueName: componentConfig.valueName || 'dialogVisible',
+      defaultValue: componentConfig.defaultValue ?? false,
+      props: finalProps,
+      events: finalEvents || {
+        confirm: () => console.log('[Wot Dialog] confirm'),
+        cancel: () => console.log('[Wot Dialog] cancel')
+      },
+      slot: slot || ''
+    }
+  },
+
+  toast: attr => {
+    const defaultProps = {
+      message: '提示信息',
+      type: 'text',
+      duration: 2000,
+      position: 'middle' // 添加位置属性
+    }
+    const { finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-toast',
+      valueName: null,
+      defaultValue: null,
+      props: finalProps,
+      events: finalEvents || {
+        close: () => console.log('[Wot Toast] close')
+      },
+      slot: slot || ''
+    }
+  },
+
+  loading: attr => {
+    const defaultProps = {
+      type: 'circular',
+      color: '#3f51b5',
+      size: '24px'
+    }
+    const { finalProps, finalEvents, slot } = resolveAttrs(attr, defaultProps)
+    return {
+      component: 'wd-loading',
       valueName: null,
       defaultValue: null,
       props: finalProps,
