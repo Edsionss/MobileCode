@@ -50,6 +50,17 @@ const layuiModule = {
               ]
             }
           ]
+        },
+        {
+          name: 'dataView',
+          label: '数据展示',
+          children: [
+            {
+              label: '表格',
+              tag: 'table',
+              other: true
+            }
+          ]
         }
       ]
     },

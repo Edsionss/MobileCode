@@ -77,7 +77,6 @@ const layoutComponents = {
       </div>
     `,
     props: ['config'],
-    created() {},
     mounted() {
       this.$nextTick(() => {
         let config = this.config,
@@ -88,9 +87,67 @@ const layoutComponents = {
           data: props.options || []
         })
       })
-    },
-
-    methods: {}
+    }
+  },
+  table: {
+    template: `
+    <div style=""> 
+      <table class="layui-hide" :id="config.id" :lay-filter="config.id"></table>
+    </div>
+    `,
+    props: ['config'],
+    mounted() {
+      this.$nextTick(() => {
+        let props = this.config.props,
+          id = this.config.id
+        var table = layui.table
+        // 渲染，并获得实例对象
+        var inst = table.render({
+          elem: '#' + id, // 绑定元素选择器
+          cols: props.cols || [
+            [
+              { type: 'checkbox', fixed: 'left' },
+              { field: 'id', fixed: 'left', width: 80, title: 'ID', sort: true, totalRow: '合计：' },
+              { field: 'username', width: 80, title: '用户' },
+              { field: 'sex', width: 80, title: '性别', sort: true },
+              { field: 'experience', width: 100, title: '积分', sort: true, totalRow: '{{= d.TOTAL_NUMS }} 😊' },
+              { field: 'ip', title: 'IP', width: 120 },
+              { field: 'joinTime', title: '加入时间', width: 120 }
+            ]
+          ],
+          data: props.data || [
+            {
+              id: 100001,
+              username: '用户1',
+              sex: '男',
+              experience: 100,
+              ip: '192.168.1.1',
+              joinTime: '2021-01-01 12:00:00'
+            },
+            {
+              id: 100002,
+              username: '用户2',
+              sex: '女',
+              experience: 200,
+              ip: '192.168.1.2',
+              joinTime: '2021-01-02 12:00:00'
+            }
+          ],
+          toolbar: true,
+          cellMinWidth: 80,
+          totalRow: true, // 开启合计行
+          page: true,
+          defaultToolbar: ['filter', 'exports'],
+          height: '400px',
+          url: '',
+          done: function (res, curr, count, origin) {
+            props.done && props.done(res, curr, count, origin)
+          }
+          // 其他属性
+          // …
+        })
+      })
+    }
   }
 }
 const registeredComponents = {}
@@ -99,4 +156,6 @@ for (const key in layoutComponents) {
   let item = layoutComponents[key]
   registeredComponents['lay-' + key] = item
 }
+console.log('[Wot] 注册组件：', registeredComponents)
+
 export default registeredComponents

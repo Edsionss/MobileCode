@@ -37,7 +37,7 @@
 }
 
 /* Element: 单个标题项 */
-.header-panel__title-item {}
+/* .header-panel__title-item {} */
 
 /* Element: 版本号 */
 .header-panel__version .el-tag {
@@ -130,10 +130,11 @@
 }
 
 /* Element: 单个操作项（按钮的包裹容器） */
-.header-panel__action-item {}
+/* .header-panel__action-item {} */
 
 /* 主题切换按钮样式 */
 .header-panel__theme {
   z-index: 1000;
   cursor: pointer;
+  color: #409eff;
 }

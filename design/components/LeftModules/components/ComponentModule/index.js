@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const { componentLoader, componentModule, utils } = main
+const { componentLoader, componentModule, utils, global } = main
 const createAsyncComponent = componentLoader.createAsyncComponent
 const ComponentModule = {
   name: 'ComponentModule',
@@ -9,7 +9,7 @@ const ComponentModule = {
   data() {
     return {
       componentsArray: componentModule,
-      activeFrameworkName: 'wot', // 默认激活的框架名称
+      activeFrameworkName: global.defaultModule || 'wot', // 默认激活的框架名称
       activeTabs: {},
       groupShowStates: {}
     }

@@ -9,6 +9,6 @@
     <component :is="config.tag" :config="config" class="layui-panel__item" v-if="config.props.other"></component>
     <div class="layui-panel__item" v-html="renderHtml"></div>
   </lay-form>
-
+  <component :is="config.tag" :config="config" class="layui-panel__item" v-if="config.props.other"></component>
   <div v-else class="layui-panel__item" v-html="renderHtml"></div>
 </div>

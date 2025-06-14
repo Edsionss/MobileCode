@@ -162,10 +162,8 @@ const layuiComponentDictionary = {
       // 为日期选择器生成一个唯一的ID，以便JS可以绑定它
       id = 'laydate-' + Math.random().toString(36).substr(2, 9)
     } = config
-
     // 提醒用户需要在JS中进行渲染
     console.log(`提示：请为ID为 "${id}" 的日期选择器调用 layui.laydate.render()。`)
-
     return `
         <div class="layui-form-item">
           <label class="layui-form-label">${label}</label>
