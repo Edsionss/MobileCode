@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LayUI表头配置器 (专业版 - Luckysheet)</title>
+  <!-- Layui CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.11/css/layui.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <!-- Luckysheet CSS -->
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/css/pluginsCss.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/plugins.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/css/luckysheet.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/assets/iconfont/iconfont.css' />
+
+  <style>
+    :root {
+      --primary-color: #667eea;
+      --secondary-color: #764ba2;
+      --border-color: #e5e7eb;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: #f1f3f6;
+      color: #333;
+      padding: 15px;
+      /* 禁止 body 滚动，让内部面板滚动 */
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      gap: 15px;
+      height: calc(100vh - 30px);
+    }
+
+    .main-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      min-width: 0;
+    }
+
+    .configurator-panel,
+    .preview-panel {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .configurator-panel {
+      height: 55%;
+      /* 给Luckysheet更多空间 */
+    }
+
+    .preview-panel {
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .toolbar {
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .toolbar-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-right: auto;
+      color: var(--secondary-color);
+    }
+
+    .control-btn {
+      background: #fff;
+      color: #555;
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .control-btn i {
+      margin-right: 5px;
+    }
+
+    .control-btn:hover {
+      background-color: #f2f2f2;
+      border-color: #bbb;
+    }
+
+    #luckysheet-container {
+      width: 100%;
+      height: 100%;
+      /* Luckysheet将填满此容器 */
+      padding: 0;
+      margin: 0;
+    }
+
+    .property-panel {
+      width: 320px;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .property-panel h3 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--secondary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .prop-content {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .prop-item {
+      margin-bottom: 15px;
+    }
+
+    .prop-item label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .prop-item input,
+    .prop-item select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
+
+    .prop-item input:focus,
+    .prop-item select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+
+    .code-container {
+      background: #2d3748;
+      border-radius: 8px;
+      padding: 15px;
+      position: relative;
+      overflow-y: auto;
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .code-container pre {
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* 预览面板样式 */
+    .preview-content {
+      padding: 0 20px 20px 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow: hidden;
+    }
+
+    .live-table-wrapper {
+      flex: 1;
+      overflow: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      min-height: 100px;
+    }
+
+    .code-preview-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      max-height: 250px;
+      flex-shrink: 0;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app" class="container">
+    <div class="main-panel">
+      <!-- 上方：配置器 (Luckysheet) -->
+      <div class="configurator-panel">
+        <div class="toolbar">
+          <div class="toolbar-title"><i class="fa-solid fa-table"></i> 表头配置 (Powered by Luckysheet)</div>
+          <button class="control-btn" @click="clearAllMerge"><i class="fas fa-eraser"></i> 清除所有合并</button>
+        </div>
+        <!-- Luckysheet 容器 -->
+        <div id="luckysheet-container"></div>
+      </div>
+
+      <!-- 下方：实时预览 -->
+      <div class="preview-panel">
+        <div class="toolbar">
+          <div class="toolbar-title"><i class="fa-solid fa-desktop"></i> Layui 实时预览</div>
+        </div>
+        <div class="preview-content">
+          <div class="live-table-wrapper">
+            <table id="live-preview-table" lay-filter="live-preview-filter"></table>
+          </div>
+          <div class="code-preview-wrapper">
+            <div class="code-header">
+              <label><strong>最终表头配置 (cols)</strong></label>
+              <button class="control-btn" @click="copyConfig"><i class="fas fa-copy"></i> 复制配置</button>
+            </div>
+            <div class="code-container">
+              <pre>{{ finalLayuiConfigString }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="property-panel">
+      <h3><i class="fa-solid fa-sliders"></i> 列属性面板</h3>
+      <div class="prop-content">
+        <div v-if="activeColIndex !== null && selectedColumn">
+          <div class="prop-item">
+            <label>选中列</label>
+            <input type="text" :value="getColLabel(activeColIndex)" readonly
+              style="background:#f0f0f0; font-weight:bold;">
+          </div>
+          <div class="prop-item">
+            <label for="field">字段名 (field)</label>
+            <input id="field" type="text" v-model="selectedColumn.field" placeholder="e.g., username">
+          </div>
+          <div class="prop-item">
+            <label for="width">宽度 (width)</label>
+            <input id="width" type="number" v-model.number="selectedColumn.width" placeholder="e.g., 150">
+          </div>
+          <div class="prop-item">
+            <label for="align">对齐方式 (align)</label>
+            <select id="align" v-model="selectedColumn.align">
+              <option value="left">左对齐</option>
+              <option value="center">居中</option>
+              <option value="right">右对齐</option>
+            </select>
+          </div>
+          <div class="prop-item">
+            <label for="fixed">固定列 (fixed)</label>
+            <select id="fixed" v-model="selectedColumn.fixed">
+              <option :value="undefined">不固定</option>
+              <option value="left">左固定</option>
+              <option value="right">右固定</option>
+            </select>
+          </div>
+        </div>
+        <div v-else>
+          <p style="color: #888; text-align:center; margin-top: 40px;">请点击 Luckysheet 的<br><strong>列头 (A, B,
+              C...)</strong><br>来配置该列的底层属性</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
+  <!-- Layui JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.11/layui.js"></script>
+  <!-- Luckysheet JS -->
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/js/plugin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/luckysheet.umd.js"></script>
+
+  <script>
+    let layer, table, luckysheet; // Make luckysheet globally accessible in the script scope
+    layui.use(['layer', 'table'], function () {
+      layer = layui.layer;
+      table = layui.table;
+    });
+
+    new Vue({
+      el: '#app',
+      data: {
+        // 配置数据
+        columnProps: [],
+        activeColIndex: null,
+        // 预览数据
+        layuiTableInstance: null,
+        layuiConfig: [[]],
+        // 初始表格尺寸
+        initialRows: 6,
+        initialCols: 8,
+      },
+      watch: {
+        // 当 columnProps 变化时，自动更新预览
+        columnProps: {
+          handler () { this.updatePreview(); },
+          deep: true
+        }
+      },
+      computed: {
+        selectedColumn: {
+          get () {
+            if (this.activeColIndex === null) return null;
+            // Ensure the property object exists
+            if (!this.columnProps[this.activeColIndex]) {
+              this.$set(this.columnProps, this.activeColIndex, this.createDefaultColProp());
+            }
+            return this.columnProps[this.activeColIndex];
+          },
+          set (newVal) {
+            if (this.activeColIndex === null) return;
+            this.$set(this.columnProps, this.activeColIndex, newVal);
+          }
+        },
+        dummyData () {
+          const data = [];
+          const fields = this.columnProps.map(p => p ? p.field : '').filter(Boolean);
+          for (let i = 1; i <= 5; i++) {
+            const row = {};
+            fields.forEach(field => { row[field] = `${field.replace(/_/g, ' ')} ${i}`; });
+            data.push(row);
+          }
+          return data;
+        },
+        finalLayuiConfigString () {
+          return `layui.table.render({
+  // ... 其他选项
+  cols: ${JSON.stringify(this.layuiConfig, null, 2)}
+});`;
+        }
+      },
+      mounted () {
+        this.initSheet();
+      },
+      methods: {
+        createDefaultColProp (index) {
+          return { field: `field_${index + 1}`, width: 100, align: 'left', fixed: undefined };
+        },
+        initSheet () {
+          // 初始化列属性数组
+          this.columnProps = Array.from({ length: this.initialCols }, (_, i) => this.createDefaultColProp(i));
+
+          const options = {
+            container: 'luckysheet-container',
+            lang: 'zh',
+            data: [{
+              name: "表头配置",
+              celldata: [], // Start empty
+              config: {}
+            }],
+            column: this.initialCols,
+            row: this.initialRows,
+            showtoolbar: true,
+            showinfobar: false,
+            showsheetbar: false,
+            allowEdit: true,
+            hook: {
+              // This hook fires after any change
+              updated: (operate) => {
+                console.log('Luckysheet updated:', operate);
+                this.updatePreview();
+              },
+              // This hook fires when selection changes
+              rangeSelect: (sheet, range) => {
+                // Check if a single column is selected by clicking the header
+                if (range.row_focus === null && range.column.length === 1) {
+                  this.activeColIndex = range.column[0];
+                } else {
+                  // If not a column header click, clear active column
+                  this.activeColIndex = null;
+                }
+              },
+            }
+          };
+          luckysheet.create(options);
+          // Initial render
+          this.updatePreview();
+        },
+        updatePreview () {
+          this.generateLayuiConfig();
+          this.renderPreviewTable();
+        },
+        generateLayuiConfig () {
+          if (!luckysheet) return;
+
+          const sheetFile = luckysheet.getluckysheetfile()[0];
+          const celldata = sheetFile.celldata || [];
+          const mergeConfig = sheetFile.config.merge || {};
+          const { row: totalRows, column: totalCols } = luckysheet.getGridSize();
+
+          // Ensure columnProps has enough items
+          while (this.columnProps.length < totalCols) {
+            this.columnProps.push(this.createDefaultColProp(this.columnProps.length));
+          }
+
+          const layuiCols = Array.from({ length: totalRows }, () => []);
+          const visited = Array.from({ length: totalRows }, () => Array(totalCols).fill(false));
+
+          for (let r = 0; r < totalRows; r++) {
+            for (let c = 0; c < totalCols; c++) {
+              if (visited[r][c]) continue;
+
+              const cellData = luckysheet.getcellvalue(r, c);
+              const cellConfig = {};
+
+              // Handle merges
+              const mergeInfo = mergeConfig[`${r}_${c}`];
+              if (mergeInfo) {
+                cellConfig.rowspan = mergeInfo.rs;
+                cellConfig.colspan = mergeInfo.cs;
+                // Mark merged cells as visited
+                for (let i = r; i < r + mergeInfo.rs; i++) {
+                  for (let j = c; j < c + mergeInfo.cs; j++) {
+                    visited[i][j] = true;
+                  }
+                }
+              }
+
+              // Get title from cell value
+              cellConfig.title = (cellData && cellData.v) ? String(cellData.v) : ' ';
+
+              // Check if it's a leaf node (reaches the bottom)
+              const isLeaf = (r + (cellConfig.rowspan || 1)) === totalRows;
+              if (isLeaf) {
+                const props = this.columnProps[c] || this.createDefaultColProp(c);
+                Object.assign(cellConfig, {
+                  field: props.field,
+                  width: props.width,
+                  align: props.align,
+                  fixed: props.fixed,
+                });
+              }
+
+              // Clean up empty/default properties
+              Object.keys(cellConfig).forEach(key => (cellConfig[key] === undefined || cellConfig[key] === null || cellConfig[key] === '') && delete cellConfig[key]);
+              if (cellConfig.rowspan === 1) delete cellConfig.rowspan;
+              if (cellConfig.colspan === 1) delete cellConfig.colspan;
+
+              layuiCols[r].push(cellConfig);
+            }
+          }
+
+          // Filter out empty rows from the end
+          while (layuiCols.length > 0 && layuiCols[layuiCols.length - 1].length === 0) {
+            layuiCols.pop();
+          }
+
+          this.layuiConfig = layuiCols;
+        },
+        renderPreviewTable () {
+          if (!table) return;
+          this.$nextTick(() => {
+            table.render({
+              elem: '#live-preview-table',
+              cols: this.layuiConfig,
+              data: this.dummyData,
+              page: false,
+              skin: 'line',
+              even: true,
+              height: 'auto'
+            });
+          });
+        },
+        clearAllMerge () {
+          if (!luckysheet) return;
+          const sheetFile = luckysheet.getluckysheetfile()[0];
+          const mergeConfig = sheetFile.config.merge || {};
+
+          // Luckysheet API requires ranges, so we convert the merge config to ranges
+          const ranges = Object.values(mergeConfig).map(mc => ({
+            row: [mc.r, mc.r + mc.rs - 1],
+            column: [mc.c, mc.c + mc.cs - 1]
+          }));
+
+          if (ranges.length > 0) {
+            luckysheet.cancelRangeMerge(ranges);
+            layer.msg('所有合并已清除', { icon: 1 });
+          } else {
+            layer.msg('没有已合并的单元格', { icon: 7 });
+          }
+        },
+        getColLabel (index) {
+          let label = ''; let num = index + 1;
+          while (num > 0) {
+            let r = (num - 1) % 26;
+            label = String.fromCharCode(65 + r) + label;
+            num = Math.floor((num - 1) / 26);
+          }
+          return label;
+        },
+        copyConfig () {
+          const codeToCopy = `cols: ${JSON.stringify(this.layuiConfig, null, 2)}`;
+          navigator.clipboard.writeText(codeToCopy).then(() => {
+            layer.msg('配置已成功复制到剪贴板！', { icon: 1 });
+          }).catch(err => {
+            layer.msg('复制失败，请检查浏览器权限。', { icon: 2 });
+          });
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

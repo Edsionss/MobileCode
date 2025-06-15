@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LayUI表头配置器 (专业版)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/css/layui.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #667eea;
+      --secondary-color: #764ba2;
+      --header-bg: #f7f8fa;
+      --border-color: #e5e7eb;
+      --selected-bg: rgba(96, 165, 250, 0.3);
+      --active-border: #60a5fa;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: #f1f3f6;
+      color: #333;
+      padding: 20px;
+      user-select: none;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      height: calc(100vh - 40px);
+    }
+
+    .main-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .toolbar {
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-right: auto;
+      color: var(--secondary-color);
+    }
+
+    .control-btn {
+      background: #fff;
+      color: #555;
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .control-btn i {
+      margin-right: 5px;
+    }
+
+    .control-btn:hover {
+      background-color: #f2f2f2;
+      border-color: #bbb;
+    }
+
+    .control-btn:disabled {
+      background: #f5f5f5;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .control-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+
+    .grid-wrapper {
+      position: relative;
+      flex-grow: 1;
+      overflow: auto;
+    }
+
+    .grid-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      cursor: default;
+      /* 默认光标 */
+    }
+
+    .grid-container.drag-mode {
+      cursor: crosshair;
+      /* 拖拽模式下的光标 */
+    }
+
+    .grid-cell {
+      position: absolute;
+      box-sizing: border-box;
+      background: white;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      border-top: 1px solid var(--border-color);
+      border-left: 1px solid var(--border-color);
+      border-right: 2px solid transparent;
+      border-bottom: 2px solid transparent;
+      transition: background-color 0.2s;
+    }
+
+    .grid-cell.selected {
+      background-color: var(--selected-bg);
+    }
+
+    .grid-cell.active-cell {
+      border: 2px solid var(--active-border);
+      z-index: 10;
+    }
+
+    .grid-cell.merged {
+      background-color: #e9eafc;
+    }
+
+    .cell-input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      text-align: center;
+      background: transparent;
+      font: inherit;
+      padding: 0;
+    }
+
+    .row-header,
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      background-color: var(--header-bg);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .row-header.active,
+    .col-header.active {
+      background-color: var(--selected-bg);
+    }
+
+    .col-header.dragging {
+      opacity: 0.5;
+      background: #d0d0d0;
+    }
+
+    .add-btn {
+      position: absolute;
+      background: var(--header-bg);
+      border: 1px solid var(--border-color);
+      color: #888;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+
+    .add-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .property-panel {
+      width: 320px;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .property-panel h3 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--secondary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .prop-item {
+      margin-bottom: 15px;
+    }
+
+    .prop-item label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .prop-item input,
+    .prop-item select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
+
+    .prop-item input:focus,
+    .prop-item select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+
+    .output-section {
+      margin-top: 15px;
+    }
+
+    .code-container {
+      background: #2d3748;
+      border-radius: 8px;
+      padding: 15px;
+      position: relative;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .code-container pre {
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app" class="container">
+    <div class="main-panel">
+      <div class="toolbar">
+        <div class="toolbar-title"><i class="fa-solid fa-table-cells-large"></i> 可视化配置网格</div>
+        <button class="control-btn" @click="undo" :disabled="historyStack.length === 0"><i class="fas fa-undo"></i>
+          撤销</button>
+        <button class="control-btn" @click="mergeSelected"><i class="fas fa-compress-alt"></i> 合并</button>
+        <button class="control-btn" @click="splitSelected"><i class="fas fa-th-large"></i> 拆分</button>
+        <button class="control-btn" @click="clearMerge"><i class="fas fa-eraser"></i> 清除合并</button>
+        <button class="control-btn" @click="toggleMergeMode" :class="{active: mergeMode === 'drag'}">
+          <i class="fa-solid fa-mouse-pointer"></i> 拖拽合并
+        </button>
+      </div>
+      <div class="grid-wrapper" ref="gridWrapper">
+        <div class="grid-container" :style="gridStyle" :class="{'drag-mode': mergeMode === 'drag'}"
+          @mousedown.prevent="handleGridMouseDown" @mousemove="handleGridMouseMove" @mouseup="handleGridMouseUp"
+          @mouseleave="handleGridMouseUp"> <!-- 鼠标移出网格也停止拖拽 -->
+
+          <!-- Corner block -->
+          <div class="row-header"
+            :style="{ width: colHeaderHeight + 'px', height: rowHeaderWidth + 'px', top: 0, left: 0 }"></div>
+
+          <!-- Column Headers (A, B, C...) -->
+          <div v-for="(_, c) in cols" :key="'col-header-'+c" class="col-header"
+            :class="{ active: c === activeCoords.col, dragging: c === draggedColIndex }"
+            :style="{ left: colPositions[c] + 'px', width: colWidths[c] + 'px', height: rowHeaderWidth + 'px', top: 0 }"
+            @dblclick="handleHeaderDblClick(-1, c)" draggable="true" @dragstart="handleColDragStart($event, c)"
+            @dragover.prevent="handleColDragOver($event, c)" @drop.prevent="handleColDrop($event, c)"
+            @dragend="handleColDragEnd">
+            {{ getColLabel(c) }}
+          </div>
+
+          <!-- Row Headers (1, 2, 3...) -->
+          <div v-for="(_, r) in rows" :key="'row-header-'+r" class="row-header"
+            :class="{ active: r === activeCoords.row }"
+            :style="{ top: rowPositions[r] + 'px', height: rowHeights[r] + 'px', width: colHeaderHeight + 'px', left: 0 }"
+            @dblclick="handleHeaderDblClick(r, -1)">
+            {{ r + 1 }}
+          </div>
+
+          <!-- Grid Cells -->
+          <template v-for="(row, r) in gridData">
+            <template v-for="(cell, c) in row">
+              <div v-if="cell.visible" :key="cell.id" class="grid-cell" :class="{
+                        'active-cell': r === activeCoords.row && c === activeCoords.col,
+                        'selected': cell.selected,
+                        'merged': cell.merged
+                    }" :style="getCellStyle(r, c)" @click="handleCellClick(r, c)" @dblclick="handleCellDblClick(r, c)">
+
+                <input v-if="r === editingCoords.row && c === editingCoords.col" type="text" class="cell-input"
+                  v-model="cell.title" @blur="stopEditing" @keyup.enter="stopEditing" ref="cellInputRef" />
+                <span v-else>{{ cell.title }}</span>
+              </div>
+            </template>
+          </template>
+
+          <!-- Add Buttons -->
+          <div class="add-btn" :style="addColBtnStyle" @click="addColumn"><i class="fa-solid fa-plus"></i></div>
+          <div class="add-btn" :style="addRowBtnStyle" @click="addRow"><i class="fa-solid fa-plus"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="property-panel">
+      <h3><i class="fa-solid fa-sliders"></i> 属性面板</h3>
+      <div v-if="activeCoords.col !== -1 && selectedColumn">
+        <div class="prop-item">
+          <label>选中列</label>
+          <input type="text" :value="getColLabel(activeCoords.col)" readonly
+            style="background:#f0f0f0; font-weight:bold;">
+        </div>
+        <div class="prop-item">
+          <label for="field">字段名 (field)</label>
+          <input id="field" type="text" v-model="selectedColumn.field" placeholder="e.g., username">
+        </div>
+        <div class="prop-item">
+          <label for="width">宽度 (width)</label>
+          <input id="width" type="number" v-model.number="selectedColumn.width" placeholder="e.g., 150">
+        </div>
+        <div class="prop-item">
+          <label for="align">对齐方式 (align)</label>
+          <select id="align" v-model="selectedColumn.align">
+            <option value="left">左对齐</option>
+            <option value="center">居中</option>
+            <option value="right">右对齐</option>
+          </select>
+        </div>
+        <div class="prop-item">
+          <label for="fixed">固定列 (fixed)</label>
+          <select id="fixed" v-model="selectedColumn.fixed">
+            <option :value="undefined">不固定</option>
+            <option value="left">左固定</option>
+            <option value="right">右固定</option>
+          </select>
+        </div>
+        <div class="output-section">
+          <label>最终配置预览 (选中列)</label>
+          <div class="code-container">
+            <pre>{{ finalColConfig }}</pre>
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <p style="color: #888; text-align:center; margin-top: 40px;">双击单元格或列头<br>以配置列属性</p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/layui.min.js"></script>
+
+  <script>
+    let layer;
+    layui.use(['layer'], function () { layer = layui.layer; });
+
+    new Vue({
+      el: '#app',
+      data: {
+        rows: 8, cols: 6, rowHeights: [], colWidths: [],
+        rowHeaderWidth: 35, colHeaderHeight: 40,
+        gridData: [], columnProps: [],
+        activeCoords: { row: -1, col: -1 },
+        editingCoords: { row: -1, col: -1 },
+        historyStack: [], cellIdCounter: 0,
+        // 新增状态
+        mergeMode: 'click', // 'click' 或 'drag'
+        isDragging: false,
+        dragStartCoords: null,
+        draggedColIndex: null,
+      },
+      created () { this.initGrid(); },
+      computed: {
+        gridStyle () {
+          const width = this.colHeaderHeight + this.colWidths.reduce((a, b) => a + b, 0);
+          const height = this.rowHeaderWidth + this.rowHeights.reduce((a, b) => a + b, 0);
+          return { width: `${width}px`, height: `${height}px` };
+        },
+        colPositions () {
+          const positions = [this.colHeaderHeight];
+          for (let i = 0; i < this.cols - 1; i++) { positions.push(positions[i] + this.colWidths[i]); }
+          return positions;
+        },
+        rowPositions () {
+          const positions = [this.rowHeaderWidth];
+          for (let i = 0; i < this.rows - 1; i++) { positions.push(positions[i] + this.rowHeights[i]); }
+          return positions;
+        },
+        addColBtnStyle () {
+          const totalWidth = this.colPositions.length > 0 ? this.colPositions[this.colPositions.length - 1] + this.colWidths[this.cols - 1] : this.colHeaderHeight;
+          const totalHeight = this.rowHeaderWidth + this.rowHeights.reduce((a, b) => a + b, 0);
+          return { left: `${totalWidth}px`, top: '0px', width: '30px', height: `${totalHeight}px` }
+        },
+        addRowBtnStyle () {
+          const totalWidth = this.colHeaderHeight + this.colWidths.reduce((a, b) => a + b, 0);
+          const totalHeight = this.rowPositions.length > 0 ? this.rowPositions[this.rowPositions.length - 1] + this.rowHeights[this.rows - 1] : this.rowHeaderWidth;
+          return { top: `${totalHeight}px`, left: '0px', height: '30px', width: `${totalWidth}px` }
+        },
+        selectedColumn: {
+          get () {
+            if (this.activeCoords.col === -1) return null;
+            return this.columnProps[this.activeCoords.col];
+          },
+          set (newVal) {
+            if (this.activeCoords.col === -1) return;
+            this.$set(this.columnProps, this.activeCoords.col, newVal);
+          }
+        },
+        finalColConfig () {
+          if (!this.selectedColumn) return '// 无选中列';
+          const props = this.selectedColumn;
+          const tempConfig = {
+            title: '示例标题', field: props.field,
+            width: props.width || undefined, align: props.align || 'left',
+            fixed: props.fixed || undefined,
+          }
+          Object.keys(tempConfig).forEach(key => tempConfig[key] === undefined && delete tempConfig[key]);
+          return JSON.stringify(tempConfig, null, 2);
+        },
+      },
+      methods: {
+        initGrid () {
+          this.rowHeights = Array(this.rows).fill(40);
+          this.colWidths = Array(this.cols).fill(120);
+          this.columnProps = Array(this.cols).fill(0).map((_, i) => ({
+            field: `field_${i + 1}`, width: 120, align: 'left', fixed: undefined
+          }));
+          this.rebuildGridData();
+        },
+        rebuildGridData () {
+          const newGrid = [];
+          for (let r = 0; r < this.rows; r++) {
+            const row = [];
+            for (let c = 0; c < this.cols; c++) {
+              row.push({
+                id: this.cellIdCounter++, title: '', visible: true, merged: false,
+                selected: false, rowspan: 1, colspan: 1
+              });
+            }
+            newGrid.push(row);
+          }
+          this.gridData = newGrid;
+        },
+        saveState () {
+          const snapshot = JSON.stringify({
+            gridData: this.gridData, rows: this.rows, cols: this.cols,
+            rowHeights: this.rowHeights, colWidths: this.colWidths, columnProps: this.columnProps
+          });
+          this.historyStack.push(snapshot);
+          if (this.historyStack.length > 20) this.historyStack.shift();
+        },
+        undo () {
+          if (this.historyStack.length === 0) return layer.msg('没有更多可撤销的操作了', { icon: 7 });
+          const lastState = JSON.parse(this.historyStack.pop());
+          for (let key in lastState) { this[key] = lastState[key]; }
+          layer.msg('操作已撤销', { icon: 1, time: 1000 });
+        },
+        getColLabel (index) {
+          let label = ''; let num = index + 1;
+          while (num > 0) {
+            let r = (num - 1) % 26;
+            label = String.fromCharCode(65 + r) + label;
+            num = Math.floor((num - 1) / 26);
+          }
+          return label;
+        },
+        getCellStyle (r, c) {
+          const cell = this.gridData[r][c];
+          let width = 0;
+          for (let i = c; i < c + cell.colspan; i++) { width += this.colWidths[i] || 0; }
+          let height = 0;
+          for (let i = r; i < r + cell.rowspan; i++) { height += this.rowHeights[i] || 0; }
+          return {
+            left: this.colPositions[c] + 'px', top: this.rowPositions[r] + 'px',
+            width: `${width}px`, height: `${height}px`
+          };
+        },
+        setActiveCell (r, c) {
+          this.stopEditing(); this.activeCoords = { row: r, col: c };
+        },
+        startEditing (r, c) {
+          this.editingCoords = { row: r, col: c };
+          this.$nextTick(() => {
+            if (this.$refs.cellInputRef) {
+              this.$refs.cellInputRef.focus();
+              this.$refs.cellInputRef.select();
+            }
+          });
+        },
+        stopEditing () { this.editingCoords = { row: -1, col: -1 }; },
+        handleCellClick (r, c) {
+          if (this.mergeMode === 'drag') return;
+          const masterCellCoords = this.findMasterCell(r, c);
+          const masterCell = this.gridData[masterCellCoords.r][masterCellCoords.c];
+          masterCell.selected = !masterCell.selected;
+        },
+        handleCellDblClick (r, c) {
+          const masterCellCoords = this.findMasterCell(r, c);
+          this.setActiveCell(masterCellCoords.r, masterCellCoords.c);
+          this.startEditing(masterCellCoords.r, masterCellCoords.c);
+        },
+        handleHeaderDblClick (r, c) { this.setActiveCell(r, c); },
+        findMasterCell (r, c) {
+          if (r < 0 || c < 0) return { r, c };
+          const cell = this.gridData[r][c];
+          if (cell.visible) return { r, c };
+          for (let i = 0; i <= r; i++) {
+            for (let j = 0; j <= c; j++) {
+              const master = this.gridData[i][j];
+              if (master.visible && (i + master.rowspan > r) && (j + master.colspan > c)) {
+                return { r: i, c: j };
+              }
+            }
+          }
+          return { r, c };
+        },
+        addColumn () {
+          this.saveState(); this.cols++; this.colWidths.push(120);
+          this.columnProps.push({ field: `field_${this.cols}`, width: 120, align: 'left', fixed: undefined });
+          this.gridData.forEach(row => { row.push({ id: this.cellIdCounter++, title: '', visible: true, merged: false, selected: false, rowspan: 1, colspan: 1 }); });
+        },
+        addRow () {
+          this.saveState(); this.rows++; this.rowHeights.push(40);
+          const newRow = Array(this.cols).fill(0).map(() => ({ id: this.cellIdCounter++, title: '', visible: true, merged: false, selected: false, rowspan: 1, colspan: 1, }));
+          this.gridData.push(newRow);
+        },
+        mergeSelected () {
+          const selectedCoords = [];
+          this.gridData.forEach((row, r) => row.forEach((cell, c) => { if (cell.selected) selectedCoords.push({ r, c }); }));
+          if (selectedCoords.length < 2) return layer.msg('请先选择至少两个单元格', { icon: 7 });
+
+          const minRow = Math.min(...selectedCoords.map(c => c.r)); const maxRow = Math.max(...selectedCoords.map(c => c.r));
+          const minCol = Math.min(...selectedCoords.map(c => c.c)); const maxCol = Math.max(...selectedCoords.map(c => c.c));
+
+          for (let r = minRow; r <= maxRow; r++) {
+            for (let c = minCol; c <= maxCol; c++) {
+              const cell = this.gridData[r][c];
+              if (!cell.selected) return layer.msg('合并失败：选区必须为完整的矩形。', { icon: 2 });
+              if (cell.merged) return layer.msg('合并失败：不能在已合并的单元格上再次操作。', { icon: 2 });
+            }
+          }
+          if (minRow > 0) {
+            const topLeftParent = this.findMasterCell(minRow - 1, minCol);
+            const topRightParent = this.findMasterCell(minRow - 1, maxCol);
+            if ((topLeftParent.r === topRightParent.r && topLeftParent.c === topRightParent.c) === false) {
+              return layer.msg('合并失败：选区破坏了上级表头结构。请确保选区边界与上级单元格对齐。', { icon: 2, area: '450px', time: 3500 });
+            }
+          }
+
+          this.saveState();
+          const rowspan = maxRow - minRow + 1; const colspan = maxCol - minCol + 1;
+          for (let r = minRow; r <= maxRow; r++) {
+            for (let c = minCol; c <= maxCol; c++) {
+              const cell = this.gridData[r][c];
+              cell.selected = false;
+              if (r === minRow && c === minCol) {
+                cell.rowspan = rowspan; cell.colspan = colspan; cell.merged = true;
+              } else { cell.visible = false; }
+            }
+          }
+          layer.msg('合并成功！', { icon: 1 });
+        },
+        splitSelected () {
+          const { row, col } = this.activeCoords;
+          if (row === -1 || col === -1) return layer.msg('请先双击一个已合并的单元格以激活它', { icon: 7 });
+
+          const masterCell = this.gridData[row][col];
+          if (!masterCell.merged) return layer.msg('激活的单元格未被合并', { icon: 7 });
+
+          this.saveState();
+          const { rowspan, colspan } = masterCell;
+          for (let r = row; r < row + rowspan; r++) {
+            for (let c = col; c < col + colspan; c++) {
+              const cell = this.gridData[r][c];
+              cell.visible = true; cell.merged = false;
+              cell.rowspan = 1; cell.colspan = 1;
+            }
+          }
+          layer.msg('拆分成功！', { icon: 1 });
+        },
+        clearMerge () {
+          this.saveState(); this.rebuildGridData();
+          layer.msg('已清除所有合并状态', { icon: 1 });
+        },
+        // --- 新增和修改的方法 ---
+        toggleMergeMode () {
+          this.mergeMode = this.mergeMode === 'click' ? 'drag' : 'click';
+          layer.msg(`已切换为 ${this.mergeMode === 'drag' ? '拖拽合并' : '单击选择'} 模式`, { time: 1500 });
+        },
+        getCoordsFromEvent (event) {
+          const rect = this.$refs.gridWrapper.getBoundingClientRect();
+          const x = event.clientX - rect.left + this.$refs.gridWrapper.scrollLeft;
+          const y = event.clientY - rect.top + this.$refs.gridWrapper.scrollTop;
+
+          let r = -1, c = -1;
+          for (let i = 0; i < this.rowPositions.length; i++) {
+            if (y > this.rowPositions[i] && y < this.rowPositions[i] + this.rowHeights[i]) {
+              r = i; break;
+            }
+          }
+          for (let i = 0; i < this.colPositions.length; i++) {
+            if (x > this.colPositions[i] && x < this.colPositions[i] + this.colWidths[i]) {
+              c = i; break;
+            }
+          }
+          return { r, c };
+        },
+        handleGridMouseDown (event) {
+          if (this.mergeMode !== 'drag') return;
+          this.isDragging = true;
+          this.dragStartCoords = this.getCoordsFromEvent(event);
+          // 清除已有选择
+          this.gridData.forEach(row => row.forEach(cell => cell.selected = false));
+        },
+        handleGridMouseMove (event) {
+          if (!this.isDragging || !this.dragStartCoords) return;
+
+          const currentCoords = this.getCoordsFromEvent(event);
+          if (currentCoords.r === -1 || currentCoords.c === -1) return;
+
+          const minRow = Math.min(this.dragStartCoords.r, currentCoords.r);
+          const maxRow = Math.max(this.dragStartCoords.r, currentCoords.r);
+          const minCol = Math.min(this.dragStartCoords.c, currentCoords.c);
+          const maxCol = Math.max(this.dragStartCoords.c, currentCoords.c);
+
+          this.gridData.forEach((row, r) => {
+            row.forEach((cell, c) => {
+              const masterCoords = this.findMasterCell(r, c);
+              const masterCell = this.gridData[masterCoords.r][masterCoords.c];
+              masterCell.selected = r >= minRow && r <= maxRow && c >= minCol && c <= maxCol;
+            });
+          });
+        },
+        handleGridMouseUp () {
+          this.isDragging = false;
+          this.dragStartCoords = null;
+        },
+        // 列拖拽排序
+        handleColDragStart (event, c) {
+          this.draggedColIndex = c;
+          event.dataTransfer.effectAllowed = 'move';
+        },
+        handleColDragOver (event, c) {
+          // 可视化提示，比如在列之间显示一条线
+        },
+        handleColDrop (event, targetColIndex) {
+          if (this.draggedColIndex === null || this.draggedColIndex === targetColIndex) {
+            this.draggedColIndex = null;
+            return;
+          }
+          this.saveState();
+
+          const sourceIndex = this.draggedColIndex;
+
+          // 重新排序 colWidths
+          const draggedWidth = this.colWidths.splice(sourceIndex, 1)[0];
+          this.colWidths.splice(targetColIndex, 0, draggedWidth);
+
+          // 重新排序 columnProps
+          const draggedProp = this.columnProps.splice(sourceIndex, 1)[0];
+          this.columnProps.splice(targetColIndex, 0, draggedProp);
+
+          // 重新排序 gridData 中的每一行
+          this.gridData.forEach(row => {
+            const draggedCell = row.splice(sourceIndex, 1)[0];
+            row.splice(targetColIndex, 0, draggedCell);
+          });
+
+          layer.msg('列已重新排序', { icon: 1, time: 1000 });
+          this.draggedColIndex = null;
+        },
+        handleColDragEnd () {
+          this.draggedColIndex = null;
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

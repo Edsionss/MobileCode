@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>方案一：拖拽分组模式 (纯净版)</title>
+  <!-- 引入 Element UI CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- 引入 Layui CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.13/dist/css/layui.css">
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      margin: 0;
+    }
+
+    #app {
+      padding: 20px;
+    }
+
+    .config-panel {
+      padding: 20px;
+      border: 1px solid #EBEEF5;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+    }
+
+    .config-title {
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #303133;
+      font-weight: bold;
+    }
+
+    .drop-zone {
+      border: 2px dashed #DCDFE6;
+      border-radius: 4px;
+      padding: 10px;
+      min-height: 50px;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+
+    .drop-zone.drag-over {
+      border-color: #409EFF;
+      background-color: #ecf5ff;
+    }
+
+    .draggable-tag {
+      cursor: grab;
+      display: inline-block;
+      margin: 5px;
+    }
+
+    .preview-title {
+      margin-top: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #606266;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <el-row :gutter="20">
+      <el-col :span="8">
+        <div class="config-panel">
+          <div class="config-title">
+            <i class="el-icon-setting"></i> 表格合并配置
+          </div>
+          <p style="color: #909399; font-size: 14px;">请拖拽下方列头到“合并分组”区域内</p>
+
+          <div>
+            <strong>可选列:</strong>
+            <div class="drop-zone" @dragover.prevent @dragleave="handleDragLeave"
+              @drop="handleDrop($event, 'available')">
+              <div v-for="col in availableColumns" :key="col.field" class="el-tag draggable-tag" draggable="true"
+                @dragstart="handleDragStart($event, col)">
+                {{ col.title }}
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <strong>合并分组:</strong>
+            <div class="drop-zone" @dragover.prevent @dragleave="handleDragLeave" @drop="handleDrop($event, 'merge')">
+              <div v-for="col in mergeGroup" :key="col.field" class="el-tag el-tag--success draggable-tag"
+                draggable="true" @dragstart="handleDragStart($event, col)">
+                <i class="el-icon-rank"></i> {{ col.title }}
+              </div>
+              <span v-if="mergeGroup.length === 0" style="color: #C0C4CC; font-size: 14px;">拖拽列到此处</span>
+            </div>
+          </div>
+        </div>
+      </el-col>
+
+      <el-col :span="16">
+        <div class="preview-title">
+          <i class="el-icon-view"></i> 实时预览
+        </div>
+        <layui-table :config="tableConfig"></layui-table>
+      </el-col>
+    </el-row>
+  </div>
+
+  <!-- 引入 Vue 和 Element UI JS -->
+  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <!-- 引入 Layui JS -->
+  <script src="https://unpkg.com/layui@2.9.13/dist/layui.js"></script>
+
+  <script>
+    function mergeTableRow (tableId, data, mergeFields) {
+      if (!mergeFields || mergeFields.length === 0) return;
+      const tableContainer = layui.$('#' + tableId).next('.layui-table-view');
+      mergeFields.forEach(field => {
+        let startIndex = 0, count = 1;
+        for (let i = 1; i < data.length; i++) {
+          if (data[i][field] === data[startIndex][field]) {
+            count++;
+          } else {
+            if (count > 1) {
+              const startCell = tableContainer.find(`.layui-table-body tr[data-index="${startIndex}"] td[data-field="${field}"]`);
+              startCell.attr('rowspan', count);
+              for (let j = 1; j < count; j++) {
+                tableContainer.find(`.layui-table-body tr[data-index="${startIndex + j}"] td[data-field="${field}"]`).hide();
+              }
+            }
+            startIndex = i;
+            count = 1;
+          }
+        }
+        if (count > 1) {
+          const startCell = tableContainer.find(`.layui-table-body tr[data-index="${startIndex}"] td[data-field="${field}"]`);
+          startCell.attr('rowspan', count);
+          for (let j = 1; j < count; j++) {
+            tableContainer.find(`.layui-table-body tr[data-index="${startIndex + j}"] td[data-field="${field}"]`).hide();
+          }
+        }
+      });
+    }
+
+    const LayuiTable = {
+      template: `
+            <div style="margin-top: 10px;"> 
+                <table class="layui-hide" :id="config.id"></table>
+            </div>
+        `,
+      props: ['config'],
+      mounted () {
+        this.renderTable();
+      },
+      watch: {
+        'config.props.mergeFields': {
+          handler: function () {
+            this.renderTable();
+          },
+          deep: true
+        }
+      },
+      methods: {
+        renderTable () {
+          const props = this.config.props;
+          const id = this.config.id;
+          layui.table.render({
+            elem: '#' + id,
+            cols: [props.cols],
+            data: props.data,
+            height: 450,
+            done: (res) => {
+              if (props.mergeFields && props.mergeFields.length > 0) {
+                mergeTableRow(id, res.data, props.mergeFields);
+              }
+            }
+          });
+        }
+      }
+    };
+
+    new Vue({
+      el: '#app',
+      components: {
+        'layui-table': LayuiTable
+      },
+      data: {
+        allColumns: [
+          { field: 'category', title: '商品大类', width: 120 },
+          { field: 'subCategory', title: '商品子类', width: 120 },
+          { field: 'name', title: '商品名称', width: 200 },
+          { field: 'price', title: '价格', width: 100 }
+        ],
+        availableColumns: [],
+        mergeGroup: []
+      },
+      computed: {
+        tableConfig () {
+          return {
+            id: 'myProductTable',
+            props: {
+              cols: this.allColumns,
+              data: [
+                { category: '书籍', subCategory: '编程', name: 'Vue.js 权威指南', price: 89 },
+                { category: '书籍', subCategory: '编程', name: 'JavaScript 高级程序设计', price: 99 },
+                { category: '书籍', subCategory: '设计', name: 'CSS 世界', price: 79 },
+                { category: '电子产品', subCategory: '外设', name: '机械键盘', price: 399 },
+                { category: '电子产品', subCategory: '外设', name: '无线鼠标', price: 199 },
+                { category: '电子产品', subCategory: '显示', name: '4K显示器', price: 1299 },
+              ],
+              mergeFields: this.mergeGroup.map(col => col.field)
+            }
+          };
+        }
+      },
+      created () {
+        this.availableColumns = [...this.allColumns];
+      },
+      methods: {
+        handleDragStart (event, item) {
+          event.dataTransfer.setData('text/plain', item.field);
+          event.dataTransfer.effectAllowed = 'move';
+        },
+        handleDragLeave (event) {
+          event.currentTarget.classList.remove('drag-over');
+        },
+        handleDrop (event, targetZone) {
+          event.preventDefault();
+          event.currentTarget.classList.remove('drag-over');
+
+          const field = event.dataTransfer.getData('text/plain');
+          if (!field) return;
+
+          let itemToMove = null;
+          let sourceIndex = -1;
+
+          sourceIndex = this.availableColumns.findIndex(c => c.field === field);
+          if (sourceIndex > -1) {
+            itemToMove = this.availableColumns.splice(sourceIndex, 1)[0];
+          } else {
+            sourceIndex = this.mergeGroup.findIndex(c => c.field === field);
+            if (sourceIndex > -1) {
+              itemToMove = this.mergeGroup.splice(sourceIndex, 1)[0];
+            }
+          }
+
+          if (itemToMove) {
+            if (targetZone === 'merge') {
+              this.mergeGroup.push(itemToMove);
+            } else {
+              this.availableColumns.push(itemToMove);
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>
