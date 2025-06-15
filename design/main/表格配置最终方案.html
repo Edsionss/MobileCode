@@ -5,9 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LayUI表头配置器 (vue-contextmenujs)</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/css/layui.min.css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/css/layui.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+  <link rel="stylesheet" href="../../package/Vant/vant.css">
+  <link rel="stylesheet" href="../../package/ElementUI/ElementUI.css">
+  <link rel="stylesheet" href="../../package/WotDesign/WotDesign.css">
+  <link rel="stylesheet" href="../../package/ContextMenu/contextmenu.css">
+  <link rel="stylesheet" href="../../package/layui/css/layui.css">
   <!-- The new library does not require a separate CSS file -->
   <style>
     /* All styles are the same as before */
@@ -38,19 +43,7 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
 
-    .header h1 {
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-size: 2.5rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
 
     .config-panel {}
 
@@ -112,6 +105,7 @@
       color: #333;
       /* height: fit-content; */
       height: 600px;
+      margin-top: 30px;
     }
 
 
@@ -122,18 +116,20 @@
       border-radius: 15px;
       padding: 25px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      overflow: auto;
     }
+
+
 
     .grid-header {
-      margin-bottom: 20px;
-    }
-
-    .grid-header h3 {
       color: #333;
       font-size: 1.3rem;
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-bottom: 20px;
+
     }
 
     .merge-grid {
@@ -143,9 +139,12 @@
       padding: 10px;
       border-radius: 10px;
       margin-bottom: 20px;
+      width: 100%;
+      overflow: auto;
     }
 
     .grid-cell {
+      min-width: 100px;
       background: white;
       border: 2px solid #e0e0e0;
       border-radius: 6px;
@@ -265,12 +264,6 @@
 
 <body>
   <div id="app" class="container">
-    <!-- Header, Instructions, etc. -->
-    <div class="header">
-      <h1><i class="fas fa-table-cells-large"></i> LayUI 表格表头配置器</h1>
-      <p>拖拽式可视化配置，让表头合并变得简单直观</p>
-    </div>
-
 
     <!-- Main Panel -->
     <div class="config-panel">
@@ -281,6 +274,8 @@
             <div class="grid-container">
               <div class="grid-header">
                 <h3><i class="fas fa-th"></i> 可视化配置网格 (右键操作)</h3>
+                <el-button type="primary" @click="addColumn">添加列</el-button>
+                <el-button type="primary" @click="addRow">添加行</el-button>
               </div>
               <div class="merge-grid" :style="{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }"
                 @contextmenu.prevent="showContextMenu" @mouseup="handleMouseUp">
@@ -297,9 +292,9 @@
                 </template>
               </div>
             </div>
-            <button class="add-col-btn" @click="addColumn" title="添加新列"><i class="fas fa-plus"></i> 添加列</button>
+            <!-- <button class="add-col-btn" @click="addColumn" title="添加新列"><i class="fas fa-plus"></i> 添加列</button> -->
           </div>
-          <button class="add-row-btn" @click="addRow" title="添加新行"><i class="fas fa-plus"></i> 添加行</button>
+          <!-- <button class="add-row-btn" @click="addRow" title="添加新行"><i class="fas fa-plus"></i> 添加行</button> -->
         </div>
         <!-- Preview Section -->
         <div class="preview-section" style="margin-top: 30px;">
@@ -317,7 +312,7 @@
         </div>
         <div class="property-panel">
           <div v-if="selectedCell" class="prop-form">
-            <el-form label-position="left" size="small" label-width="120px">
+            <el-form label-position="left" size="small" label-width="150px">
               <!-- 基础属性 -->
               <el-form-item label="标题 (Title)">
                 <el-input v-model="selectedCell.title" @focus="saveState"></el-input>
@@ -384,7 +379,7 @@
             <p>在左侧网格中<br>单击或拖动选择单元格</p>
           </div>
         </div>
-        <el-dialog title="配置" :visible.sync="configDialogVisible" width="80%" :append-to-body="true">
+        <el-dialog title="配置" :visible.sync="configDialogVisible" width="90%" :append-to-body="true">
           <div class="code-container">
             <button class="copy-btn" @click="copyCode">
               <i class="fas fa-copy"></i> 复制
@@ -401,15 +396,50 @@
 
     </div>
   </div>
-
-  <!-- 【已修复】脚本加载顺序 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/layui.min.js"></script>
   <script src="https://unpkg.com/vue-contextmenujs/dist/contextmenu.umd.js"></script>
-  <!-- 添加Element UI依赖 -->
-  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-
-  <script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+  <script src="../../package/esModule/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@config/": "../../config/",
+        "@/": "/",
+        "@components/": "../components/",
+        "@utils/": "../../utils/",
+        "@assets/": "../../assets/",
+        "@design/": "../../design/",
+        "@modules/": "../../modules/",
+        "@package/": "../../package/"
+      }
+    }  
+  </script>
+  <script src="../../package/Vue/vue.js"></script>
+  <script src="../../package/Router/vue-router.js"></script>
+  <script src="../../package/Vuex/vuex.js"></script>
+  <!-- 引入Vant -->
+  <script src="../../package/Vant/vant.min.js"></script>
+  <!-- 引入ElementUI -->
+  <script src="../../package/ElementUI/ElementUi.js"></script>
+  <!-- 引入WotDesign -->
+  <script src="../../package/WotDesign/WotDesign.js"></script>
+  <!-- 引入layui -->
+  <script src="../../package/Layui/layui.js"></script>
+  <!-- xm-select -->
+  <script src="../../package/XmSelect/xm-select.js"></script>
+  <!-- echarts 5.6 -->
+  <script src="../../package/Echarts/echarts.min.js"></script>
+  <!-- 引入Sortable -->
+  <script src="../../package/Sortable/Sortable.js"></script>
+  <!-- 引入vuedraggable -->
+  <script src="../../package/Vuedraggable/vuedraggable.umd.js"></script>
+  <!-- 引入右键菜单 contextmenu -->
+  <script src="../../package/ContextMenu/contextmenu.umd.js"></script>
+  <!-- 引入lodash -->
+  <script src="../../package/Lodash/lodash.min.js"></script>
+  <script type="module">
+    import utils from '@utils/index.js'
     // 初始化LayUI
     let layer, table;
     layui.use(['layer', 'table'], function () {
@@ -435,6 +465,7 @@
         dragStartCell: null, // 拖拽起始单元格
         previewTable: null, // 添加预览表格实例
         configDialogVisible: false, // 配置对话框可见性
+        layConfig: [],//
         // 测试数据生成器配置（已简化，只生成随机字母）
         // testDataGenerators: {
         //   // 生成随机字母字符串
@@ -470,17 +501,22 @@
         layuiConfig () {
           const config = [];
           if (this.columns.length === 0) return config;
-
           const lastVisibleRowIndex = this.getLastVisibleRowIndex();
           this.gridData.forEach((rowData, i) => {
             if (this.isRowEmpty(i)) return;
             const row = [];
             for (let j = 0; j < this.columns.length; j++) {
               const cellData = this.gridData[i][j];
-              if (cellData.visible) {
+              if (i !== 0) {
+                //进行表格的规则判断
+                const layConfig = _.cloneDeep(this.layConfig),
+                  preIndex = i == 0 ? 0 : i - 1,
+                  preData = layConfig[preIndex];
+                if (j > preData.length - 1) continue
+              }
+              if (cellData.visible && (i !== 0 || cellData.title)) {// 如果单元格可见且有标题
                 const isLastEligibleRow = (i + cellData.rowspan - 1) === lastVisibleRowIndex;
                 const cell = { title: cellData.title || '' };
-
                 // 添加所有可能的属性
                 if (cellData.rowspan > 1) cell.rowspan = cellData.rowspan;
                 if (cellData.colspan > 1) cell.colspan = cellData.colspan;
@@ -492,12 +528,12 @@
                 if (cellData.hide) cell.hide = cellData.hide;
                 if (cellData.sort) cell.sort = cellData.sort;
                 if (cellData.edit) cell.edit = cellData.edit;
-
                 row.push(cell);
               }
             }
             if (row.length > 0) config.push(row);
           });
+          this.layConfig = config
           return config;
         },
 
@@ -508,27 +544,7 @@
             return '// 请先添加列并配置表头结构';
           // 获取最后一行的字段配置
           const lastRowFields = this.getLastRowFields();
-          // 生成测试数据
-          // const testData = this.generateTestData(lastRowFields);
-          return JSON.stringify(lastRowFields, null, 2).replace(/"field":/g, '"field":')  // 保持紧凑（可选）
-            .replace(/{\n\s+/g, '{ ')          // 对象开始不换行
-            .replace(/\n\s+}/g, ' }');         // 对象结束不换行
-          // return JSON.stringify(lastRowFields).replace(/{"/g, '{\n    "')  // 外层 { 换行
-          //   .replace(/}"/g, '\n    }"')  // 内层 } 换行（避免影响字符串内容）
-          //   .replace(/},"/g, '\n    },\n    "')  // 处理嵌套对象
-          //   .replace(/}$/, '\n}');       // 最后 } 换行;
-          // return `// LayUI表格配置
-          // const tableConfig = {
-          //     elem: '#yourTable',
-          //     url: 'your-data-url',
-          //     data: ${JSON.stringify(testData, null, 2)},
-          //     cols: ${JSON.stringify(this.layuiConfig, null, 2)}
-          // };
-          // // 渲染表格
-          // layui.use('table', function(){
-          //     const table = layui.table;
-          //     table.render(tableConfig);
-          // });`;
+          return utils.formatJSONLikeImage(lastRowFields)
         }
       },
       watch: {
@@ -858,7 +874,15 @@
           const maxRow = Math.max(...coordsList.map(c => c.row));
           const minCol = Math.min(...coordsList.map(c => c.col));
           const maxCol = Math.max(...coordsList.map(c => c.col));
-
+          const minData = this.gridData[minRow][minCol],
+            maxData = this.gridData[maxRow][maxCol],
+            firstRow = _.cloneDeep(this.layConfig)
+          if (!minData.title && !maxData.title) return layer.msg('不能合并两个空内容', { icon: 2 });
+          if ((minRow !== 0 && maxRow !== 0)) {
+            const firstCol = firstRow.length - 1
+            if ((minCol > firstCol || maxCol > firstCol))//不能超出第一行的边界
+              return layer.msg('合并失败,不能在第一行以外添加一个额外的列！', { icon: 2 });
+          }
           let isRectangle = true;
           for (let r = minRow; r <= maxRow; r++)
             for (let c = minCol; c <= maxCol; c++)
@@ -866,11 +890,9 @@
                 isRectangle = false;
                 break;
               }
-
           if (!isRectangle) {
             return layer.msg('合并失败：只能合并连续的、可见的矩形区域！', { icon: 2 });
           }
-
           this.saveState();
           const rowspan = maxRow - minRow + 1;
           const colspan = maxCol - minCol + 1;
@@ -884,7 +906,6 @@
               if (r !== minRow || c !== minCol)
                 this.gridData[r][c].visible = false;
             }
-
           masterCell.selected = true;
           layer.msg('合并成功！', { icon: 1 });
         },
@@ -925,12 +946,13 @@
               }
             }
             if (cell) {
-              fields.push({
-                field: cell.field,
-                hide: cell.hide,
-                width: cell.width,
-                align: cell.align
-              });
+              fields.push(cell)
+              // fields.push({
+              //   field: cell.field,
+              //   hide: cell.hide,
+              //   width: cell.width,
+              //   align: cell.align
+              // });
             }
           }
           return fields;
@@ -957,12 +979,12 @@
         // 更新预览表格
         updatePreview () {
           if (!table) return;
+          console.log(this.layuiConfig);
 
           // 获取最后一行的字段配置
           const lastRowFields = this.getLastRowFields();
           // 生成测试数据
           const testData = this.generateTestData(lastRowFields);
-
           // 配置项
           const tableConfig = {
             elem: '#previewTable',

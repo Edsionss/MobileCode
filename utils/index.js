@@ -387,5 +387,20 @@ export default {
     // --- 3. 处理无效输入 ---
     // 如果 source 既不是字符串也不是 File 对象，则返回一个失败的 Promise。
     return Promise.reject(new Error('无效的加载源：source 必须是 URL 字符串或 File 对象。'))
+  },
+  formatJSONLikeImage(array) {
+    // 首先，将数组中的每个对象转换为紧凑的JSON字符串
+    const objectStrings = array.map(obj => {
+      // 在每个对象字符串前加上缩进（例如5个空格，可以根据需要调整）
+      return '     ' + JSON.stringify(obj)
+    })
+
+    // 然后，用逗号和换行符将它们连接起来
+    const content = objectStrings.join(',\n')
+
+    // 最后，在外面包上 [ 和 ]，并添加换行符
+    const finalString = '[\n' + content + '\n]'
+
+    return finalString
   }
 }
