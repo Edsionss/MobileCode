@@ -7,8 +7,6 @@
   <title>LayUI表头配置器 (智能版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/css/layui.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <!-- vue-contextmenujs CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/vue-contextmenujs@1.1.2/dist/vue-contextmenu.css">
   <style>
     /* 样式与之前完全一致，此处省略以保持简洁 */
     * {
@@ -267,9 +265,52 @@
       outline: 2px solid #764ba2;
     }
 
-    /* vue-contextmenujs icon styling */
-    .mx-context-menu-item .fas {
-      margin-right: 10px;
+    .context-menu {
+      position: absolute;
+      z-index: 10000;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      padding: 8px 0;
+      min-width: 180px;
+      border: 1px solid #eee;
+    }
+
+    .context-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .context-menu li {
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #333;
+    }
+
+    .context-menu li:hover {
+      background-color: #f5f5f5;
+    }
+
+    .context-menu li.disabled {
+      color: #aaa;
+      cursor: not-allowed;
+      background-color: transparent;
+    }
+
+    .context-menu li.separator {
+      height: 1px;
+      background: #eee;
+      margin: 5px 0;
+      padding: 0;
+    }
+
+    .context-menu .fa-fw {
+      text-align: center;
     }
 
     .instructions {
@@ -382,9 +423,8 @@
             <div class="grid-header">
               <h3><i class="fas fa-th"></i> 可视化配置网格 (右键操作)</h3>
             </div>
-            <!-- Changed: Replaced @contextmenu.prevent="showContextMenu" with the new onContextMenu handler -->
             <div class="merge-grid" :style="{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }"
-              @contextmenu.prevent="onContextMenu" @mouseup="handleMouseUp">
+              @contextmenu.prevent="showContextMenu" @mouseup="handleMouseUp">
               <template v-if="columns.length > 0">
                 <div v-for="cell in flatGridData" v-if="cell.visible" :key="cell.id" class="grid-cell"
                   :class="{ 'merged': cell.merged, 'selected': cell.selected }"
@@ -443,9 +483,29 @@
       </div>
     </div>
 
-    <!-- Removed: Old context menu div is gone -->
-    <!-- Added: vue-contextmenujs component -->
-    <vue-contextmenu ref="contextMenu"></vue-contextmenu>
+    <!-- Context Menu -->
+    <div class="context-menu" v-if="contextMenu.visible"
+      :style="{ top: contextMenu.top + 'px', left: contextMenu.left + 'px' }">
+      <ul>
+        <li @click="mergeSelected" :class="{ disabled: !canMerge }">
+          <i class="fas fa-compress-alt fa-fw"></i> 合并选中
+        </li>
+        <li @click="splitSelected" :class="{ disabled: !canSplit }">
+          <i class="fas fa-th-large fa-fw"></i> 拆分选中
+        </li>
+        <li class="separator"></li>
+        <li @click="undo" :class="{ disabled: historyStack.length === 0 }">
+          <i class="fas fa-undo fa-fw"></i> 撤销 ({{ historyStack.length }})
+        </li>
+        <li @click="clearMerge">
+          <i class="fas fa-eraser fa-fw"></i> 清除所有合并
+        </li>
+        <li @click="clearSelection" :class="{ disabled: selectedCells.length === 0 }">
+          <i class="fas fa-times-circle fa-fw"></i> 清除选择
+        </li>
+      </ul>
+    </div>
+
 
     <div class="preview-section">
       <div class="preview-header">
@@ -465,16 +525,10 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/layui.min.js"></script>
-  <!-- Added: vue-contextmenujs script -->
-  <script src="https://unpkg.com/vue-contextmenujs@1.1.2/dist/vue-contextmenu.js"></script>
-
 
   <script>
     let layer;
     layui.use(['layer'], function () { layer = layui.layer; });
-
-    // Added: Register the component globally
-    Vue.component('vue-contextmenu', vueContextmenu);
 
     new Vue({
       el: '#app',
@@ -487,8 +541,12 @@
         historyStack: [],
         editingCellId: null,
         isDragging: false,
-        dragStartCell: null
-        // Removed: old contextMenu data object
+        dragStartCell: null,
+        contextMenu: {
+          visible: false,
+          top: 0,
+          left: 0
+        }
       },
       computed: {
         flatGridData () { return this.gridData.flat(); },
@@ -501,6 +559,7 @@
         },
         canMerge () { return this.selectedCells.length > 1; },
         canSplit () { return this.selectedCells.length === 1 && this.selectedCells[0].merged; },
+
         layuiConfig () {
           const config = [];
           if (this.columns.length === 0) return config;
@@ -551,52 +610,16 @@
         }
       },
       created () {
+        // **【核心改动】初始化为 10列 x 1行**
         this.initializeDefaultGrid(10, 1);
       },
-      // Removed mounted and beforeDestroy for old context menu
+      mounted () {
+        window.addEventListener('click', this.hideContextMenuOnClick);
+      },
+      beforeDestroy () {
+        window.removeEventListener('click', this.hideContextMenuOnClick);
+      },
       methods: {
-        // Added: New method to show context menu
-        onContextMenu (event) {
-          event.preventDefault();
-
-          const menuItems = [
-            {
-              label: '合并选中',
-              icon: 'fas fa-compress-alt',
-              disabled: !this.canMerge,
-              onClick: this.mergeSelected
-            },
-            {
-              label: '拆分选中',
-              icon: 'fas fa-th-large',
-              disabled: !this.canSplit,
-              onClick: this.splitSelected
-            },
-            {
-              divider: true
-            },
-            {
-              label: `撤销 (${this.historyStack.length})`,
-              icon: 'fas fa-undo',
-              disabled: this.historyStack.length === 0,
-              onClick: this.undo
-            },
-            {
-              label: '清除所有合并',
-              icon: 'fas fa-eraser',
-              onClick: this.clearMerge
-            },
-            {
-              label: '清除选择',
-              icon: 'fas fa-times-circle',
-              disabled: this.selectedCells.length === 0,
-              onClick: this.clearSelection
-            }
-          ];
-
-          this.$refs.contextMenu.show(event, menuItems);
-        },
-
         initializeDefaultGrid (cols, rows) {
           this.columns = [];
           for (let i = 1; i <= cols; i++) {
@@ -607,6 +630,7 @@
         },
         isRowEmpty (rowIndex) {
           if (!this.gridData[rowIndex]) return true;
+          // 如果行内所有可见单元格的标题都为空，则视为空行
           return this.gridData[rowIndex].every(cell => !cell.visible || !cell.title.trim());
         },
         saveState () { const snapshot = JSON.parse(JSON.stringify({ gridData: this.gridData, rows: this.rows, columns: this.columns })); this.historyStack.push(snapshot); },
@@ -616,6 +640,7 @@
             this.gridData = lastState.gridData;
             this.rows = lastState.rows;
             this.columns = lastState.columns;
+            this.hideContextMenu();
             layer.msg('操作已撤销', { icon: 1, time: 1000 });
           } else {
             layer.msg('没有更多可撤销的操作了', { icon: 7 });
@@ -642,6 +667,7 @@
           if (!this.gridData || this.gridData.length === 0 || this.columns.length === 0) return;
           this.gridData.forEach((row, rowIndex) => {
             row.forEach((cell, colIndex) => {
+              // 只为最底层的、未被合并覆盖的单元格设置默认标题和字段
               if ((rowIndex + cell.rowspan - 1) === (this.rows - 1)) {
                 let isCovered = false;
                 for (let r = 0; r < rowIndex; r++) {
@@ -683,7 +709,7 @@
           for (let j = 0; j < this.columns.length; j++) {
             newRow.push({ id: this.cellIdCounter++, merged: false, title: '', rowspan: 1, colspan: 1, visible: true, selected: false, field: '', align: 'center', fixed: null });
           }
-          this.gridData.push(newRow);
+          this.gridData.push(newRow); // Add to bottom
           this.updateTitles();
           layer.msg('已添加新行', { icon: 1, time: 1000 });
         },
@@ -705,10 +731,12 @@
         saveCellEdit () {
           if (this.editingCellId !== null) {
             this.editingCellId = null;
+            // No need for a message here, it's disruptive
           }
         },
         handleMouseDown (cell, event) {
           if (event.button !== 0) return;
+          this.hideContextMenu();
           this.isDragging = true;
           this.dragStartCell = cell;
           this.flatGridData.forEach(c => c.selected = (c.id === cell.id));
@@ -731,9 +759,21 @@
           this.isDragging = false;
           this.dragStartCell = null;
         },
-        // Removed: showContextMenu, hideContextMenu, hideContextMenuOnClick methods
+        showContextMenu (event) {
+          // **【核心改动】修复菜单定位**
+          this.contextMenu.visible = true;
+          this.contextMenu.top = event.clientY + window.pageYOffset;
+          this.contextMenu.left = event.clientX + window.pageXOffset;
+        },
+        hideContextMenu () { this.contextMenu.visible = false; },
+        hideContextMenuOnClick (event) {
+          if (this.contextMenu.visible && !event.target.closest('.context-menu')) {
+            this.hideContextMenu();
+          }
+        },
         clearSelection () {
           this.selectedCells.forEach(c => c.selected = false);
+          this.hideContextMenu();
         },
         clearMerge () {
           this.saveState();
@@ -741,6 +781,7 @@
           const currentRows = this.rows;
           this.initializeDefaultGrid(currentCols, currentRows);
           layer.msg('已清除所有合并', { icon: 1 });
+          this.hideContextMenu();
         },
         splitSelected () {
           if (!this.canSplit) return;
@@ -756,6 +797,7 @@
             }
           }
           this.updateTitles();
+          this.hideContextMenu();
           layer.msg('单元格已拆分', { icon: 1 });
         },
         findAncestor (rowIndex, colIndex, startSearchRow = rowIndex - 1) {
@@ -793,18 +835,19 @@
             }
             if (!isRectangle) break;
           }
-          if (!isRectangle) { return layer.msg('合并失败：只能合并连续的、可见的矩形区域！', { icon: 2 }); }
+          if (!isRectangle) { this.hideContextMenu(); return layer.msg('合并失败：只能合并连续的、可见的矩形区域！', { icon: 2 }); }
 
           if (minRow > 0) {
             const firstAncestor = this.findAncestor(minRow, minCol);
             const lastAncestor = this.findAncestor(minRow, maxCol);
-            if (!firstAncestor || !lastAncestor) { return layer.msg('合并失败：无法确定上级表头结构。', { icon: 2 }); }
+            if (!firstAncestor || !lastAncestor) { this.hideContextMenu(); return layer.msg('合并失败：无法确定上级表头结构。', { icon: 2 }); }
             const firstAncestorCoords = this.findCellCoords(firstAncestor.id);
             const lastAncestorCoords = this.findCellCoords(lastAncestor.id);
-            if (!firstAncestorCoords || !lastAncestorCoords) { return layer.msg('合并失败：无法定位上级表头坐标。', { icon: 2 }); }
+            if (!firstAncestorCoords || !lastAncestorCoords) { this.hideContextMenu(); return layer.msg('合并失败：无法定位上级表头坐标。', { icon: 2 }); }
             const firstAncestorStartCol = firstAncestorCoords.col;
             const lastAncestorEndCol = lastAncestorCoords.col + lastAncestor.colspan - 1;
             if (minCol !== firstAncestorStartCol || maxCol !== lastAncestorEndCol) {
+              this.hideContextMenu();
               return layer.msg('合并失败：所选区域的边界未对齐上级表头。请确保选区完整地覆盖一个或多个上级单元格。', { icon: 2, area: '420px', time: 3000 });
             }
           }
@@ -822,6 +865,7 @@
             }
           }
           masterCell.selected = true;
+          this.hideContextMenu();
           layer.msg('合并成功！', { icon: 1 });
         },
         exportConfig () { const blob = new Blob([JSON.stringify(this.layuiConfig, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'layui-table-config.json'; a.click(); URL.revokeObjectURL(url); layer.msg('配置已导出！', { icon: 1 }); },
