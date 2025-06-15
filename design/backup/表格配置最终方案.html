@@ -462,7 +462,6 @@
         handleMouseMove (cell, event) { if (!this.isDragging || !this.dragStartCell) return; const startCoords = this.findCellCoords(this.dragStartCell.id); const currentCoords = this.findCellCoords(cell.id); if (!startCoords || !currentCoords) return; const minRow = Math.min(startCoords.row, currentCoords.row); const maxRow = Math.max(startCoords.row, currentCoords.row); const minCol = Math.min(startCoords.col, currentCoords.col); const maxCol = Math.max(startCoords.col, currentCoords.col); this.flatGridData.forEach(c => { const coords = this.findCellCoords(c.id); c.selected = coords && coords.row >= minRow && coords.row <= maxRow && coords.col >= minCol && coords.col <= maxCol; }); },
         handleMouseUp () { this.isDragging = false; this.dragStartCell = null; },
 
-        // 【已替换】使用新的 programmatic menu
         showContextMenu (event) {
           this.$contextmenu({
             x: event.x,
