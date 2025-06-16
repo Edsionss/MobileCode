@@ -9,7 +9,7 @@ export default {
   modeList: [
     {
       label: 'PC',
-      icon: '../../assets/icon/svg/computer.svg',
+      icon: '../../../assets/icon/svg/computer.svg',
       style: {
         //暂不做特定要求
         width: 'calc((100% - 752px) - 60px)',
@@ -19,7 +19,7 @@ export default {
     },
     {
       label: 'Phone',
-      icon: '../../assets/icon/svg/phone.svg',
+      icon: '../../../assets/icon/svg/phone.svg',
       style: {
         //iphone12 pro  的分辨率
         width: '390px',
@@ -29,7 +29,7 @@ export default {
     },
     {
       label: 'Pad',
-      icon: '../../assets/icon/svg/pad.svg',
+      icon: '../../../assets/icon/svg/pad.svg',
       style: {
         //ipad mini的分辨率768 * 1024
         width: '768px',
@@ -55,8 +55,8 @@ export default {
       type: 'primary',
       icon: 'el-icon-view',
       click() {
-        window.open(`/design/preview/index.html?id=${generateUniqueId()}`, '_blank')
         console.log(this.$store.state)
+        window.open(`/view/preview/index.html?id=${generateUniqueId()}`, '_blank')
       }
     },
     {
@@ -72,5 +72,5 @@ export default {
   ],
   defaultVersionLabel: 'Beta',
   version: '0.1.7',
-  icon: '../../assets/icon/svg/Stitcher.svg'
+  icon: '../../../assets/icon/svg/Stitcher.svg'
 }
