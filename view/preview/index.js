@@ -2,7 +2,7 @@
 import previewData from './preview.js'
 import testdata from './testdata.js'
 import PreviewCanvas from './components/PreviewCanvas/index.js'
-
+import transition from './transition.js'
 Vue.component('preview-canvas', PreviewCanvas)
 var app = new Vue({
   el: '#app',
@@ -10,7 +10,8 @@ var app = new Vue({
   data() {
     return {
       previewData: previewData,
-      test: testdata
+      test: testdata,
+      oldData: transition.componentsConfig.form
     }
   },
   created() {

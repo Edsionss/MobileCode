@@ -53,6 +53,9 @@ const WotCanvas = {
     componentEmittedInput(inputValueOrFile, component) {
       let newValue = inputValueOrFile
       this.$set(this.formData, component.id, newValue)
+    },
+    defaultClick(item) {
+      item.click && item.click.bind(this)(item)
     }
   }
 }

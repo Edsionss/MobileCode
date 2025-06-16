@@ -1,3 +1,16 @@
 body {
   font-family: sans-serif;
 }
+
+.preview-layout {
+  width: 100%;
+}
+
+.preview-layout__canvas-panel__body {
+  background-color: #f8f9fa;
+  padding: 15px;
+}
+
+.wd-cell-group.is-border .wd-input.is-cell:last-child::after {
+  display: block !important;
+}

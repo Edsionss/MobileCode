@@ -34,6 +34,8 @@ const NestedCanvas = {
         layui: 'layui-canvas',
         wot: 'wot-canvas'
       }
+      console.log(dict[name])
+
       return dict[name]
     }
   }
