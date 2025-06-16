@@ -55,7 +55,7 @@ export default {
       type: 'primary',
       icon: 'el-icon-view',
       click() {
-        window.open(`/design/main/preview.html??id=${generateUniqueId()}`, '_blank')
+        window.open(`/design/preview/index.html?id=${generateUniqueId()}`, '_blank')
         console.log(this.$store.state)
       }
     },
