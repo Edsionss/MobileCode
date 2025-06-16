@@ -57,47 +57,6 @@
       align-items: stretch;
     }
 
-    .add-row-btn {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      border: 2px dashed #667eea;
-      background: rgba(102, 126, 234, 0.1);
-      color: #667eea;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: bold;
-    }
-
-    .add-row-btn:hover {
-      background: rgba(102, 126, 234, 0.2);
-      border-style: solid;
-    }
-
-    .add-col-btn {
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      margin-left: 10px;
-      padding: 20px 10px;
-      border: 2px dashed #667eea;
-      background: rgba(102, 126, 234, 0.1);
-      color: #667eea;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .add-col-btn:hover {
-      background: rgba(102, 126, 234, 0.2);
-      border-style: solid;
-    }
-
     .property-panel {
       background: #fff;
       border-radius: 15px;
@@ -144,7 +103,7 @@
     }
 
     .grid-cell {
-      min-width: 100px;
+      min-width: 70px;
       background: white;
       border: 2px solid #e0e0e0;
       border-radius: 6px;
@@ -187,6 +146,7 @@
     }
 
     .preview-section {
+      margin-top: 30px;
       background: white;
       border-radius: 15px;
       padding: 25px;
@@ -292,12 +252,10 @@
                 </template>
               </div>
             </div>
-            <!-- <button class="add-col-btn" @click="addColumn" title="添加新列"><i class="fas fa-plus"></i> 添加列</button> -->
           </div>
-          <!-- <button class="add-row-btn" @click="addRow" title="添加新行"><i class="fas fa-plus"></i> 添加行</button> -->
         </div>
         <!-- Preview Section -->
-        <div class="preview-section" style="margin-top: 30px;">
+        <div class="preview-section" style="">
           <div class="preview-header">
             <h3><i class="fas fa-eye"></i> 实时预览</h3>
             <button class="export-btn" @click="exportConfig">
@@ -319,12 +277,8 @@
               </el-form-item>
 
               <el-form-item label="字段名 (Field)">
-                <el-input v-model="selectedCell.field" :disabled="!isSelectedCellFieldEligible" @focus="saveState">
-                  <template #append v-if="!isSelectedCellFieldEligible">
-                    <el-tooltip content="仅最底层单元格可设置字段名" placement="top">
-                      <i class="fas fa-info-circle"></i>
-                    </el-tooltip>
-                  </template>
+                <el-input v-model="selectedCell.field" @focus="saveState">
+
                 </el-input>
               </el-form-item>
 
@@ -466,14 +420,6 @@
         previewTable: null, // 添加预览表格实例
         configDialogVisible: false, // 配置对话框可见性
         layConfig: [],//
-        // 测试数据生成器配置（已简化，只生成随机字母）
-        // testDataGenerators: {
-        //   // 生成随机字母字符串
-        //   text: (length = 5) => {
-        //     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        //     return Array(length).fill().map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-        //   }
-        // }
       },
       computed: {
         // 扁平化的网格数据
@@ -485,12 +431,6 @@
         // 当前选中的单元格
         selectedCell () { return this.selectedCells.length > 0 ? this.selectedCells[0] : null; },
 
-        // 判断选中的单元格是否可以设置字段名
-        isSelectedCellFieldEligible () {
-          // 移除限制，允许所有单元格配置字段名
-          return true;
-        },
-
         // 是否可以合并
         canMerge () { return this.selectedCells.length > 1; },
 
@@ -499,45 +439,98 @@
 
         // 生成LayUI表格配置
         layuiConfig () {
+          console.log('Generating LayUI config...');
           const config = [];
           if (this.columns.length === 0) return config;
+          // 获取最后一个可见行的索引
           const lastVisibleRowIndex = this.getLastVisibleRowIndex();
+          // 遍历每一行
           this.gridData.forEach((rowData, i) => {
             if (this.isRowEmpty(i)) return;
             const row = [];
-            for (let j = 0; j < this.columns.length; j++) {
-              const cellData = this.gridData[i][j];
+            let currentCol = 0;
+            // 遍历每一列
+            while (currentCol < this.columns.length) {
+              const cellData = this.gridData[i][currentCol];
+              // 如果单元格不可见，跳过
+              if (!cellData.visible) {
+                currentCol++;
+                continue;
+              }
+              // 检查是否是有效的合并单元格
               if (i !== 0) {
-                //进行表格的规则判断
-                const layConfig = _.cloneDeep(this.layConfig),
-                  preIndex = i == 0 ? 0 : i - 1,
-                  preData = layConfig[preIndex];
-                if (j > preData.length - 1) continue
+                const preIndex = i - 1;
+                const preRow = config[preIndex] || [];
+                // 检查是否超出上一行的边界
+                if (currentCol >= preRow.length) {
+                  currentCol++;
+                  continue;
+                }
+                // 检查是否被上一行合并单元格覆盖
+                const preCell = preRow[currentCol];
+                if (preCell && preCell.rowspan > 1) {
+                  currentCol++;
+                  continue;
+                }
               }
-              if (cellData.visible && (i !== 0 || cellData.title)) {// 如果单元格可见且有标题
-                const isLastEligibleRow = (i + cellData.rowspan - 1) === lastVisibleRowIndex;
-                const cell = { title: cellData.title || '' };
-                // 添加所有可能的属性
-                if (cellData.rowspan > 1) cell.rowspan = cellData.rowspan;
-                if (cellData.colspan > 1) cell.colspan = cellData.colspan;
-                if (isLastEligibleRow && cellData.field) cell.field = cellData.field;
-                if (cellData.align && cellData.align !== 'center') cell.align = cellData.align;
-                if (cellData.fixed) cell.fixed = cellData.fixed;
-                if (cellData.width) cell.width = cellData.width;
-                if (cellData.minWidth) cell.minWidth = cellData.minWidth;
-                if (cellData.hide) cell.hide = cellData.hide;
-                if (cellData.sort) cell.sort = cellData.sort;
-                if (cellData.edit) cell.edit = cellData.edit;
-                row.push(cell);
-              }
+              // 创建单元格配置
+              const cell = { title: cellData.title || '' };
+              // 添加合并属性
+              if (cellData.rowspan > 1) cell.rowspan = cellData.rowspan;
+              if (cellData.colspan > 1) cell.colspan = cellData.colspan;
+              // 添加其他属性
+              const isLastEligibleRow = (i + cellData.rowspan - 1) === lastVisibleRowIndex;
+              if (isLastEligibleRow && cellData.field) cell.field = cellData.field;
+              if (cellData.align && cellData.align !== 'center') cell.align = cellData.align;
+              if (cellData.fixed) cell.fixed = cellData.fixed;
+              if (cellData.width) cell.width = cellData.width;
+              if (cellData.minWidth) cell.minWidth = cellData.minWidth;
+              if (cellData.hide) cell.hide = cellData.hide;
+              if (cellData.sort) cell.sort = cellData.sort;
+              if (cellData.edit) cell.edit = cellData.edit;
+              row.push(cell);
+              currentCol += cellData.colspan || 1;
             }
             if (row.length > 0) config.push(row);
           });
-          this.layConfig = config
-          return config;
+          let resultConfig = _.cloneDeep(config);
+          if (config.length > 0) {
+            // const firstRowMaxCol = config[0].length;//获取第一行最大列数
+            const firstRow = resultConfig[0];
+            const firstRowMaxCol = firstRow.reduce((pre, col) => {
+              return col.title ? pre + 1 : pre;
+            }, 0);//获取第一行最大列数
+            resultConfig = []
+            config.forEach(row => {
+              // 确保每一行的列数一致
+              while (!row.length > firstRowMaxCol) {
+                resultConfig.push({ title: '', rowspan: 1, colspan: 1, visible: false });
+              }
+            });
+          }
+          this.layConfig = resultConfig;
+          console.log('Generated config:', resultConfig);
+          return resultConfig;
         },
 
-
+        newRow () {
+          return {
+            merged: false,
+            title: '',
+            rowspan: 1,
+            colspan: 1,
+            visible: true,
+            selected: false,
+            field: '',
+            align: 'center',
+            fixed: null,
+            width: null,
+            minWidth: null,
+            hide: false,
+            sort: false,
+            edit: false
+          }
+        },
         // 生成代码输出
         codeOutput () {
           if (this.columns.length === 0 || this.layuiConfig.length === 0)
@@ -572,11 +565,13 @@
       },
       created () {
         // 初始化默认网格
-        this.initializeDefaultGrid(10, 1);
+        this.initializeDefaultGrid(15, 1);
       },
       methods: {
         //查看配置
         viewConfig () {
+          console.log(this.$data);
+
           this.configDialogVisible = true;
         },
         // 初始化默认网格
@@ -632,20 +627,7 @@
           this.gridData = Array.from({ length: this.rows }, () =>
             Array.from({ length: this.columns.length }, () => ({
               id: this.cellIdCounter++,
-              merged: false,
-              title: '',
-              rowspan: 1,
-              colspan: 1,
-              visible: true,
-              selected: false,
-              field: '',
-              align: 'center',
-              fixed: null,
-              width: null,
-              minWidth: null,
-              hide: false,
-              sort: false,
-              edit: false
+              ...this.newRow
             }))
           );
           this.updateTitles();
@@ -707,20 +689,7 @@
           this.columns.push({ id: this.columnIdCounter++, name: newName });
           this.gridData.forEach(row => row.push({
             id: this.cellIdCounter++,
-            merged: false,
-            title: '',
-            rowspan: 1,
-            colspan: 1,
-            visible: true,
-            selected: false,
-            field: '',
-            align: 'center',
-            fixed: null,
-            width: null,
-            minWidth: null,
-            hide: false,
-            sort: false,
-            edit: false
+            ...this.newRow
           }));
           this.updateTitles();
         },
@@ -731,20 +700,7 @@
           this.rows++;
           const newRow = Array.from({ length: this.columns.length }, () => ({
             id: this.cellIdCounter++,
-            merged: false,
-            title: '',
-            rowspan: 1,
-            colspan: 1,
-            visible: true,
-            selected: false,
-            field: '',
-            align: 'center',
-            fixed: null,
-            width: null,
-            minWidth: null,
-            hide: false,
-            sort: false,
-            edit: false
+            ...this.newRow
           }));
           this.gridData.push(newRow);
           this.updateTitles();
@@ -796,12 +752,10 @@
           const startCoords = this.findCellCoords(this.dragStartCell.id);
           const currentCoords = this.findCellCoords(cell.id);
           if (!startCoords || !currentCoords) return;
-
           const minRow = Math.min(startCoords.row, currentCoords.row);
           const maxRow = Math.max(startCoords.row, currentCoords.row);
           const minCol = Math.min(startCoords.col, currentCoords.col);
           const maxCol = Math.max(startCoords.col, currentCoords.col);
-
           this.flatGridData.forEach(c => {
             const coords = this.findCellCoords(c.id);
             c.selected = coords &&
@@ -870,18 +824,19 @@
         mergeSelected () {
           if (!this.canMerge) return;
           const coordsList = this.selectedCells.map(c => this.findCellCoords(c.id)).filter(Boolean);
+          console.log(coordsList);
           const minRow = Math.min(...coordsList.map(c => c.row));
           const maxRow = Math.max(...coordsList.map(c => c.row));
           const minCol = Math.min(...coordsList.map(c => c.col));
           const maxCol = Math.max(...coordsList.map(c => c.col));
-          const minData = this.gridData[minRow][minCol],
-            maxData = this.gridData[maxRow][maxCol],
-            firstRow = _.cloneDeep(this.layConfig)
+          const minData = this.gridData[minRow][minCol],//获取最小单元格的数据
+            maxData = this.gridData[maxRow][maxCol],//获取最大单元格的数据
+            firstRow = _.cloneDeep(this.layConfig)[minRow];//获取第一行的配置
           if (!minData.title && !maxData.title) return layer.msg('不能合并两个空内容', { icon: 2 });
           if ((minRow !== 0 && maxRow !== 0)) {
             const firstCol = firstRow.length - 1
             if ((minCol > firstCol || maxCol > firstCol))//不能超出第一行的边界
-              return layer.msg('合并失败,不能在第一行以外添加一个额外的列！', { icon: 2 });
+              return layer.msg('合并失败,不能超出上一行的边界！', { icon: 2 });
           }
           let isRectangle = true;
           for (let r = minRow; r <= maxRow; r++)
@@ -947,18 +902,12 @@
             }
             if (cell) {
               fields.push(cell)
-              // fields.push({
-              //   field: cell.field,
-              //   hide: cell.hide,
-              //   width: cell.width,
-              //   align: cell.align
-              // });
             }
           }
           return fields;
         },
 
-        // 生成测试数据（只用随机字母生成器）
+        // 生成测试数据
         generateTestData (fields) {
           const data = [];
           const rowCount = 3; // 生成3行测试数据
@@ -968,7 +917,6 @@
               if (field && field.field) {
                 // 只用text生成器
                 row[field.field] = '测试数据'
-                // this.testDataGenerators.text()
 
               }
             });
@@ -979,8 +927,7 @@
         // 更新预览表格
         updatePreview () {
           if (!table) return;
-          console.log(this.layuiConfig);
-
+          // console.log(this.layuiConfig);
           // 获取最后一行的字段配置
           const lastRowFields = this.getLastRowFields();
           // 生成测试数据

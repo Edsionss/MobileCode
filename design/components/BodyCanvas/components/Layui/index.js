@@ -1,7 +1,7 @@
 import main from '@config/main.js'
 import { Layui as layuiDict } from '@modules/components/main.js'
-const { componentLoader, utils } = main
-const createAsyncComponent = componentLoader.createAsyncComponent
+const { createAsyncComponent, utils } = main
+
 import layoutComponents from './components.js'
 const LayuiCanvas = {
   name: 'LayuiCanvas',

@@ -1,6 +1,6 @@
 import main from '@config/main.js'
-const { componentLoader, componentModule, utils, global } = main
-const createAsyncComponent = componentLoader.createAsyncComponent
+const { createAsyncComponent, componentModule, utils, global } = main
+
 const ComponentModule = {
   name: 'ComponentModule',
   // props: { componentsArray: { type: Array, default: () => [] } },

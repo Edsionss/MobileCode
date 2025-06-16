@@ -1,6 +1,6 @@
 import main from '@config/main.js'
-const { componentLoader, utils, Vant } = main
-const createAsyncComponent = componentLoader.createAsyncComponent
+const { createAsyncComponent, utils, Vant } = main
+
 const VantCanvas = {
   name: 'VantCanvas',
   template: `<div>Loading...</div>`,

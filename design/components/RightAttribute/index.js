@@ -1,7 +1,7 @@
 import main from '@config/main.js'
-const { componentsAttrForm, rightAttribute, componentLoader, utils } = main
+const { componentsAttrForm, rightAttribute, createAsyncComponent, utils } = main
 const { tabs, click, defaultTabs } = rightAttribute.attrTabs
-const createAsyncComponent = componentLoader.createAsyncComponent
+
 const rightAttributeComponent = {
   name: 'rightAttributeComponent',
   template: `

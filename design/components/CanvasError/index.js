@@ -1,6 +1,6 @@
 import main from '@config/main.js'
-const { componentLoader } = main
-const createAsyncComponent = componentLoader.createAsyncComponent
+const { createAsyncComponent } = main
+
 const canvasErrorComponent = {
   name: 'canvasErrorComponent',
   props: {},

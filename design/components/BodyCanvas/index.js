@@ -1,5 +1,5 @@
 import main from '@config/main.js'
-const createAsyncComponent = main.componentLoader.createAsyncComponent
+const createAsyncComponent = main.createAsyncComponent
 
 // 引入你的组件
 import LayuiCanvas from './components/Layui/index.js'

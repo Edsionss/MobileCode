@@ -10,7 +10,7 @@ import template from './components/template.js'
 import rightAttribute from './components/rightAttribute.js'
 import vantAttrForm from './components/AttributeForm/vant/index.js'
 import layuiAttrForm from './components/AttributeForm/layui/index.js'
-import componentLoader from '../utils/componentLoader.js'
+import createAsyncComponent from '../utils/componentLoader.js'
 import { Element, Vant, Wot, Layui } from '@modules/components/main.js'
 import componentsMenu from './components/componentsMenu.js'
 const config = {
@@ -21,7 +21,7 @@ const config = {
     vant: utils.processComponentAttrConfig(vantAttrForm, Element),
     layui: utils.processComponentAttrConfig(layuiAttrForm, Element)
   },
-  componentLoader,
+  createAsyncComponent,
   Element,
   Vant,
   Wot,

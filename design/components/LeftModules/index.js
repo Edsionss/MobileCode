@@ -1,7 +1,7 @@
 import main from '@config/main.js'
-const { leftModules, componentLoader } = main
+const { leftModules, createAsyncComponent } = main
 const { module, tools, event, modelValue, toolsShow, defaultModule } = leftModules
-const createAsyncComponent = componentLoader.createAsyncComponent
+
 import componentModule from './components/ComponentModule/index.js'
 Vue.component('component-module', componentModule)
 const leftModulesComponent = {

@@ -1,0 +1,15 @@
+<div>
+  <div class="canvas-item__content" v-for="config in componentsList" :key="config.id">
+    <component :is="getComponentName(config.framework)" :config="config">
+      <template v-if="config.children">
+        <template v-if="config.tag ==='lay-grid'">
+          <preview-canvas v-for="(colChildren, index) in config.children" :key="index" :slot="'col-slot-' + (index + 1)"
+            :components-list.sync="config.children[index]"></preview-canvas>
+        </template>
+        <template v-else>
+          <preview-canvas :components-list.sync="config.children"></preview-canvas>
+        </template>
+      </template>
+    </component>
+  </div>
+</div>

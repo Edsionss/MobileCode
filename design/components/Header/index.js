@@ -1,7 +1,7 @@
 import main from '@config/main.js'
-const { header, componentLoader } = main
+const { header, createAsyncComponent } = main
 const { titleList, modeList, buttonList, version, icon, defaultMode, defaultVersionLabel } = header
-const createAsyncComponent = componentLoader.createAsyncComponent
+
 const headerComponent = {
   name: 'headerComponent',
   props: {

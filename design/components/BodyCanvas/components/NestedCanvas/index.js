@@ -1,6 +1,6 @@
 import main from '@config/main.js'
-const { componentLoader, utils, componentsMenu } = main
-const createAsyncComponent = componentLoader.createAsyncComponent
+const { createAsyncComponent, utils, componentsMenu } = main
+
 // 这个组件会自我引用以实现嵌套
 const NestedCanvas = {
   name: 'NestedCanvas', // 递归组件必须有 name 属性

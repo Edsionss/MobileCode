@@ -1,6 +1,6 @@
 import main from '@config/main.js'
-const { componentLoader, utils, Wot } = main
-const createAsyncComponent = componentLoader.createAsyncComponent
+const { createAsyncComponent, utils, Wot } = main
+
 const WotCanvas = {
   name: 'WotCanvas',
   template: `<div>Loading...</div>`,

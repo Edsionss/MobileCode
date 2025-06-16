@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layui JSON to Vue2 + Wot-Design (Fixed)</title>
+  <!-- 引入 Wot Design UI 样式 -->
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/wot-design@latest/lib/theme-dark/index.css" /> -->
+  <link rel="stylesheet" href="../../package/Vant/vant.css">
+  <link rel="stylesheet" href="../../package/ElementUI/ElementUI.css">
+  <link rel="stylesheet" href="../../package/WotDesign/WotDesign.css">
+  <link rel="stylesheet" href="../../package/ContextMenu/contextmenu.css">
+  <link rel="stylesheet" href="../../package/layui/css/layui.css">
+  <style>
+    body {
+      padding: 20px;
+      background-color: #f7f8fa;
+    }
+
+    #app .wd-card {
+      margin-bottom: 20px;
+    }
+
+    .form-item-wrapper {
+      margin-bottom: 18px;
+    }
+
+    /* Flex 容器样式 */
+    .flex-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      /* 让 label 和 input 对齐 */
+    }
+
+    .flex-container .form-item-wrapper {
+      flex: 1 1 220px;
+      /* 弹性增长和收缩，基础宽度220px */
+      margin-bottom: 0;
+      /* 在 flex 布局中，由 gap 控制间距 */
+    }
+
+    .flex-container .wd-button {
+      flex-shrink: 0;
+      margin-bottom: 0;
+      /* 按钮也应用此规则，使其与输入框底部对齐 */
+    }
+
+    .wd-table {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <component-renderer :schema="pageSchema" :form-data="formData" :table-columns="tableColumns" :table-data="tableData"
+      :select-options="selectOptions" @init-echarts="initEcharts"></component-renderer>
+  </div>
+
+  <!-- 引入 Vue, Wot Design, 和 ECharts 的 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/wot-design@latest/lib/wot-design.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+
+  <script>
+    // 关键步骤: 全局安装 Wot Design 组件库
+    Vue.use(window.Wot);
+
+    // 注册递归组件
+    Vue.component('component-renderer', {
+      name: 'ComponentRenderer',
+      props: {
+        schema: Array,
+        formData: Object,
+        tableColumns: Array,
+        tableData: Array,
+        selectOptions: Array
+      },
+      template: `
+            <div>
+                <template v-for="component in schema">
+                    <!-- 卡片容器 (Card) -->
+                    <wd-card v-if="component.type === 'card'" :key="component.id" :title="component.props.title">
+                        <component-renderer
+                            :schema="component.children"
+                            :form-data="formData"
+                            :table-columns="tableColumns"
+                            :table-data="tableData"
+                            :select-options="selectOptions"
+                             @init-echarts="$emit('init-echarts', $event)"
+                        ></component-renderer>
+                    </wd-card>
+
+                    <!-- 栅格布局 (Grid) -->
+                    <wd-row v-else-if="component.type === 'grid'" :key="component.id" :gutter="10">
+                        <wd-col
+                            v-for="col in component.children"
+                            :key="col.id"
+                            :span="convertLayuiColsToSpan(col.props.cols)"
+                        >
+                            <component-renderer
+                                :schema="col.children"
+                                :form-data="formData"
+                                :table-columns="tableColumns"
+                                :table-data="tableData"
+                                :select-options="selectOptions"
+                                @init-echarts="$emit('init-echarts', $event)"
+                            ></component-renderer>
+                        </wd-col>
+                    </wd-row>
+
+                    <!-- Flex 布局 -->
+                    <div v-else-if="component.type === 'flex'" :key="component.id" class="flex-container">
+                        <component-renderer
+                            :schema="component.children"
+                            :form-data="formData"
+                            :table-columns="tableColumns"
+                            :table-data="tableData"
+                            :select-options="selectOptions"
+                            @init-echarts="$emit('init-echarts', $event)"
+                        ></component-renderer>
+                    </div>
+
+                    <!-- 基础组件包装器 -->
+                    <div v-else :key="component.id" class="form-item-wrapper">
+                        <wd-input
+                            v-if="['input', 'fnsrmc', 'fnsrsbh'].includes(component.type)"
+                            v-model="formData[component.props.name || component.id]"
+                            :label="component.props.title"
+                            :placeholder="component.props.placeholder"
+                            :required="component.props.required === 'true'"
+                            clearable
+                        ></wd-input>
+                        
+                        <wd-input
+                            v-if="component.type === 'number'"
+                            type="number"
+                            v-model="formData[component.props.name || component.id]"
+                            :label="component.props.title"
+                            :placeholder="component.props.placeholder"
+                            :required="component.props.required === 'true'"
+                            clearable
+                        ></wd-input>
+
+                        <wd-button
+                            v-if="component.type === 'button'"
+                            :type="component.props.theme === '1' ? 'primary' : 'default'"
+                        >{{ component.props.title }}</wd-button>
+                        
+                        <wd-datetime-picker
+                            v-if="component.type === 'frkrq'"
+                            v-model="formData[component.props.name || component.id]"
+                            type="monthrange"
+                            :label="component.props.title"
+                        ></wd-datetime-picker>
+
+                        <wd-select
+                            v-if="component.type === 'select'"
+                            v-model="formData[component.props.name || component.id]"
+                            :label="component.props.title"
+                            :filterable="component.props.filterable === 'true'"
+                            clearable
+                        >
+                            <wd-option
+                                v-for="option in selectOptions"
+                                :key="option.value"
+                                :label="option.label"
+                                :value="option.value"
+                            ></wd-option>
+                        </wd-select>
+                        
+                        <wd-table
+                            v-if="component.type === 'table'"
+                            :columns="tableColumns"
+                            :data="tableData"
+                            :height="component.props.height + 'px'"
+                            stripe
+                        >
+                            <template #pagination>
+                                <wd-pagination :current-page.sync="tablePage.current" :total="tablePage.total" :page-size.sync="tablePage.size"></wd-pagination>
+                            </template>
+                        </wd-table>
+                        
+                        <div v-if="component.type === 'echartsPie'" :id="component.id" :style="{ height: component.props.height, width: '100%' }"></div>
+                    </div>
+                </template>
+            </div>
+        `,
+      data () {
+        return {
+          tablePage: {
+            current: 1,
+            total: 50,
+            size: 10
+          }
+        }
+      },
+      mounted () {
+        // 当组件挂载后，查找图表节点并通知父级初始化
+        this.schema.forEach(component => {
+          if (component.type === 'echartsPie') {
+            this.$emit('init-echarts', component);
+          }
+        });
+      },
+      methods: {
+        // layui 的 12 列栅格转为 wot-design 的 24 列
+        convertLayuiColsToSpan (cols) {
+          // layui栅格通常是12或24，这里假设是12列制，与grid的cols=2对应
+          return (parseInt(cols) / 12) * 24;
+        }
+      }
+    });
+
+    new Vue({
+      el: '#app',
+      data: {
+        pageSchema: [], // 原始 JSON Schema
+        formData: {}, // 响应式的表单数据模型
+        // 表格的列定义 (模拟)
+        tableColumns: [
+          { label: '日期', prop: 'date', width: 150 },
+          { label: '姓名', prop: 'name', width: 120 },
+          { label: '省份', prop: 'province' },
+          { label: '市区', prop: 'city' },
+          { label: '地址', prop: 'address', width: 300 },
+          { label: '邮编', prop: 'zip' },
+        ],
+        // 表格数据 (模拟)
+        tableData: [
+          { date: '2023-05-03', name: '张三', province: '广东', city: '深圳', address: '南山区科技园', zip: 518000 },
+          { date: '2023-05-02', name: '李四', province: '北京', city: '北京', address: '海淀区中关村', zip: 100080 },
+          { date: '2023-05-04', name: '王五', province: '上海', city: '上海', address: '浦东新区张江', zip: 201203 },
+        ],
+        // Select 下拉选项 (模拟)
+        selectOptions: [
+          { label: '状态一', value: '1' },
+          { label: '状态二', value: '2' },
+          { label: '状态三', value: '3' },
+        ]
+      },
+      created () {
+        // 你的原始 JSON 数据
+        const originalSchema = [
+          { "id": "c1d8e18104837897d2", "name": "card_0", "type": "card", "level": 1, "parentId": "0", "seq": 0, "props": { "title": "通用输入", "headFontColor": "#000", "headBgColor": "#fff", "isShrink": "false", "isFull": "false", "className": "" }, "children": [{ "id": "a6983d89b184b81295", "name": "grid_1", "type": "grid", "level": 2, "parentId": "c1d8e18104837897d2", "seq": 0, "props": { "cols": "2", "space": "layui-col-space10", "className": "" }, "children": [{ "id": "1934496464179200000", "name": null, "type": "gridCols", "level": 3, "parentId": "a6983d89b184b81295", "seq": 0, "props": { "cols": 6 }, "children": [{ "id": "5df8ee83418548413c", "name": "input_13", "type": "input", "level": 4, "parentId": "1934496464179200000", "seq": 0, "props": { "title": "标题", "name": "title", "type": "text", "required": "false", "placeholder": "请输入", "defaultValue": "", "params": [] }, "children": [], "events": [] }], "events": [] }, { "id": "1934496464179200001", "name": null, "type": "gridCols", "level": 3, "parentId": "a6983d89b184b81295", "seq": 1, "props": { "cols": 6 }, "children": [{ "id": "e2683c86088d08210b", "name": "number_14", "type": "number", "level": 4, "parentId": "1934496464179200001", "seq": 0, "props": { "title": "数字输入框", "name": "numberInput", "precision": "", "type": "number", "required": "false", "placeholder": "请输入数字", "defaultValue": "", "params": [] }, "children": [], "events": [] }], "events": [] }], "events": [] }], "events": [] },
+          { "id": "f0f89c81298fa8183e", "name": "card_2", "type": "card", "level": 1, "parentId": "0", "seq": 1, "props": { "title": "查询条件", "headFontColor": "#000", "headBgColor": "#fff", "isShrink": "false", "isFull": "false", "className": "" }, "children": [{ "id": "d538e5817b8b38c050", "name": "flex_3", "type": "flex", "level": 2, "parentId": "f0f89c81298fa8183e", "seq": 0, "props": { "gap": "10", "wrap": "true", "alignItems": "center", "justify": "flex-start" }, "children": [{ "id": "e7d86485848288de39", "name": "button_9", "type": "button", "level": 3, "parentId": "d538e5817b8b38c050", "seq": 0, "props": { "title": "查询", "className": "", "theme": "1", "size": "", "radius": "false" }, "children": [], "events": [] }, { "id": "73a8b589aa8e08eefa", "name": "fnsrmc_10", "type": "fnsrmc", "level": 3, "parentId": "d538e5817b8b38c050", "seq": 1, "props": { "title": "纳税人名称", "name": "fnsrmc", "type": "text", "required": "false", "placeholder": "请输入纳税人名称", "defaultValue": "", "params": [] }, "children": [], "events": [] }, { "id": "f8e83387448648e9b9", "name": "fnsrsbh_11", "type": "fnsrsbh", "level": 3, "parentId": "d538e5817b8b38c050", "seq": 2, "props": { "title": "纳税人识别号", "name": "fnsrsbh", "type": "text", "required": "false", "placeholder": "请输入纳税人识别号", "defaultType": "1", "defaultValue": "", "params": [] }, "children": [], "events": [] }, { "id": "6ce80889e78358e226", "name": "frkrq_12", "type": "frkrq", "level": 3, "parentId": "d538e5817b8b38c050", "seq": 3, "props": { "title": "入库日期", "range": "true", "name": "frkrq", "type": "month", "required": "false", "placeholder": "请选择日期", "defaultValue": "", "params": [] }, "children": [], "events": [] }, { "id": "1c08b585488ad8c081", "name": "select_15", "type": "select", "level": 3, "parentId": "d538e5817b8b38c050", "seq": 4, "props": { "dataSourceType": "1", "dataSource": "", "title": "下拉框", "name": "mySelect", "radio": "false", "filterable": "true", "allCol": "true", "required": "false", "defaultValue": "", "params": "" }, "children": [], "events": [] }], "events": [] }], "events": [] },
+          { "id": "2808c782f48168a0e5", "name": "card_4", "type": "card", "level": 1, "parentId": "0", "seq": 2, "props": { "title": "数据展示", "headFontColor": "#000", "headBgColor": "#fff", "isShrink": "false", "isFull": "false", "className": "" }, "children": [{ "id": "4718a589fd8978178b", "name": "grid_5", "type": "grid", "level": 2, "parentId": "2808c782f48168a0e5", "seq": 0, "props": { "cols": 2, "space": "layui-col-space10", "className": "" }, "children": [{ "id": "1934496464179200002", "name": null, "type": "gridCols", "level": 3, "parentId": "4718a589fd8978178b", "seq": 0, "props": { "cols": 6 }, "children": [{ "id": "b5f8a08c6486b87bac", "name": "table_6", "type": "table", "level": 4, "parentId": "1934496464179200002", "seq": 0, "props": { "dataSource": "", "colsDynamic": "false", "data": [], "limit": 100, "page": "true", "title": "", "height": 420, "init": "true", "cols": [] }, "children": [], "events": [] }], "events": [] }, { "id": "1934496464179200003", "name": null, "type": "gridCols", "level": 3, "parentId": "4718a589fd8978178b", "seq": 1, "props": { "cols": 6 }, "children": [{ "id": "ef986783a8892882e3", "name": "echartsPie_7", "type": "echartsPie", "level": 4, "parentId": "1934496464179200003", "seq": 0, "props": { "dataSource": "", "unit": "", "init": "true", "chartsType": "pie", "chartsRadius": "false", "text": "收入来源分析", "subtext": "2023年度", "titleAlign": "left", "height": "500px", "borderRadius": "fasle", "legend": "false", "series": [{ "name": "饼图", "center": ["50%", "50%"], "type": "pie" }] }, "children": [], "events": [] }], "events": [] }], "events": [] }], "events": [] }
+        ];
+
+        this.pageSchema = originalSchema;
+        // 初始化表单数据，确保响应性
+        this.initializeFormData(this.pageSchema);
+      },
+      methods: {
+        // 递归遍历 schema，初始化 formData，确保所有字段都是响应式的
+        initializeFormData (schema) {
+          schema.forEach(component => {
+            const props = component.props;
+            const key = props.name || component.id;
+            // 如果是表单类组件，且在 formData 中不存在，则初始化
+            const formTypes = ['input', 'number', 'fnsrmc', 'fnsrsbh', 'frkrq', 'select'];
+            if (formTypes.includes(component.type)) {
+              if (!this.formData.hasOwnProperty(key)) {
+                // 使用 Vue.set 来确保新增属性是响应式的
+                this.$set(this.formData, key, props.defaultValue || null);
+              }
+            }
+            if (component.children && component.children.length > 0) {
+              this.initializeFormData(component.children);
+            }
+          });
+        },
+
+        // 渲染饼图 (由子组件通过事件触发)
+        initEcharts (chartNode) {
+          // 使用 nextTick 确保 DOM 元素已经渲染
+          this.$nextTick(() => {
+            const chartDom = document.getElementById(chartNode.id);
+            if (chartDom && !chartDom.hasAttribute('_echarts_instance_')) {
+              const myChart = echarts.init(chartDom);
+              const props = chartNode.props;
+              const option = {
+                title: { text: props.text, subtext: props.subtext, left: props.titleAlign || 'center' },
+                tooltip: { trigger: 'item' },
+                legend: { show: props.legend === 'true', orient: 'vertical', left: 'left' },
+                series: [
+                  {
+                    name: props.series[0].name || '访问来源',
+                    type: 'pie',
+                    radius: props.chartsRadius === 'true' ? ['40%', '70%'] : '50%',
+                    center: props.series[0].center,
+                    data: [ // 模拟数据
+                      { value: 1048, name: '搜索引擎' }, { value: 735, name: '直接访问' },
+                      { value: 580, name: '邮件营销' }, { value: 484, name: '联盟广告' },
+                      { value: 300, name: '视频广告' }
+                    ],
+                    emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
+                  }
+                ]
+              };
+              myChart.setOption(option);
+              window.addEventListener('resize', () => myChart.resize());
+            }
+          });
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

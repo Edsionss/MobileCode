@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="../../package/Vant/vant.css">
   <link rel="stylesheet" href="../../package/ElementUI/ElementUI.css">
   <link rel="stylesheet" href="../../package/WotDesign/WotDesign.css">
+  <link rel="stylesheet" href="../../package/ContextMenu/contextmenu.css">
   <link rel="stylesheet" href="../../package/layui/css/layui.css">
   <!-- 引入自定义样式 -->
   <link rel="stylesheet" href="./index.css">
@@ -44,6 +45,12 @@
   <script src="../../package/XmSelect/xm-select.js"></script>
   <!-- echarts 5.6 -->
   <script src="../../package/Echarts/echarts.min.js"></script>
+  <!-- 引入Sortable -->
+  <script src="../../package/Sortable/Sortable.js"></script>
+  <!-- 引入vuedraggable -->
+  <script src="../../package/Vuedraggable/vuedraggable.umd.js"></script>
+  <!-- 引入右键菜单 contextmenu -->
+  <script src="../../package/ContextMenu/contextmenu.umd.js"></script>
   <!-- 引入lodash -->
   <script src="../../package/Lodash/lodash.min.js"></script>
 
@@ -52,23 +59,31 @@
 
 <body>
   <div id="app">
-    <!-- Block: preview-layout -->
-    <div class="preview-layout">
-
+    <!-- Block: design-layout -->
+    <div class="design-layout">
+      <!-- Element: header -->
+      <div class="design-layout__header">
+        <header-component @change-Mode="changeMode"></headerComponent>
+      </div>
       <!-- Element: body -->
-      <div class="preview-layout__body">
-
-        <!-- Element: preview-panel -->
-        <div class="preview-layout__canvas-panel">
-
-          <div class="preview-layout__canvas-panel__body">
-
-            <preview-canvas :components-list="previewData"></preview-canvas>
-
-          </div>
-
+      <div class="design-layout__body">
+        <!-- Element: components-panel -->
+        <div class="design-layout__components-panel">
+          <modules-component></modules-component>
         </div>
+        <!-- Element: canvas-panel -->
+        <div class="design-layout__canvas-panel" :style="canvas.currentModeStyle">
 
+          <canvas-error-component v-if="canvas.canvasWarning"></canvas-error-component>
+
+          <div class="design-layout__canvas-panel__body" v-else>
+            <canvas-component></canvas-component>
+          </div>
+        </div>
+        <!-- Element: attribute-panel -->
+        <div class="design-layout__attribute-panel">
+          <attribute-component></attribute-component>
+        </div>
       </div>
     </div>
   </div>
