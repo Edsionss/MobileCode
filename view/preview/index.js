@@ -11,7 +11,7 @@ var app = new Vue({
     return {
       previewData: previewData,
       test: testdata,
-      oldData: transition.componentsConfig.form
+      oldData: transition.componentsConfig.componentsConfig
     }
   },
   created() {

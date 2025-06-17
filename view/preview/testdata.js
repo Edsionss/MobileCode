@@ -92,7 +92,7 @@ export default {
       parentId: '0',
       seq: 3,
       props: {
-        dataSource: '',
+        dataSource: '1899769144851972096',
         colsDynamic: 'false',
         data: [],
         limit: '100',
@@ -100,12 +100,112 @@ export default {
         title: '',
         height: 500,
         init: 'true',
-        cols: [],
-        tableCodeId: 'dHMhx3EP',
+        cols: [
+          [
+            {
+              m: '纳税人名称',
+              ct: {
+                fa: 'General',
+                t: 'g'
+              },
+              v: '纳税人名称',
+              field: 'fnsrmc',
+              fixed: 'left',
+              title: '纳税人名称',
+              key: '4-0-0',
+              colspan: 0,
+              rowspan: 0,
+              type: 'normal',
+              colGroup: false,
+              hide: false,
+              width: 0
+            },
+            {
+              m: '纳税人识别号',
+              ct: {
+                fa: 'General',
+                t: 'g'
+              },
+              v: '纳税人识别号',
+              field: 'fshxydm',
+              title: '纳税人识别号',
+              key: '4-0-1',
+              colspan: 0,
+              rowspan: 0,
+              type: 'normal',
+              colGroup: false,
+              hide: false,
+              width: 0
+            },
+            {
+              m: '登记日期',
+              ct: {
+                fa: 'General',
+                t: 'g'
+              },
+              v: '登记日期',
+              field: 'fkyslrq',
+              title: '登记日期',
+              key: '4-0-2',
+              colspan: 0,
+              rowspan: 0,
+              type: 'normal',
+              colGroup: false,
+              hide: false,
+              width: 0
+            },
+            {
+              m: '行业',
+              ct: {
+                fa: 'General',
+                t: 'g'
+              },
+              v: '行业',
+              title: '行业',
+              key: '4-0-3',
+              colspan: 0,
+              rowspan: 0,
+              type: 'normal',
+              colGroup: false,
+              hide: false,
+              width: 0
+            },
+            {
+              m: '生产经营地址',
+              ct: {
+                fa: 'General',
+                t: 'g'
+              },
+              v: '生产经营地址',
+              title: '生产经营地址',
+              key: '4-0-4',
+              colspan: 0,
+              rowspan: 0,
+              type: 'normal',
+              colGroup: false,
+              hide: false,
+              width: 0
+            },
+            {
+              m: '开业设立日期',
+              ct: {
+                fa: 'General',
+                t: 'g'
+              },
+              v: '开业设立日期',
+              title: '开业设立日期',
+              key: '4-0-5',
+              colspan: 0,
+              rowspan: 0,
+              type: 'normal',
+              colGroup: false,
+              hide: false,
+              width: 0
+            }
+          ]
+        ],
         method: 'post'
-      },
-      children: [],
-      events: []
+      }
     },
     {
       id: 'b8c899809a8958200e',
@@ -115,7 +215,7 @@ export default {
       parentId: '0',
       seq: 4,
       props: {
-        dataSource: '',
+        dataSource: '1899769367380770816',
         unit: '',
         init: 'true',
         chartsType: 'pie',
@@ -145,34 +245,32 @@ export default {
       parentId: '0',
       seq: 5,
       props: {
-        dataSource: '',
-        init: 'true',
+        dataSource: '1888829165015564288',
+        init: 'false',
         height: '500px',
-        titleAlign: '',
-        text: '',
+        titleAlign: 'center',
+        text: '历年变化情况',
         subtext: '',
         xAxis: {
           type: 'category'
         },
         yAxis: [
           {
-            name: ''
+            name: '税收金额（万元）'
           }
         ],
         series: [
           {
-            unit: '',
+            unit: '万元',
             type: 'bar',
             yIndex: ''
           }
         ],
-        unit: '',
+        unit: '万元',
         type: 'bar',
         yIndex: '',
-        name: ''
-      },
-      children: [],
-      events: []
+        name: '税收金额（万元）'
+      }
     },
     {
       id: '1e08fb8f458d48c594',

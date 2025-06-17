@@ -51,7 +51,7 @@ class Transition {
 
       select: data => {
         // 'select' 组件逻辑相对特殊，单独处理
-        const { props, events } = data
+        const { props, events, id } = data
         const { title, name, required, placeholder, defaultValue, params, radio } = props
 
         const newProps = {
@@ -72,6 +72,7 @@ class Transition {
         }
 
         return {
+          id: id,
           tag: 'wd-select-picker',
           valueName: name, // `valueName` 用于表单数据收集，直接使用源 `name`
           props: newProps,
@@ -81,7 +82,7 @@ class Transition {
 
       button: data => {
         // 'button' 组件逻辑也相对特殊
-        const { props, events } = data
+        const { props, events, id } = data
         // 对于按钮，通常只需要关心 title 和 params，其他属性意义不大
         const { title, name, params } = props
 
@@ -93,6 +94,7 @@ class Transition {
           tag = 'wd-button'
 
         return {
+          id: id,
           tag, // 假设目标按钮组件是 'wd-button'
           props: newProps,
           events: events,
@@ -103,6 +105,51 @@ class Transition {
           }
           // 'click' 事件处理器通常在业务代码中定义，而不是在这里定义一个空函数
         }
+      },
+      table: data => {
+        const { props, events, id } = data
+        const { ...tableConfig } = props
+        let newProps = { ...tableConfig, other: true, tag: 'table' }
+        return {
+          id: id,
+          tag: 'lay-table',
+          component: 'lay-table',
+          props: newProps
+        }
+      },
+      echartsPie: data => {
+        const { props, id, type } = data
+        const { ...echartsConfig } = props
+        let newProps = {
+          ...echartsConfig,
+          other: true,
+          tag: 'lay-echarts',
+          component: 'lay-echarts',
+          chantType: type
+        }
+        return {
+          id: id,
+          tag: 'lay-echarts',
+          component: 'lay-echarts',
+          props: newProps
+        }
+      },
+      echartsBarLine: data => {
+        const { props, id, type } = data
+        const { ...echartsConfig } = props
+        let newProps = {
+          ...echartsConfig,
+          other: true,
+          tag: 'lay-echarts',
+          component: 'lay-echarts',
+          chantType: type
+        }
+        return {
+          id: id,
+          tag: 'lay-echarts',
+          component: 'lay-echarts',
+          props: newProps
+        }
       }
     }
 
@@ -111,6 +158,8 @@ class Transition {
 
     // 3. 根据映射器转换所有组件，并按类型（form, table, echarts）分类
     this.componentsConfig = this._generateComponentsConfig(this.componentMappers, this.allComponents)
+
+    // 4.进行既定格式组装
 
     // 在控制台打印最终生成的配置，方便调试
     console.log('最终生成的组件配置:', this.componentsConfig)
@@ -126,7 +175,7 @@ class Transition {
    * @returns {object} - 转换后的目标组件配置。
    */
   _createBaseComponent(data, { tag, valueName, extraProps = {} }) {
-    const { props, events } = data
+    const { props, events, id } = data
     // 从源 props 中解构出通用属性
     const { title, name, required, placeholder, defaultValue, params } = props
 
@@ -142,6 +191,7 @@ class Transition {
     }
 
     return {
+      id: id,
       tag,
       component: tag,
       valueName: name,
@@ -193,43 +243,75 @@ class Transition {
       if (dict[componentType]) {
         // 调用转换函数生成新配置
         const newComponentConfig = dict[componentType](item)
-
         // 根据源组件类型进行分类（此设计具有良好的扩展性）
         // 尽管当前映射器未定义 'table' 和 'echarts'，但结构上支持未来扩展。
-        switch (componentType) {
-          case 'table':
-            result.table.push(newComponentConfig)
-            break
-          case 'echarts':
-            result.echarts.push(newComponentConfig)
-            break
-          default:
-            // 其他所有组件都归类为表单组件
-            if (!result.form[0]) {
-              result.form[0] = {
-                tag: 'wd-cell-group',
-                component: 'wd-cell-group',
-                framework: 'wot',
-                groupName: 'form',
-                children: [],
-                props: {
-                  title: '查询条件',
-                  border: true
-                }
+        if (componentType === 'table') {
+          if (!result.table[0]) {
+            result.table[0] = {
+              tag: 'wd-cell-group',
+              component: 'wd-cell-group',
+              framework: 'wot',
+              groupName: 'table',
+              children: [],
+              props: {
+                title: '数据表格',
+                border: true
               }
             }
-            result.form[0].children.push({
-              ...newComponentConfig,
-              framework: 'wot', // 添加额外的元信息
-              groupName: 'form'
-            })
-            break
+          }
+          result.table[0].children.push({
+            ...newComponentConfig,
+            framework: 'layui', // 添加额外的元信息
+            groupName: 'dataView',
+            groupLabel: '数据展示'
+          })
+        } else if (componentType.includes('echarts')) {
+          if (!result.echarts[0]) {
+            result.echarts[0] = {
+              tag: 'wd-cell-group',
+              component: 'wd-cell-group',
+              framework: 'wot',
+              groupName: 'echarts',
+              children: [],
+              props: {
+                title: '图表数据',
+                border: true
+              }
+            }
+          }
+          result.echarts[0].children.push({
+            ...newComponentConfig,
+            framework: 'layui', // 添加额外的元信息
+            groupName: 'dataView',
+            groupLabel: '数据展示'
+          })
+          // result.echarts.push(newComponentConfig)
+        } else {
+          if (!result.form[0]) {
+            result.form[0] = {
+              tag: 'wd-cell-group',
+              component: 'wd-cell-group',
+              framework: 'wot',
+              groupName: 'form',
+              children: [],
+              props: {
+                title: '查询条件',
+                border: true
+              }
+            }
+          }
+          result.form[0].children.push({
+            ...newComponentConfig,
+            framework: 'wot', // 添加额外的元信息
+            groupName: 'form'
+          })
         }
       } else {
         // 如果找不到映射关系，打印错误信息，方便排查问题
         console.error(`[Wot Transition] 组件类型 "${item.type}" 的转换器暂未定义。`)
       }
     })
+    result.componentsConfig = [result.form[0], result.echarts[0], result.table[0]]
     return result
   }
 }

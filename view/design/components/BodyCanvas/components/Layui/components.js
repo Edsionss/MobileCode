@@ -103,6 +103,7 @@ const layoutComponents = {
         var table = layui.table
         // 渲染，并获得实例对象
         var inst = table.render({
+          ...props,
           elem: '#' + id, // 绑定元素选择器
           cols: props.cols || [
             [
@@ -133,13 +134,13 @@ const layoutComponents = {
               joinTime: '2021-01-02 12:00:00'
             }
           ],
-          toolbar: true,
-          cellMinWidth: 80,
-          totalRow: true, // 开启合计行
-          page: true,
-          defaultToolbar: ['filter', 'exports'],
-          height: '400px',
-          url: '',
+          // toolbar: true,
+          // cellMinWidth: 80,
+          // totalRow: true, // 开启合计行
+          // page: true,
+          // defaultToolbar: ['filter', 'exports'],
+          // height: '400px',
+          // url: '',
           done: function (res, curr, count, origin) {
             props.done && props.done(res, curr, count, origin)
           }
@@ -147,6 +148,98 @@ const layoutComponents = {
           // …
         })
       })
+    }
+  },
+  echarts: {
+    template: `
+    <div> 
+      <div :style="chartStyle" :id="config.id" :lay-filter="config.id"></div>
+    </div>
+    `,
+    props: ['config'],
+    created() {},
+    mounted() {
+      this.render()
+    },
+    methods: {
+      render() {
+        var chartDom = document.getElementById(this.config.id)
+        var myChart = echarts.init(chartDom)
+        let type = this.config.props.chantType,
+          option
+        switch (type) {
+          case 'echartsBarLine':
+            option = this.echartsBarLine()
+            break
+          case 'echartsPie':
+            option = this.echartsPie()
+            break
+          default:
+            break
+        }
+        console.log(option)
+
+        option && myChart.setOption(option)
+      },
+      echartsBarLine() {
+        return {
+          xAxis: {
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [
+            {
+              data: [120, 200, 150, 80, 70, 110, 130],
+              type: 'bar'
+            }
+          ]
+        }
+      },
+      echartsPie() {
+        return {
+          title: {
+            text: 'Referer of a Website',
+            subtext: 'Fake Data',
+            left: 'center'
+          },
+          tooltip: {
+            trigger: 'item'
+          },
+          legend: {
+            orient: 'vertical',
+            left: 'left'
+          },
+          series: [
+            {
+              name: 'Access From',
+              type: 'pie',
+              radius: '50%',
+              data: [
+                { value: 1048, name: 'Search Engine' },
+                { value: 735, name: 'Direct' },
+                { value: 580, name: 'Email' },
+                { value: 484, name: 'Union Ads' },
+                { value: 300, name: 'Video Ads' }
+              ],
+              emphasis: {
+                itemStyle: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    computed: {
+      chartStyle() {
+        return { width: ' 100%', height: this.config.height || '500px' }
+      }
     }
   }
 }
