@@ -4,8 +4,10 @@ import testdata from './testdata.js'
 import PreviewCanvas from './components/PreviewCanvas/index.js'
 import transition from './transition.js'
 Vue.component('preview-canvas', PreviewCanvas)
-var app = new Vue({
-  el: '#app',
+import main from '@config/main.js'
+const { createAsyncComponent, utils } = main
+const previewComponents = {
+  name: 'Preview',
   components: {},
   data() {
     return {
@@ -14,9 +16,6 @@ var app = new Vue({
       oldData: transition.componentsConfig.componentsConfig,
       formData: {}
     }
-  },
-  beforeCreate() {
-    Vue.prototype.$bus = this
   },
   created() {
     this.initFormData()
@@ -59,5 +58,7 @@ var app = new Vue({
       })
     }
   }
-})
-console.log('Vue实例', app)
+}
+const templateUrl = new URL('index.html', import.meta.url).href
+const cssUrl = new URL('index.css', import.meta.url).href
+export default createAsyncComponent(previewComponents, templateUrl, cssUrl)

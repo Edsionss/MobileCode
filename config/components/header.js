@@ -56,7 +56,17 @@ export default {
       icon: 'el-icon-view',
       click() {
         console.log(this.$store.state)
-        window.open(`/view/preview/index.html?id=${generateUniqueId()}`, '_blank')
+        // window.open(`/view/preview/index.html?id=${generateUniqueId()}`, '_blank')
+        // 1. 定义你想要跳转的路由信息
+        const routeData = this.$router.resolve({
+          name: 'preview', // 路由的name
+          params: { userId: '123' }, // 路由参数
+          query: { source: 'dashboard' } // 查询参数
+        })
+
+        // 2. 使用 window.open 打开 resolve 生成的 href
+        //    第二个参数 '_blank' 表示在新标签页中打开
+        window.open(routeData.href, '_blank')
       }
     },
     {

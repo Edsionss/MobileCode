@@ -1,36 +1,23 @@
-// 导入组件库
-import headerComponent from '@components/Header/index.js'
-import leftModulesComponent from '@components/LeftModules/index.js'
-import rightAttributeComponent from '@components/RightAttribute/index.js'
-import bodyCanvasComponent from '@components/BodyCanvas/index.js'
-import canvasErrorComponent from '@components/CanvasError/index.js'
-import utils from '@utils/index.js'
-import store from '@modules/store/index.js'
+// 导入组件
+import headerComponent from '@designComponents/Header/index.js'
+import leftModulesComponent from '@designComponents/LeftModules/index.js'
+import rightAttributeComponent from '@designComponents/RightAttribute/index.js'
+import bodyCanvasComponent from '@designComponents/BodyCanvas/index.js'
+import canvasErrorComponent from '@designComponents/CanvasError/index.js'
+import main from '@config/main.js'
+const { createAsyncComponent, utils } = main
 //全局注册组件
-Vue.use(VueRouter)
-Vue.use(vant.Lazyload)
-Vue.use(vant)
-Vue.component('vuedraggable', vuedraggable)
 
-// 全局注册自定义组件
 Vue.component('header-component', headerComponent)
 Vue.component('modules-component', leftModulesComponent)
 Vue.component('attribute-component', rightAttributeComponent)
 Vue.component('canvas-component', bodyCanvasComponent)
 Vue.component('canvas-error-component', canvasErrorComponent)
-// 将Vuex的辅助函数挂载到Vue原型上
-Vue.prototype.$mapState = Vuex.mapState
-Vue.prototype.$mapGetters = Vuex.mapGetters
-Vue.prototype.$mapMutations = Vuex.mapMutations
-Vue.prototype.$mapActions = Vuex.mapActions
+
 // 创建Vue实例
-var app = new Vue({
-  el: '#app',
-  store, // 使用Vuex状态管理
+const designComponent = {
+  name: 'design',
   components: {},
-  beforeCreate() {
-    Vue.prototype.$bus = this
-  },
   provide() {
     return {}
   },
@@ -56,7 +43,9 @@ var app = new Vue({
       }
     }
   },
-  created() {},
+  created() {
+    console.log('Design component CREATED')
+  },
   mounted() {},
   computed: {},
   methods: {
@@ -113,5 +102,7 @@ var app = new Vue({
       return style
     }
   }
-})
-console.log('Vue实例', app)
+}
+const templateUrl = new URL('index.html', import.meta.url).href
+const cssUrl = new URL('index.css', import.meta.url).href
+export default createAsyncComponent(designComponent, templateUrl, cssUrl)

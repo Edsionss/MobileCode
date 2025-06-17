@@ -1,79 +1,19 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!-- Block: preview-layout -->
+<div class="preview-layout">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>在线预览</title>
-  <!-- 引入样式 -->
-  <link rel="stylesheet" href="../../package/Vant/vant.css">
-  <link rel="stylesheet" href="../../package/ElementUI/ElementUI.css">
-  <link rel="stylesheet" href="../../package/WotDesign/WotDesign.css">
-  <link rel="stylesheet" href="../../package/layui/css/layui.css">
-  <!-- 引入自定义样式 -->
-  <link rel="stylesheet" href="./index.css">
-  <!-- es-module-shims -->
-  <script src="../../package/esModule/es-module-shims.js"></script>
-  <script type="importmap">
-    {
-      "imports": {
-        "@config/": "../../../config/",
-        "@/": "/",
-        "@components/": "../design/components/",
-        "@utils/": "../../../utils/",
-        "@assets/": "../../../assets/",
-        "@design/": "../design/",
-        "@modules/": "../../../modules/",
-        "@package/": "../../../package/"
-      }
-    }  
-  </script>
-  <!-- 引入vue相关依赖 -->
-  <script src="../../package/Vue/vue.js"></script>
-  <script src="../../package/Router/vue-router.js"></script>
-  <script src="../../package/Vuex/vuex.js"></script>
-  <!-- 引入Vant -->
-  <script src="../../package/Vant/vant.min.js"></script>
-  <!-- 引入ElementUI -->
-  <script src="../../package/ElementUI/ElementUi.js"></script>
-  <!-- 引入WotDesign -->
-  <script src="../../package/WotDesign/WotDesign.js"></script>
-  <!-- 引入layui -->
-  <script src="../../package/Layui/layui.js"></script>
-  <!-- xm-select -->
-  <script src="../../package/XmSelect/xm-select.js"></script>
-  <!-- echarts 5.6 -->
-  <script src="../../package/Echarts/echarts.min.js"></script>
-  <!-- 引入lodash -->
-  <script src="../../package/Lodash/lodash.min.js"></script>
+  <!-- Element: body -->
+  <div class="preview-layout__body">
 
-</head>
-<style></style>
+    <!-- Element: preview-panel -->
+    <div class="preview-layout__canvas-panel">
 
-<body>
-  <div id="app">
-    <!-- Block: preview-layout -->
-    <div class="preview-layout">
+      <div class="preview-layout__canvas-panel__body">
 
-      <!-- Element: body -->
-      <div class="preview-layout__body">
-
-        <!-- Element: preview-panel -->
-        <div class="preview-layout__canvas-panel">
-
-          <div class="preview-layout__canvas-panel__body">
-
-            <preview-canvas :components-list="oldData"></preview-canvas>
-
-          </div>
-
-        </div>
+        <preview-canvas :components-list="oldData"></preview-canvas>
 
       </div>
+
     </div>
+
   </div>
-</body>
-
-<script src="./index.js" type="module"></script>
-
-</html>
+</div>
