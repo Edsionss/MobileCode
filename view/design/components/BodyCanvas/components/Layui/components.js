@@ -177,7 +177,7 @@ const layoutComponents = {
           default:
             break
         }
-        console.log(option)
+        // console.log(option)
 
         option && myChart.setOption(option)
       },
@@ -249,6 +249,6 @@ for (const key in layoutComponents) {
   let item = layoutComponents[key]
   registeredComponents['lay-' + key] = item
 }
-console.log('[Wot] 注册组件：', registeredComponents)
+console.log('[lay] 注册组件：', registeredComponents)
 
 export default registeredComponents

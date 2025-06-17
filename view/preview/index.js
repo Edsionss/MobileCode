@@ -11,13 +11,27 @@ var app = new Vue({
     return {
       previewData: previewData,
       test: testdata,
-      oldData: transition.componentsConfig.componentsConfig
+      oldData: transition.componentsConfig.componentsConfig,
+      formData: {}
     }
   },
-  created() {
-    console.log(this.recursion(testdata.modules))
+  beforeCreate() {
+    Vue.prototype.$bus = this
   },
-  mounted() {},
+  created() {
+    this.initFormData()
+  },
+  mounted() {
+    this.$bus.$on('formChange', (name, value) => {
+      this.$set(this.formData, name, value)
+    })
+    this.$bus.$on('componentsClick', item => {
+      item.click && item.click.bind(this)(item)
+    })
+  },
+  beforeDestroy() {
+    this.$bus.$off('formChange')
+  },
 
   computed: {},
   methods: {
@@ -34,6 +48,15 @@ var app = new Vue({
       }
       recursionFun(array)
       return result
+    },
+    initFormData() {
+      const tiledArray = this.recursion(this.oldData)
+      tiledArray.forEach(item => {
+        const valueName = item.valueName || item.id
+        if (!this.formData.hasOwnProperty(valueName)) {
+          this.$set(this.formData, valueName, item.defaultValue)
+        }
+      })
     }
   }
 })

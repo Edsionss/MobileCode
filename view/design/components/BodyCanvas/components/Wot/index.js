@@ -14,48 +14,48 @@ const WotCanvas = {
   },
   data() {
     return {
-      // config: {},
       formData: {}
     }
   },
   created() {
     this.handelComponentValue()
   },
+  mounted() {},
   computed: {
     utils() {
       return utils
+    },
+    valueName() {
+      return this.config.props.valueName || this.config.id
+    },
+    props() {
+      return this.config.props || {}
     }
   },
   watch: {
     config() {
-      console.log(this.config)
       this.handelComponentValue()
     }
   },
+
   methods: {
     //添加表单的v-model值
     handelComponentValue() {
-      // this.componentsData.forEach(element => {
-      //   if (element.groupName === 'form') {
-      //     if (!this.formData.hasOwnProperty(element.id)) {
-      //       this.$set(this.formData, element.id, element.defaultValue)
-      //     }
-      //   }
-      // })
-      let config = this.config
-      if (config.groupName === 'form') {
-        if (!this.formData.hasOwnProperty(config.id)) {
-          this.$set(this.formData, config.id, config.defaultValue)
+      if (this.config.groupName === 'form') {
+        if (!this.formData.hasOwnProperty(this.valueName)) {
+          this.$set(this.formData, this.valueName, this.props.defaultValue)
         }
       }
     },
     //手动更新表单值
     componentEmittedInput(inputValueOrFile, component) {
       let newValue = inputValueOrFile
-      this.$set(this.formData, component.id, newValue)
+      this.$set(this.formData, this.valueName, newValue)
+      this.$bus.$emit('formChange', this.valueName, newValue)
     },
     defaultClick(item) {
-      item.click && item.click.bind(this)(item)
+      // item.click && item.click.bind(this)(item)
+      this.$bus.$emit('componentsClick', item)
     }
   }
 }

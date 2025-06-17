@@ -8,7 +8,7 @@ Vue.component('layui-canvas', LayuiCanvas.remove(['css']))
 Vue.component('vant-canvas', VantCanvas.remove(['css']))
 Vue.component('wot-canvas', WotCanvas.remove(['css']))
 // 这个组件会自我引用以实现嵌套
-const NestedCanvas = {
+const PreviewCanvas = {
   name: 'PreviewCanvas', // 递归组件必须有 name 属性
   props: {
     // 在当前层级需要渲染的组件列表
@@ -34,8 +34,6 @@ const NestedCanvas = {
         layui: 'layui-canvas',
         wot: 'wot-canvas'
       }
-      console.log(dict[name])
-
       return dict[name]
     }
   }
@@ -45,4 +43,4 @@ const NestedCanvas = {
 const templateUrl = new URL('index.html', import.meta.url).href
 const cssUrl = new URL('index.css', import.meta.url).href
 // 4. 关键：调用加载器，将自己包装成异步组件，然后导出
-export default createAsyncComponent(NestedCanvas, templateUrl, cssUrl)
+export default createAsyncComponent(PreviewCanvas, templateUrl, cssUrl)

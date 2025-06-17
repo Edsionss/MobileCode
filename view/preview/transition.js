@@ -251,7 +251,7 @@ class Transition {
               tag: 'wd-cell-group',
               component: 'wd-cell-group',
               framework: 'wot',
-              groupName: 'table',
+              groupName: 'layout',
               children: [],
               props: {
                 title: '数据表格',
@@ -271,7 +271,7 @@ class Transition {
               tag: 'wd-cell-group',
               component: 'wd-cell-group',
               framework: 'wot',
-              groupName: 'echarts',
+              groupName: 'layout',
               children: [],
               props: {
                 title: '图表数据',
@@ -285,14 +285,13 @@ class Transition {
             groupName: 'dataView',
             groupLabel: '数据展示'
           })
-          // result.echarts.push(newComponentConfig)
         } else {
           if (!result.form[0]) {
             result.form[0] = {
               tag: 'wd-cell-group',
               component: 'wd-cell-group',
               framework: 'wot',
-              groupName: 'form',
+              groupName: 'layout',
               children: [],
               props: {
                 title: '查询条件',
