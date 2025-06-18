@@ -24,32 +24,37 @@ const WotCanvas = {
   computed: {
     bindValue() {
       const groupName = this.config.groupName
-      if (groupName === 'form' || groupName === 'popup') return this.formData[this.valueName]
+      if (groupName === 'form' || groupName === 'active') return this.formData[this.valueName]
       return undefined
     },
     utils() {
       return utils
     },
     valueName() {
-      return this.config.props.valueName || this.config.id
+      return this.config.valueName || this.props.valueName || this.config.id
     },
     props() {
       return this.config.props || {}
+    },
+    defaultValue() {
+      return this.config.defaultValue || this.props.defaultValue
     }
   },
   watch: {
-    config() {
-      this.handelComponentValue()
+    config: {
+      handler(newValue, oldValue) {
+        this.handelComponentValue()
+      },
+      deep: true
     }
   },
 
   methods: {
     //添加表单的v-model值
     handelComponentValue() {
-      if (this.config.groupName === 'form') {
-        if (!this.formData.hasOwnProperty(this.valueName)) {
-          this.$set(this.formData, this.valueName, this.props.defaultValue)
-        }
+      const groupName = this.config.groupName
+      if (groupName === 'form' || groupName === 'active') {
+        this.$set(this.formData, this.valueName, this.defaultValue)
       }
     },
     //手动更新表单值
@@ -59,7 +64,6 @@ const WotCanvas = {
       this.$bus.$emit('formChange', this.valueName, newValue)
     },
     defaultClick(item) {
-      // item.click && item.click.bind(this)(item)
       this.$bus.$emit('componentsClick', item)
     }
   }

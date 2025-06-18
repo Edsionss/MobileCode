@@ -113,7 +113,8 @@ class Transition {
           component: tag,
           slot: `<span>${title}</span>`,
           click: function (item) {
-            console.log('[Button] click', this.$data)
+            this.recursionUpdateForm(this.componentsList, 'popupVisible', !this.formData.popupVisible)
+            console.log('[Button] click', this.formData.popupVisible, this.$data)
           }
           // 'click' 事件处理器通常在业务代码中定义，而不是在这里定义一个空函数
         }
@@ -344,13 +345,14 @@ class Transition {
       children: [],
       props: {
         visible: false,
-        position: 'bottom',
+        position: 'top',
         round: true,
         label: '弹出层',
-        tag: 'popup'
+        tag: 'popup',
+        style: { height: '100%' }
       },
       events: {},
-      slot: '<span><wd-button @click="popupVisible = true">弹出层</wd-button></span>',
+      slot: '',
       _DEFAULT_CONFIG_PROPS: {
         label: '弹出层',
         tag: 'popup'
@@ -361,6 +363,7 @@ class Transition {
       groupLabel: '反馈'
     }
     const footerElement = {}
+    searchElement.children = result.form[0].children
     result.componentsConfig = [result.form[0], result.echarts[0], result.table[0], searchElement]
     return result
   }

@@ -26,7 +26,7 @@ const previewComponents = {
   },
   mounted() {
     this.$bus.$on('formChange', (name, value) => {
-      this.$set(this.formData, name, value)
+      this.recursionUpdateForm(this.componentsList, name, value)
     })
     this.$bus.$on('componentsClick', item => {
       item.click && item.click.bind(this)(item)
@@ -38,13 +38,9 @@ const previewComponents = {
   },
   beforeDestroy() {
     this.$bus.$off('formChange')
+    this.$bus.$off('componentsClick')
   },
-  watch: {
-    activeData: {
-      handler(newVal, oldVal) {},
-      deep: true
-    }
-  },
+  watch: {},
   computed: {},
   methods: {
     recursion(array) {
@@ -61,16 +57,32 @@ const previewComponents = {
       recursionFun(array)
       return result
     },
+    recursionUpdateForm(array, valueName, newVal) {
+      for (const item of array) {
+        const itemValueName = item.valueName || item.id
+        if (itemValueName == valueName) {
+          this.$set(item, 'defaultValue', newVal)
+          this.$set(item.props, 'defaultValue', newVal)
+          this.$set(this.formData, valueName, newVal)
+          return true // 找到了，返回 true 并终止所有层级的循环
+        }
+        if (item.children && item.children.length > 0) {
+          // 递归调用，如果子调用返回了 true，说明找到了，也立刻终止当前循环
+          if (this.recursionUpdateForm(item.children, valueName, newVal)) {
+            return true
+          }
+        }
+      }
+      return false // 在当前层级没找到
+    },
     initFormData() {
       const tiledArray = this.recursion(this.componentsList)
       tiledArray.forEach(item => {
         const valueName = item.valueName || item.id,
           groupName = item.groupName
         if (!this.formData.hasOwnProperty(valueName)) {
-          if (groupName === 'form') {
+          if (groupName === 'form' || groupName === 'active') {
             this.$set(this.formData, valueName, item.defaultValue)
-          } else if (groupName === 'active') {
-            this.$set(this.activeData, valueName, item.defaultValue)
           }
         }
       })
