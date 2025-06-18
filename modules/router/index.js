@@ -4,7 +4,7 @@ import preview from '@preview/index.js'
 const staticRoutes = [
   {
     path: '/',
-    redirect: '/preview'
+    redirect: '/design'
   },
   {
     path: '/design',

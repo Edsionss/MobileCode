@@ -1,5 +1,5 @@
 <!-- Block: preview-layout -->
-<div class="preview-layout">
+<div class="preview-layout" id="preview-container" ref="preview-container">
 
   <!-- Element: body -->
   <div class="preview-layout__body">
@@ -9,7 +9,7 @@
 
       <div class="preview-layout__canvas-panel__body">
 
-        <preview-canvas :components-list="oldData"></preview-canvas>
+        <preview-canvas :components-list="componentsList"></preview-canvas>
 
       </div>
 

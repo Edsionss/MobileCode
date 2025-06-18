@@ -65,7 +65,7 @@ const headerComponent = {
     window.addEventListener(
       'resize',
       function () {
-        this.$emit('change-mode', this.currentModeItem)
+        this.$bus.$emit('change-mode', this.currentModeItem)
       }.bind(this)
     )
   },
@@ -84,7 +84,7 @@ const headerComponent = {
       }
       this.currentMode = item.label
       this.currentModeItem = item
-      this.$emit('change-mode', this.currentModeItem)
+      this.$bus.$emit('change-mode', this.currentModeItem)
     },
     defaultClick(item) {
       console.log('默认点击事件', item)
@@ -92,7 +92,7 @@ const headerComponent = {
     },
     loadData() {
       this.currentModeItem = this.modeList.find(item => item.label === this.currentMode)
-      this.$emit('change-mode', this.currentModeItem)
+      this.$bus.$emit('change-mode', this.currentModeItem)
     },
     // 切换主题
     toggleTheme() {

@@ -11,14 +11,18 @@ const previewComponents = {
   components: {},
   data() {
     return {
-      previewData: previewData,
-      test: testdata,
-      oldData: transition.componentsConfig.componentsConfig,
-      formData: {}
+      StitcherData: {},
+      componentsList: [],
+      formData: {},
+      activeData: {}
     }
   },
+  beforeCreate() {},
   created() {
+    this.StitcherData = transition.StitcherData
+    this.componentsList = transition.StitcherData.componentsConfig.componentsConfig
     this.initFormData()
+    this.StitcherData.Create && this.StitcherData.Create.bind(this)()
   },
   mounted() {
     this.$bus.$on('formChange', (name, value) => {
@@ -27,11 +31,20 @@ const previewComponents = {
     this.$bus.$on('componentsClick', item => {
       item.click && item.click.bind(this)(item)
     })
+    this.StitcherData.Mounted && this.StitcherData.Mounted.bind(this)()
+    this.$nextTick(() => {
+      this.StitcherData.NextTick && this.StitcherData.NextTick.bind(this)()
+    })
   },
   beforeDestroy() {
     this.$bus.$off('formChange')
   },
-
+  watch: {
+    activeData: {
+      handler(newVal, oldVal) {},
+      deep: true
+    }
+  },
   computed: {},
   methods: {
     recursion(array) {
@@ -49,11 +62,16 @@ const previewComponents = {
       return result
     },
     initFormData() {
-      const tiledArray = this.recursion(this.oldData)
+      const tiledArray = this.recursion(this.componentsList)
       tiledArray.forEach(item => {
-        const valueName = item.valueName || item.id
+        const valueName = item.valueName || item.id,
+          groupName = item.groupName
         if (!this.formData.hasOwnProperty(valueName)) {
-          this.$set(this.formData, valueName, item.defaultValue)
+          if (groupName === 'form') {
+            this.$set(this.formData, valueName, item.defaultValue)
+          } else if (groupName === 'active') {
+            this.$set(this.activeData, valueName, item.defaultValue)
+          }
         }
       })
     }

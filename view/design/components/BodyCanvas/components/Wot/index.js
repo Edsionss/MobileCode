@@ -22,6 +22,11 @@ const WotCanvas = {
   },
   mounted() {},
   computed: {
+    bindValue() {
+      const groupName = this.config.groupName
+      if (groupName === 'form' || groupName === 'popup') return this.formData[this.valueName]
+      return undefined
+    },
     utils() {
       return utils
     },

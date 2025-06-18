@@ -43,10 +43,13 @@ const designComponent = {
       }
     }
   },
-  created() {
-    console.log('Design component CREATED')
+  created() {},
+  mounted() {
+    this.$bus.$on('change-mode', this.changeMode)
   },
-  mounted() {},
+  beforeDestroy() {
+    this.$bus.$off('change-mode')
+  },
   computed: {},
   methods: {
     // 切换模式
@@ -54,6 +57,7 @@ const designComponent = {
       this.canvas.currentMode = item.label
       this.canvas.currentModeItem = item
       this.canvas.currentModeStyle = this.calculationCanvasModeStyle()
+      this.$store.commit('setDesignMode', item)
     },
     // 计算画布模式样式
     calculationCanvasModeStyle() {

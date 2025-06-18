@@ -12,7 +12,7 @@ class Transition {
    * @param {object} pageInfo - 包含页面模块信息的原始配置对象。
    */
   constructor(pageInfo) {
-    const { modules } = pageInfo
+    const { modules, ...pageData } = pageInfo
     this.pageInfo = pageInfo
 
     // 1. 定义组件映射器 (Component Mappers)
@@ -24,7 +24,19 @@ class Transition {
       fnsrsbh: data => this.componentMappers.input(data),
       fnsrmc: data => this.componentMappers.input(data),
       // 'frkrq' 是日历选择器的别名，复用 'date' 的转换逻辑。
-      frkrq: data => this.componentMappers.date(data),
+      frkrq: data => {
+        let oldProps = data.props
+        let result = this.componentMappers.date(data)
+        if (data.type === 'frkrq') {
+          result.props.type = 'daterange'
+          result.props['min-date'] = new Date('2017-01-01')
+        } else {
+          result.props.type = oldProps.type
+          if (oldProps.type === 'year') {
+          }
+        }
+        return result
+      },
 
       // --- 标准表单组件映射 ---
       input: data =>
@@ -159,8 +171,21 @@ class Transition {
     // 3. 根据映射器转换所有组件，并按类型（form, table, echarts）分类
     this.componentsConfig = this._generateComponentsConfig(this.componentMappers, this.allComponents)
 
-    // 4.进行既定格式组装
+    // 4.配置bindParams的id用于请求preview接口
+    this.bindParams = this._getBindParams(this.allComponents)
 
+    //组合最后的转化结果
+    this.StitcherData = {
+      ...pageData,
+      componentsConfig: this.componentsConfig,
+      bindParams: this.bindParams,
+      // BeforeCreate: function () {}, 禁止使用
+      Create: function () {},
+      Mounted: function () {},
+      NextTick: function () {
+        this.activeData.popupVisible = true
+      }
+    }
     // 在控制台打印最终生成的配置，方便调试
     console.log('最终生成的组件配置:', this.componentsConfig)
   }
@@ -242,7 +267,8 @@ class Transition {
       // 检查是否存在对应的转换函数
       if (dict[componentType]) {
         // 调用转换函数生成新配置
-        const newComponentConfig = dict[componentType](item)
+        let newComponentConfig = dict[componentType](item)
+        newComponentConfig._DEFAULT_CONFIG_PROPS = item // 保存默认配置
         // 根据源组件类型进行分类（此设计具有良好的扩展性）
         // 尽管当前映射器未定义 'table' 和 'echarts'，但结构上支持未来扩展。
         if (componentType === 'table') {
@@ -294,7 +320,7 @@ class Transition {
               groupName: 'layout',
               children: [],
               props: {
-                title: '查询条件',
+                title: '',
                 border: true
               }
             }
@@ -310,8 +336,40 @@ class Transition {
         console.error(`[Wot Transition] 组件类型 "${item.type}" 的转换器暂未定义。`)
       }
     })
-    result.componentsConfig = [result.form[0], result.echarts[0], result.table[0]]
+    const headerElement = {}
+    const searchElement = {
+      component: 'wd-popup',
+      valueName: 'popupVisible',
+      defaultValue: false,
+      children: [],
+      props: {
+        visible: false,
+        position: 'bottom',
+        round: true,
+        label: '弹出层',
+        tag: 'popup'
+      },
+      events: {},
+      slot: '<span><wd-button @click="popupVisible = true">弹出层</wd-button></span>',
+      _DEFAULT_CONFIG_PROPS: {
+        label: '弹出层',
+        tag: 'popup'
+      },
+      id: 'KZNPH904',
+      framework: 'wot',
+      groupName: 'active',
+      groupLabel: '反馈'
+    }
+    const footerElement = {}
+    result.componentsConfig = [result.form[0], result.echarts[0], result.table[0], searchElement]
     return result
+  }
+  _getBindParams(allComponents) {
+    let result = []
+    allComponents.forEach(config => {
+      const props = config.props
+      props.params && result.push({ name: props.params })
+    })
   }
 }
 
