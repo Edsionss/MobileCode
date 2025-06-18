@@ -177,8 +177,6 @@ const layoutComponents = {
           default:
             break
         }
-        // console.log(option)
-
         option && myChart.setOption(option)
       },
       echartsBarLine() {
