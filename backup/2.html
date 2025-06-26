@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>【最终方案】低代码栅格布局生成与拖拽容器注入</title>
+  <!-- 1. 引入依赖 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.2/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 20px;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .panel {
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .05);
+    }
+
+    .components-panel {
+      width: 280px;
+      padding: 15px;
+    }
+
+    .canvas-panel {
+      flex-grow: 1;
+      padding: 15px;
+    }
+
+    h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #e4e7ed;
+      padding-bottom: 10px;
+    }
+
+    .component-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #f5f7fa;
+      cursor: move;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .component-item:hover {
+      border-color: #1E9FFF;
+      color: #1E9FFF;
+    }
+
+    .sortable-ghost {
+      opacity: 0.4;
+      background: #c8ebfb;
+      border-radius: 4px;
+    }
+
+    /* 画布中的项 */
+    .canvas-item-wrapper {
+      position: relative;
+      padding: 2px;
+    }
+
+    .canvas-item-wrapper.is-selected {
+      background-color: rgba(255, 87, 34, 0.1);
+      box-shadow: 0 0 0 2px #FF5722 inset;
+    }
+
+    .canvas-item-content {
+      position: relative;
+    }
+
+    .drag-handle {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      cursor: move;
+      background: #1E9FFF;
+      color: white;
+      padding: 2px 5px;
+      font-size: 12px;
+      border-radius: 4px;
+      z-index: 10;
+      display: none;
+    }
+
+    .canvas-item-wrapper:hover .drag-handle {
+      display: block;
+    }
+
+    .is-selected .drag-handle {
+      background-color: #FF5722;
+    }
+
+    /* LayUI 风格组件样式 */
+    .layui-card {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .layui-card-header {
+      padding: 10px 15px;
+      background-color: #f5f7fa;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .layui-card-body {
+      padding: 15px;
+      min-height: 50px;
+    }
+
+    .layui-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px dashed #1E9FFF;
+    }
+
+    .layui-col {
+      box-sizing: border-box;
+    }
+
+    .layui-col-content {
+      min-height: 60px;
+      box-sizing: border-box;
+      border: 1px dashed #5FB878;
+      background-color: rgba(255, 255, 255, 0.7);
+      height: 100%;
+      padding: 10px;
+    }
+
+    /* 拖拽区域的通用样式 */
+    .drop-zone {
+      min-height: 60px;
+      padding: 5px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+    }
+
+    .drop-zone .drop-zone {
+      min-height: 40px;
+      background: rgba(0, 0, 0, 0.03);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <div class="main-layout">
+      <!-- 左侧物料区 -->
+      <div class="panel components-panel">
+        <h3>组件库</h3>
+        <draggable :list="sourceComponents" :group="{ name: 'main-group', pull: 'clone', put: false }"
+          :clone="cloneComponent" :sort="false">
+          <div v-for="item in sourceComponents" :key="item.name" class="component-item">{{ item.name }}</div>
+        </draggable>
+      </div>
+
+      <!-- 右侧画布区 -->
+      <div class="panel canvas-panel">
+        <h3>画布</h3>
+        <!-- 顶层的 NestedCanvas -->
+        <nested-canvas :components-list.sync="canvasComponents" :active-component-id="activeComponentId"
+          @component-clicked="onComponentClick"></nested-canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 组件模板定义 ==================== -->
+  <template id="nested-canvas-template">
+    <draggable v-model="draggableList" group="main-group" class="drop-zone">
+      <div v-for="config in draggableList" :key="config.id" class="canvas-item-wrapper"
+        :class="{ 'is-selected': activeComponentId === config.id }" @click.stop="clickOnComponent(config)">
+        <div class="drag-handle">{{ config.name }}</div>
+        <div class="canvas-item-content">
+          <!-- 动态渲染 LayuiCanvas 或其他框架的 Canvas -->
+          <component :is="getComponentName(config.framework)" :config="config">
+
+            <!-- 如果是栅格布局，使用具名插槽分发 -->
+            <template v-if="config.type === 'grid'">
+              <nested-canvas v-for="(colChildren, index) in config.children" :key="index"
+                :slot="'col-slot-' + (index + 1)" :components-list.sync="config.children[index]"
+                :active-component-id="activeComponentId" @component-clicked="bubbleClick"></nested-canvas>
+            </template>
+
+            <!-- 如果是普通容器，使用默认插槽 -->
+            <nested-canvas v-else-if="config.children" :components-list.sync="config.children"
+              :active-component-id="activeComponentId" @component-clicked="bubbleClick"></nested-canvas>
+
+          </component>
+        </div>
+      </div>
+    </draggable>
+  </template>
+
+  <template id="layui-canvas-template">
+    <div>
+      <!-- A. 栅格布局：v-for动态生成列，并提供具名插槽 -->
+      <div v-if="config.type === 'grid'" class="layui-row" :style="gridRowStyle">
+        <div v-for="i in colsArray" :key="i" class="layui-col" :style="gridColStyle(i)">
+          <div class="layui-col-content">
+            <slot :name="'col-slot-' + i"></slot>
+          </div>
+        </div>
+      </div>
+
+      <!-- B. 普通卡片容器：提供默认插槽 -->
+      <div v-else-if="config.type === 'card'" class="layui-card">
+        <div class="layui-card-header">{{ config.props.title || '卡片' }}</div>
+        <div class="layui-card-body">
+          <slot></slot>
+        </div>
+      </div>
+
+      <!-- C. 原子组件：使用 v-html -->
+      <div v-else v-html="config.render"></div>
+    </div>
+  </template>
+
+  <!-- ==================== Vue 脚本 ==================== -->
+  <script>
+    // ---------- 1. 定义 LayuiCanvas 组件 ----------
+    const LayuiCanvas = {
+      name: 'LayuiCanvas',
+      template: '#layui-canvas-template',
+      props: ['config'],
+      computed: {
+        colsArray () {
+          const cols = this.config.props.cols || 1;
+          return Array.from({ length: cols }, (_, i) => i + 1);
+        },
+        gridRowStyle () {
+          const gap = this.config.props.gap || 0;
+          const margin = -gap / 2;
+          return { marginLeft: `${margin}px`, marginRight: `${margin}px` };
+        }
+      },
+      methods: {
+        gridColStyle (index) {
+          const cols = this.config.props.cols || 1;
+          const span = 24 / cols;
+          const width = (span / 24) * 100;
+          const gap = this.config.props.gap || 0;
+          const padding = gap / 2;
+          return {
+            width: `${width}%`,
+            paddingLeft: `${padding}px`,
+            paddingRight: `${padding}px`,
+          };
+        }
+      }
+    };
+
+    // ---------- 2. 定义 NestedCanvas 递归组件 ----------
+    const NestedCanvas = {
+      name: 'NestedCanvas',
+      template: '#nested-canvas-template',
+      components: {
+        'draggable': vuedraggable,
+        'layui-canvas': LayuiCanvas
+      },
+      props: ['componentsList', 'activeComponentId'],
+      computed: {
+        draggableList: {
+          get () { return this.componentsList; },
+          set (newValue) { this.$emit('update:componentsList', newValue); }
+        }
+      },
+      methods: {
+        getComponentName (framework) {
+          return framework === 'layui' ? 'layui-canvas' : 'div'; // 简化处理
+        },
+        clickOnComponent (config) {
+          this.$emit('component-clicked', config);
+        },
+        bubbleClick (config) {
+          this.$emit('component-clicked', config);
+        }
+      }
+    };
+
+    // ---------- 3. 创建主 Vue 实例 ----------
+    new Vue({
+      el: '#app',
+      components: {
+        'nested-canvas': NestedCanvas
+      },
+      data: {
+        sourceComponents: [
+          {
+            name: '栅格：一行两列',
+            framework: 'layui',
+            type: 'grid',
+            props: { cols: 2, gap: 10 }
+          },
+          {
+            name: '栅格：一行三列',
+            framework: 'layui',
+            type: 'grid',
+            props: { cols: 3, gap: 10 }
+          },
+          {
+            name: '卡片容器',
+            framework: 'layui',
+            type: 'card',
+            props: { title: '这是一个卡片' }
+          },
+          {
+            name: 'LayUI 按钮',
+            framework: 'layui',
+            type: 'atomic',
+            render: '<button type="button" class="layui-btn">一个按钮</button>'
+          }
+        ],
+        canvasComponents: [],
+        activeComponentId: null,
+      },
+      methods: {
+        cloneComponent (original) {
+          const newComponent = {
+            ...JSON.parse(JSON.stringify(original)),
+            id: 'comp-' + Date.now() + Math.random().toString(36).substr(2, 5)
+          };
+
+          // 为容器类型生成 children 属性
+          if (original.type === 'grid') {
+            const cols = original.props.cols || 1;
+            newComponent.children = [];
+            for (let i = 0; i < cols; i++) {
+              newComponent.children.push([]); // 二维数组，每一项代表一列
+            }
+          } else if (original.type === 'card') {
+            newComponent.children = []; // 一维数组
+          } else {
+            delete newComponent.children;
+          }
+          return newComponent;
+        },
+        onComponentClick (config) {
+          console.log('Selected:', config.id, config);
+          this.activeComponentId = config.id;
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

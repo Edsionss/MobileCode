@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LayUI表头配置器 (带完整校验+撤销)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/css/layui.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* 样式与之前完全一致，此处省略 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .config-panel {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .sidebar {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 15px;
+      padding: 25px;
+      color: white;
+      height: fit-content;
+    }
+
+    .sidebar h3 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .column-input {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      padding: 12px;
+      color: white;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .column-input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .add-column-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .add-column-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .columns-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .column-item {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .column-item:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(5px);
+    }
+
+    .column-item.sortable-ghost {
+      opacity: 0.5;
+      transform: rotate(5deg);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .column-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drag-handle {
+      color: rgba(255, 255, 255, 0.7);
+      cursor: grab;
+    }
+
+    .drag-handle:hover {
+      color: white;
+    }
+
+    .delete-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      background: rgba(255, 100, 100, 0.8);
+    }
+
+    .grid-container {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .grid-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .grid-header h3 {
+      color: #333;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .control-btn {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .control-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      opacity: 0.7;
+    }
+
+    .merge-grid {
+      display: grid;
+      gap: 2px;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .grid-cell {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .grid-cell:hover {
+      transform: scale(1.02);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .grid-cell.merged {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-color: #667eea;
+    }
+
+    .grid-cell.selected {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: white;
+      border-color: #f093fb;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(240, 147, 251, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(240, 147, 251, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(240, 147, 251, 0);
+      }
+    }
+
+    .preview-section {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .preview-header h3 {
+      color: #333;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .export-btn {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .export-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+
+    .code-container {
+      background: #2d3748;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 15px;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .code-container pre {
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .instructions {
+      background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      color: #2d3748;
+    }
+
+    .instructions h4 {
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
+    .instructions ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .instructions li {
+      margin-bottom: 5px;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .instructions li:before {
+      content: "✨";
+      position: absolute;
+      left: 0;
+    }
+
+    .tips {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      color: #8b4513;
+      font-size: 0.9rem;
+    }
+
+    .tips strong {
+      color: #d2691e;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="container">
+    <div class="header">
+      <h1><i class="fas fa-table"></i> LayUI 表格表头配置器</h1>
+      <p>拖拽式可视化配置，让表头合并变得简单直观</p>
+    </div>
+
+    <div class="instructions">
+      <h4><i class="fas fa-lightbulb"></i> 使用说明</h4>
+      <ul>
+        <li>在左侧添加并拖拽排列表格的数据列。</li>
+        <li>在网格中点击单元格进行多选，然后点击“合并选中”。</li>
+        <li><strong>合并规则：</strong>被合并的单元格必须形成一个完整的矩形，且不能跨越其上级表头单元格的边界。</li>
+        <li>使用“添加行”创建多级表头，使用“撤销”恢复上一步操作。</li>
+        <li>实时预览并导出最终的 LayUI 配置代码。</li>
+      </ul>
+    </div>
+
+    <div class="config-panel">
+      <!-- ... 左侧边栏 HTML 不变 ... -->
+      <div class="sidebar">
+        <h3><i class="fas fa-columns"></i> 列配置</h3>
+        <input type="text" class="column-input" placeholder="输入列名称..." v-model="newColumnName" @keyup.enter="addColumn">
+        <button class="add-column-btn" @click="addColumn"> <i class="fas fa-plus"></i> 添加列 </button>
+        <draggable class="columns-list" v-model="columns" handle=".drag-handle" @end="rebuildGrid(true)">
+          <div v-for="(column, index) in columns" :key="column.id" class="column-item">
+            <div class="column-content"> <i class="fas fa-grip-vertical drag-handle"></i> <span>{{ column.name }}</span>
+            </div>
+            <button class="delete-btn" @click="removeColumn(index)"> <i class="fas fa-trash"></i> </button>
+          </div>
+        </draggable>
+      </div>
+
+      <div class="grid-container">
+        <div class="grid-header">
+          <h3><i class="fas fa-th"></i> 可视化配置网格</h3>
+          <div class="control-buttons">
+            <button class="control-btn" @click="undo" :disabled="historyStack.length === 0"> <i class="fas fa-undo"></i>
+              撤销 ({{ historyStack.length }}) </button>
+            <button class="control-btn" @click="mergeSelected"> <i class="fas fa-compress-alt"></i> 合并选中 </button>
+            <button class="control-btn" @click="clearMerge"> <i class="fas fa-expand-alt"></i> 清除合并 </button>
+            <button class="control-btn" @click="addRow"> <i class="fas fa-plus"></i> 添加行 </button>
+          </div>
+        </div>
+        <div class="merge-grid" :style="{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }">
+          <template v-if="columns.length > 0">
+            <div v-for="cell in flatGridData" v-if="cell.visible" :key="cell.id" class="grid-cell"
+              :class="{ 'merged': cell.merged, 'selected': cell.selected }"
+              :style="{ gridRowEnd: `span ${cell.rowspan}`, gridColumnEnd: `span ${cell.colspan}` }"
+              @click="toggleCell(cell)">
+              {{ cell.title }}
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-section">
+      <!-- ... 预览和代码区域 HTML 不变 ... -->
+      <div class="preview-header">
+        <h3><i class="fas fa-eye"></i> 实时预览</h3>
+        <button class="export-btn" @click="exportConfig"> <i class="fas fa-download"></i> 导出配置 </button>
+      </div>
+      <div id="previewTable" v-html="previewHTML"></div>
+      <div class="code-container">
+        <button class="copy-btn" @click="copyCode"> <i class="fas fa-copy"></i> 复制 </button>
+        <pre>{{ codeOutput }}</pre>
+      </div>
+      <div class="tips">
+        <strong>提示：</strong> 生成的代码可以直接用于LayUI表格的cols配置项中。支持多级表头和复杂的合并结构。 <br><strong>新功能：</strong>
+        现在支持拖拽调整列顺序，让表格配置更加灵活！
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/layui.min.js"></script>
+
+  <script>
+    let layer;
+    layui.use(['layer'], function () { layer = layui.layer; });
+
+    new Vue({
+      el: '#app',
+      components: { 'draggable': window.vuedraggable },
+      data: {
+        newColumnName: '',
+        columns: [],
+        gridData: [],
+        rows: 2,
+        columnIdCounter: 0,
+        cellIdCounter: 0,
+        historyStack: [],
+      },
+      computed: {
+        // ... computed 属性与之前相同 ...
+        flatGridData () { return this.gridData.flat(); },
+        layuiConfig () {
+          const config = []; if (this.columns.length === 0) return config;
+          for (let i = 0; i < this.rows; i++) {
+            const row = [];
+            for (let j = 0; j < this.columns.length; j++) {
+              const cellData = this.gridData[i][j];
+              if (cellData.visible) {
+                const cell = { title: cellData.title || `R${i + 1} C${j + 1}` };
+                if (cellData.rowspan > 1) cell.rowspan = cellData.rowspan;
+                if (cellData.colspan > 1) cell.colspan = cellData.colspan;
+                if (i === this.rows - 1) { cell.field = this.columns[j].name.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_'); }
+                row.push(cell);
+              }
+            }
+            if (row.length > 0) config.push(row);
+          }
+          return config;
+        },
+        previewHTML () {
+          if (this.columns.length === 0) return '';
+          let html = '<table class="layui-table" style="margin: 0;"><thead>';
+          for (let i = 0; i < this.rows; i++) {
+            html += '<tr>';
+            for (let j = 0; j < this.columns.length; j++) {
+              const cellData = this.gridData[i][j];
+              if (cellData.visible) {
+                html += `<th rowspan="${cellData.rowspan}" colspan="${cellData.colspan}" style="text-align: center; background: #f2f2f2; border: 1px solid #ddd; padding: 10px;">${cellData.title || `R${i + 1} C${j + 1}`}</th>`;
+              }
+            }
+            html += '</tr>';
+          }
+          html += '</thead></table>'; return html;
+        },
+        codeOutput () {
+          if (this.columns.length === 0) return '// 请先添加列并配置表头结构';
+          return `// LayUI表格配置\nconst tableConfig = {\n    elem: '#yourTable',\n    url: 'your-data-url',\n    cols: ${JSON.stringify(this.layuiConfig, null, 2)}\n};\n\n// 渲染表格\nlayui.use('table', function(){\n    const table = layui.table;\n    table.render(tableConfig);\n});`;
+        }
+      },
+      watch: {
+        columns: { handler () { this.rebuildGrid(true); }, deep: true }
+      },
+      methods: {
+        // ... saveState, undo, rebuildGrid, addColumn, removeColumn, toggleCell, findCellCoords, exportConfig, copyCode 等方法与之前相同 ...
+        saveState () { const snapshot = JSON.parse(JSON.stringify({ gridData: this.gridData, rows: this.rows })); this.historyStack.push(snapshot); },
+        undo () { if (this.historyStack.length > 0) { const lastState = this.historyStack.pop(); this.gridData = lastState.gridData; this.rows = lastState.rows; layer.msg('操作已撤销', { icon: 1, time: 1000 }); } else { layer.msg('没有更多可撤销的操作了', { icon: 7 }); } },
+        rebuildGrid (clearHistory = false) { if (clearHistory) { this.historyStack = []; } const cols = this.columns.length; const newGrid = []; for (let i = 0; i < this.rows; i++) { const row = []; for (let j = 0; j < cols; j++) { row.push({ id: this.cellIdCounter++, merged: false, title: i === this.rows - 1 ? this.columns[j].name : '', rowspan: 1, colspan: 1, visible: true, selected: false }); } newGrid.push(row); } this.gridData = newGrid; },
+        addColumn () { const name = this.newColumnName.trim(); if (name && !this.columns.some(c => c.name === name)) { this.columns.push({ id: this.columnIdCounter++, name: name }); this.newColumnName = ''; } },
+        removeColumn (index) { this.columns.splice(index, 1); },
+        toggleCell (cell) { cell.selected = !cell.selected; },
+        findCellCoords (cellId) { for (let r = 0; r < this.rows; r++) { for (let c = 0; c < this.columns.length; c++) { if (this.gridData[r][c].id === cellId) { return { row: r, col: c }; } } } return null; },
+        clearMerge () { this.saveState(); this.rebuildGrid(false); layer.msg('已清除所有合并', { icon: 1 }); },
+        addRow () { this.saveState(); this.rows++; const newRow = []; for (let j = 0; j < this.columns.length; j++) { newRow.push({ id: this.cellIdCounter++, merged: false, title: '', rowspan: 1, colspan: 1, visible: true, selected: false }); } this.gridData.unshift(newRow); this.gridData[this.rows - 1].forEach((cell, j) => cell.title = this.columns[j].name); this.gridData[this.rows - 2].forEach(cell => cell.title = ''); },
+        exportConfig () { const blob = new Blob([JSON.stringify(this.layuiConfig, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'layui-table-config.json'; a.click(); URL.revokeObjectURL(url); layer.msg('配置已导出！', { icon: 1 }); },
+        copyCode () { navigator.clipboard.writeText(this.codeOutput).then(() => { layer.msg('代码已复制到剪贴板！', { icon: 1 }); }); },
+
+        // --- 【核心改动】校验和合并逻辑 ---
+
+        /**
+         * 【新增】辅助函数：寻找指定单元格的“父”单元格。
+         *  即在上一行中，跨越了当前列的那个单元格。
+         */
+        findAncestor (rowIndex, colIndex) {
+          if (rowIndex === 0) return null; // 第一行没有父单元格
+
+          let parentRowIndex = rowIndex - 1;
+          let parentColIndex = colIndex;
+          let cellAbove = this.gridData[parentRowIndex][parentColIndex];
+
+          // 如果正上方的单元格是被合并的，就向左回溯，直到找到它的“主人”
+          while (cellAbove.visible === false) {
+            parentColIndex--;
+            if (parentColIndex < 0) return null; // 理论上不应发生
+            cellAbove = this.gridData[parentRowIndex][parentColIndex];
+          }
+          return cellAbove;
+        },
+
+        mergeSelected () {
+          const selectedCells = this.flatGridData.filter(c => c.selected);
+          if (selectedCells.length < 2) {
+            return layer.msg('请至少选择两个单元格进行合并', { icon: 2 });
+          }
+
+          const coords = selectedCells.map(c => this.findCellCoords(c.id));
+          const minRow = Math.min(...coords.map(c => c.row));
+          const maxRow = Math.max(...coords.map(c => c.row));
+          const minCol = Math.min(...coords.map(c => c.col));
+          const maxCol = Math.max(...coords.map(c => c.col));
+
+          // 规则1：检查是否为完整的矩形区域
+          let isRectangle = true;
+          for (let r = minRow; r <= maxRow; r++) {
+            for (let c = minCol; c <= maxCol; c++) {
+              if (!this.gridData[r][c].selected) {
+                isRectangle = false; break;
+              }
+            }
+            if (!isRectangle) break;
+          }
+          if (!isRectangle) {
+            return layer.msg('合并失败：只能合并连续的矩形区域！', { icon: 2 });
+          }
+
+          // 规则2：检查是否跨越了上级表头边界
+          if (minRow > 0) {
+            const firstAncestor = this.findAncestor(minRow, minCol);
+            for (let c = minCol + 1; c <= maxCol; c++) {
+              const currentAncestor = this.findAncestor(minRow, c);
+              // 核心判断：选区内所有列的“父单元格”必须是同一个。
+              if (currentAncestor.id !== firstAncestor.id) {
+                return layer.msg('合并失败：所选区域跨越了上级表头的边界！', { icon: 2, area: '300px' });
+              }
+            }
+          }
+
+          // 所有校验通过，执行合并
+          this.saveState(); // 保存操作前状态
+
+          const rowspan = maxRow - minRow + 1;
+          const colspan = maxCol - minCol + 1;
+
+          const masterCell = this.gridData[minRow][minCol];
+          masterCell.rowspan = rowspan;
+          masterCell.colspan = colspan;
+          masterCell.merged = true;
+
+          // 隐藏被合并的单元格并取消选中
+          for (let r = minRow; r <= maxRow; r++) {
+            for (let c = minCol; c <= maxCol; c++) {
+              this.gridData[r][c].selected = false;
+              if (r !== minRow || c !== minCol) {
+                this.gridData[r][c].visible = false;
+              }
+            }
+          }
+          layer.msg('合并成功！', { icon: 1 });
+        },
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>方案二：列头“链接”模式 - 表格合并配置</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.13/dist/css/layui.css">
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      margin: 0;
+    }
+
+    #app {
+      padding: 20px;
+    }
+
+    .config-panel {
+      padding: 20px;
+      border: 1px solid #EBEEF5;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+    }
+
+    .config-title {
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #303133;
+      font-weight: bold;
+    }
+
+    .link-icon {
+      font-size: 18px;
+      cursor: pointer;
+      color: #C0C4CC;
+      transition: color 0.3s;
+    }
+
+    .link-icon.active {
+      color: #409EFF;
+    }
+
+    .link-icon .link-order {
+      font-size: 10px;
+      font-weight: bold;
+      position: absolute;
+      top: 0;
+      right: -5px;
+      background: #f56c6c;
+      color: white;
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+      text-align: center;
+    }
+
+    .column-config-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f2f6fc;
+    }
+
+    .column-config-row>div {
+      padding: 0 10px;
+    }
+
+    .col-name {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .col-drag-handle {
+      cursor: grab;
+      color: #909399;
+    }
+
+    .preview-title {
+      margin-top: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #606266;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <el-row :gutter="20">
+      <!-- 配置面板 -->
+      <el-col :span="8">
+        <div class="config-panel">
+          <div class="config-title">
+            <i class="el-icon-setting"></i> 列配置与合并
+          </div>
+          <p style="color: #909399; font-size: 14px;">点击 <i class="el-icon-link"></i> 图标建立合并链，拖拽 <i
+              class="el-icon-rank"></i> 调整优先级。</p>
+
+          <div id="column-list">
+            <div v-for="(col, index) in columnsConfig" :key="col.field" class="column-config-row">
+              <div class="col-drag-handle"><i class="el-icon-rank"></i></div>
+              <div class="col-name">{{ col.title }}</div>
+              <div style="position: relative;">
+                <i class="el-icon-link link-icon" :class="{ active: col.isMerged }" @click="toggleMerge(col)">
+                  <span v-if="col.isMerged" class="link-order">{{ col.mergeOrder }}</span>
+                </i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-col>
+
+      <!-- 表格预览区域 -->
+      <el-col :span="16">
+        <div class="preview-title">
+          <i class="el-icon-view"></i> 实时预览
+        </div>
+        <layui-table :config="tableConfig"></layui-table>
+      </el-col>
+    </el-row>
+  </div>
+
+  <!-- Vue、Element UI 和 Layui 的 CDN -->
+  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/layui@2.9.13/dist/layui.js"></script>
+  <!-- 引入 SortableJS 用于拖拽排序 -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+  <script>
+    // 表格合并工具函数 (同 Demo 1)
+    function mergeTableRow (tableId, data, mergeFields) {
+      if (!mergeFields || mergeFields.length === 0) return;
+      const tableContainer = layui.$('#' + tableId).next('.layui-table-view');
+      mergeFields.forEach(field => {
+        let startIndex = 0, count = 1;
+        for (let i = 1; i < data.length; i++) {
+          if (data[i][field] === data[startIndex][field]) {
+            count++;
+          } else {
+            if (count > 1) {
+              const startCell = tableContainer.find(`.layui-table-body tr[data-index="${startIndex}"] td[data-field="${field}"]`);
+              startCell.attr('rowspan', count);
+              for (let j = 1; j < count; j++) {
+                tableContainer.find(`.layui-table-body tr[data-index="${startIndex + j}"] td[data-field="${field}"]`).hide();
+              }
+            }
+            startIndex = i;
+            count = 1;
+          }
+        }
+        if (count > 1) {
+          const startCell = tableContainer.find(`.layui-table-body tr[data-index="${startIndex}"] td[data-field="${field}"]`);
+          startCell.attr('rowspan', count);
+          for (let j = 1; j < count; j++) {
+            tableContainer.find(`.layui-table-body tr[data-index="${startIndex + j}"] td[data-field="${field}"]`).hide();
+          }
+        }
+      });
+    }
+
+    // Layui Table 子组件 (同 Demo 1)
+    const LayuiTable = {
+      template: `
+            <div style="margin-top: 10px;"> 
+                <table class="layui-hide" :id="config.id"></table>
+            </div>
+        `,
+      props: ['config'],
+      mounted () { this.renderTable(); },
+      watch: {
+        'config.props.mergeFields': {
+          handler: function () { this.renderTable(); },
+          deep: true
+        }
+      },
+      methods: {
+        renderTable () {
+          const props = this.config.props;
+          const id = this.config.id;
+          layui.table.render({
+            elem: '#' + id,
+            cols: [props.cols],
+            data: props.data,
+            height: 450,
+            done: (res) => {
+              if (props.mergeFields && props.mergeFields.length > 0) {
+                mergeTableRow(id, res.data, props.mergeFields);
+              }
+            }
+          });
+        }
+      }
+    };
+
+    // Vue 根实例 (父组件)
+    new Vue({
+      el: '#app',
+      components: {
+        'layui-table': LayuiTable
+      },
+      data: {
+        // 在列配置中增加合并相关的状态
+        columnsConfig: [
+          { field: 'category', title: '商品大类', width: 120, isMerged: false, mergeOrder: 0 },
+          { field: 'subCategory', title: '商品子类', width: 120, isMerged: false, mergeOrder: 0 },
+          { field: 'name', title: '商品名称', width: 200, isMerged: false, mergeOrder: 0 },
+          { field: 'price', title: '价格', width: 100, isMerged: false, mergeOrder: 0 }
+        ]
+      },
+      computed: {
+        // 动态生成表格配置
+        tableConfig () {
+          const mergedCols = this.columnsConfig.filter(c => c.isMerged);
+          // 根据 mergeOrder 排序来确定合并优先级
+          mergedCols.sort((a, b) => a.mergeOrder - b.mergeOrder);
+
+          return {
+            id: 'myProductTable',
+            props: {
+              cols: this.columnsConfig, // 列定义始终是完整的
+              data: [ // 示例数据
+                { category: '书籍', subCategory: '编程', name: 'Vue.js 权威指南', price: 89 },
+                { category: '书籍', subCategory: '编程', name: 'JavaScript 高级程序设计', price: 99 },
+                { category: '书籍', subCategory: '设计', name: 'CSS 世界', price: 79 },
+                { category: '电子产品', subCategory: '外设', name: '机械键盘', price: 399 },
+                { category: '电子产品', subCategory: '外设', name: '无线鼠标', price: 199 },
+                { category: '电子产品', subCategory: '显示', name: '4K显示器', price: 1299 },
+              ],
+              // 核心：将已合并的列转换为 mergeFields 数组
+              mergeFields: mergedCols.map(col => col.field)
+            }
+          };
+        }
+      },
+      mounted () {
+        // 使用 SortableJS 实现拖拽排序
+        const el = document.getElementById('column-list');
+        Sortable.create(el, {
+          handle: '.col-drag-handle',
+          animation: 150,
+          onEnd: (evt) => {
+            const item = this.columnsConfig.splice(evt.oldIndex, 1)[0];
+            this.columnsConfig.splice(evt.newIndex, 0, item);
+            this.updateMergeOrder(); // 拖拽后重新计算合并顺序
+          }
+        });
+      },
+      methods: {
+        toggleMerge (clickedCol) {
+          clickedCol.isMerged = !clickedCol.isMerged;
+          this.updateMergeOrder();
+        },
+        updateMergeOrder () {
+          let currentOrder = 1;
+          this.columnsConfig.forEach(col => {
+            if (col.isMerged) {
+              col.mergeOrder = currentOrder++;
+            } else {
+              col.mergeOrder = 0;
+            }
+          });
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,36 @@
+<draggable v-model="draggableList" force-fallback="true" group="itxst" animation="300"
+  chosen-class="canvas-drag__item--chosen" class="canvas-drag__content" handle=".canvas-drag__drag-handle"
+  @change="onDragChange">
+  <transition-group tag="div" class="canvas-drag__item-group">
+    <div class="canvas-item__content" v-for="config in draggableList" :key="config.id"
+      @click.stop="onComponentClick(config)" :class="{ 'is-selected': activeComponentId === config.id }">
+      <!-- 关键点：动态组件渲染 + 嵌套渲染 -->
+      <div class="canvas-drag__item-label">{{ config.tag||config.props.tag }}</div>
+      <component :is="getComponentName(config.framework)" class="canvas-drag__drag-handle" :config="config">
+        <!--'vant-canvas' 或 'layui-canvas' 内部的 <slot> 将会渲染这里的内容。如果当前组件是一个容器 (config.children 存在)，我们就在这里递归渲染另一个 NestedCanvas。-->
+        <template v-if="config.children">
+          <!-- 如果当前 config 是栅格布局 -->
+          <template v-if="config.tag ==='lay-grid'">
+            <!-- 遍历栅格的每一列的数据。config.children 在栅格场景下应该是一个二维数组，例如 [[...col1_items], [...col2_items]]-->
+            <!-- 关键：将这个 NestedCanvas 实例放到名为 'col-slot-N' 的插槽里 -->
+            <nested-canvas v-for="(colChildren, index) in config.children" :key="index"
+              :slot="'col-slot-' + (index + 1)" :components-list.sync="config.children[index]"
+              :active-component-id="activeComponentId" @component-clicked="bubbleClick"
+              @change="event => onColChange(event, index)"></nested-canvas>
+          </template>
+          <template v-else>
+            <nested-canvas :components-list.sync="config.children" :active-component-id="activeComponentId"
+              @component-clicked="bubbleClick" @change="bubbleChange"></nested-canvas>
+          </template>
+        </template>
+      </component>
+      <!-- 选中菜单的逻辑保持不变 -->
+      <div class="canvas-item__menu" v-if="activeComponentId === config.id">
+        <div class="canvas-item__menu-item" v-for="item in componentsMenu" :key="item.id"
+          @click.stop="clickMenu(item, config)">
+          <el-icon :class="item.icon"></el-icon>
+        </div>
+      </div>
+    </div>
+  </transition-group>
+</draggable>

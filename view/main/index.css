@@ -1,0 +1,75 @@
+/* 主题变量 */
+:root {
+  /* 浅色主题 */
+  --theme-bg-color: #fcfdff;
+  --theme-panel-bg: #ffffff;
+  --theme-border-color: #ccc;
+  --theme-text-color: #333333;
+  --theme-grid-color: #dcdcdc;
+  --theme-shadow-color: #0000001a;
+  --theme-shadow-color-light: #0000000a;
+  --theme-scrollbar-thumb: #c1c1c1;
+  --theme-scrollbar-track: #f1f1f1;
+}
+
+/* 深色主题 */
+[data-theme="dark"] {
+  --theme-bg-color: #1a1a1a;
+  --theme-panel-bg: #2d2d2d;
+  --theme-border-color: #404040;
+  --theme-text-color: #ffffff;
+  --theme-grid-color: #404040;
+  --theme-shadow-color: #0000004d;
+  --theme-shadow-color-light: #00000033;
+  --theme-scrollbar-thumb: #4a4a4a;
+  --theme-scrollbar-track: #2d2d2d;
+}
+
+/* 全局过渡动画 */
+html {
+  transition: background-color 0.3s ease-in-out;
+}
+
+html * {
+  transition: background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out,
+    border-color 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-scrollbar-track);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-border-color);
+}
+
+/* Firefox滚动条样式 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-scrollbar-thumb) var(--theme-scrollbar-track);
+}
+
+body {
+  font-family: sans-serif;
+  color: var(--theme-text-color);
+  background-color: var(--theme-bg-color);
+}
+
+
+.theme-switch:hover {
+  opacity: 0.8;
+}

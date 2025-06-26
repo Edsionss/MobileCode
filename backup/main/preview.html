@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>移动端低代码设计器</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="../../package/Vant/vant.css">
+  <link rel="stylesheet" href="../../package/ElementUI/ElementUI.css">
+  <link rel="stylesheet" href="../../package/WotDesign/WotDesign.css">
+  <link rel="stylesheet" href="../../package/ContextMenu/contextmenu.css">
+  <link rel="stylesheet" href="../../package/layui/css/layui.css">
+  <!-- 引入自定义样式 -->
+  <link rel="stylesheet" href="./index.css">
+  <!-- es-module-shims -->
+  <script src="../../package/esModule/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@config/": "../../config/",
+        "@/": "/",
+        "@components/": "../components/",
+        "@utils/": "../../utils/",
+        "@assets/": "../../assets/",
+        "@design/": "../../design/",
+        "@modules/": "../../modules/",
+        "@package/": "../../package/"
+      }
+    }  
+  </script>
+  <!-- 引入vue相关依赖 -->
+  <script src="../../package/Vue/vue.js"></script>
+  <script src="../../package/Router/vue-router.js"></script>
+  <script src="../../package/Vuex/vuex.js"></script>
+  <!-- 引入Vant -->
+  <script src="../../package/Vant/vant.min.js"></script>
+  <!-- 引入ElementUI -->
+  <script src="../../package/ElementUI/ElementUi.js"></script>
+  <!-- 引入WotDesign -->
+  <script src="../../package/WotDesign/WotDesign.js"></script>
+  <!-- 引入layui -->
+  <script src="../../package/Layui/layui.js"></script>
+  <!-- xm-select -->
+  <script src="../../package/XmSelect/xm-select.js"></script>
+  <!-- echarts 5.6 -->
+  <script src="../../package/Echarts/echarts.min.js"></script>
+  <!-- 引入Sortable -->
+  <script src="../../package/Sortable/Sortable.js"></script>
+  <!-- 引入vuedraggable -->
+  <script src="../../package/Vuedraggable/vuedraggable.umd.js"></script>
+  <!-- 引入右键菜单 contextmenu -->
+  <script src="../../package/ContextMenu/contextmenu.umd.js"></script>
+  <!-- 引入lodash -->
+  <script src="../../package/Lodash/lodash.min.js"></script>
+
+</head>
+<style></style>
+
+<body>
+  <div id="app">
+    <!-- Block: design-layout -->
+    <div class="design-layout">
+      <!-- Element: header -->
+      <div class="design-layout__header">
+        <header-component @change-Mode="changeMode"></headerComponent>
+      </div>
+      <!-- Element: body -->
+      <div class="design-layout__body">
+        <!-- Element: components-panel -->
+        <div class="design-layout__components-panel">
+          <modules-component></modules-component>
+        </div>
+        <!-- Element: canvas-panel -->
+        <div class="design-layout__canvas-panel" :style="canvas.currentModeStyle">
+
+          <canvas-error-component v-if="canvas.canvasWarning"></canvas-error-component>
+
+          <div class="design-layout__canvas-panel__body" v-else>
+            <canvas-component :preview-data="previewData"></canvas-component>
+          </div>
+        </div>
+        <!-- Element: attribute-panel -->
+        <div class="design-layout__attribute-panel">
+          <attribute-component></attribute-component>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script src="./index.js" type="module"></script>
+
+</html>

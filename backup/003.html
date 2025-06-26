@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可视化表头合并配置方案</title>
+  <!-- 引入 Element UI CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- 引入 Layui CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.13/dist/css/layui.css">
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      margin: 0;
+      background-color: #f7f8fa;
+    }
+
+    #app {
+      padding: 20px;
+    }
+
+    .config-panel {
+      padding: 20px;
+      border: 1px solid #EBEEF5;
+      border-radius: 4px;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+    }
+
+    .config-title {
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #303133;
+      font-weight: bold;
+    }
+
+    .preview-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #303133;
+      margin-bottom: 20px;
+    }
+
+    /* 表头构建器网格样式 */
+    .header-builder-grid {
+      display: grid;
+      border-left: 1px solid #EBEEF5;
+      border-top: 1px solid #EBEEF5;
+    }
+
+    .header-cell {
+      border-right: 1px solid #EBEEF5;
+      border-bottom: 1px solid #EBEEF5;
+      padding: 10px;
+      min-height: 140px;
+      background-color: #fafafa;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .header-cell.is-placeholder {
+      background-color: #f0f0f0;
+    }
+
+    /* 被合并的单元格样式 */
+    .cell-input {
+      margin-bottom: 10px;
+    }
+
+    .cell-actions .el-button {
+      margin: 2px;
+      padding: 5px;
+    }
+
+    .grid-actions {
+      margin-top: 20px;
+      text-align: right;
+    }
+
+    .cell-info {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 12px;
+      color: #909399;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <el-row :gutter="20">
+      <!-- 配置面板 -->
+      <el-col :span="10">
+        <div class="config-panel">
+          <div class="config-title"><i class="el-icon-s-grid"></i> 可视化表头构建器</div>
+          <p style="color: #909399; font-size: 14px;">在下方网格中编辑表头结构，右侧将实时预览。</p>
+
+          <!-- 网格构建器 -->
+          <div class="header-builder-grid" :style="{ gridTemplateColumns: `repeat(${dataColumns.length}, 1fr)` }">
+            <template v-for="(row, rowIndex) in headerGrid">
+              <div v-for="(cell, colIndex) in row" :key="cell.id" class="header-cell"
+                :class="{ 'is-placeholder': cell.placeholder }"
+                :style="{ gridColumn: `span ${cell.colspan}`, gridRow: `span ${cell.rowspan}` }">
+
+                <!-- 只在真实单元格中显示内容 -->
+                <template v-if="!cell.placeholder">
+                  <span class="cell-info">R{{rowIndex+1}}, C{{colIndex+1}}</span>
+                  <el-input v-model="cell.title" placeholder="输入标题" size="mini" class="cell-input"></el-input>
+
+                  <div class="cell-actions">
+                    <el-button-group>
+                      <el-button type="primary" icon="el-icon-right" size="mini" title="向右合并"
+                        @click="mergeRight(rowIndex, colIndex)"
+                        :disabled="colIndex + cell.colspan >= dataColumns.length"></el-button>
+                      <el-button type="primary" icon="el-icon-bottom" size="mini" title="向下合并"
+                        @click="mergeDown(rowIndex, colIndex)"
+                        :disabled="rowIndex + cell.rowspan >= headerGrid.length"></el-button>
+                    </el-button-group>
+                    <el-button type="warning" icon="el-icon-refresh-left" size="mini" title="拆分单元格"
+                      @click="splitCell(rowIndex, colIndex)"
+                      :disabled="cell.colspan === 1 && cell.rowspan === 1"></el-button>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <!-- 网格全局操作 -->
+          <div class="grid-actions">
+            <el-button @click="addHeaderRow" icon="el-icon-plus" size="small">添加表头行</el-button>
+            <el-button @click="removeHeaderRow" icon="el-icon-minus" size="small"
+              :disabled="headerGrid.length <= 1">移除最后一行</el-button>
+            <el-button @click="resetGrid" icon="el-icon-refresh" size="small" type="danger">重置表头</el-button>
+          </div>
+        </div>
+      </el-col>
+
+      <!-- 表格预览区域 -->
+      <el-col :span="14">
+        <div class="preview-title"><i class="el-icon-view"></i> Layui 表格实时预览</div>
+        <div id="layui-table-container"></div>
+      </el-col>
+    </el-row>
+  </div>
+
+  <!-- 引入 Vue 和 Element UI JS -->
+  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <!-- 引入 Layui JS -->
+  <script src="https://unpkg.com/layui@2.9.13/dist/layui.js"></script>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        // 基础数据列定义 (底层)
+        dataColumns: [
+          { field: 'id', title: 'ID', width: 80 },
+          { field: 'name', title: '姓名', width: 100 },
+          { field: 'score_yuwen', title: '语文', width: 80 },
+          { field: 'score_shuxue', title: '数学', width: 80 },
+          { field: 'score_yingyu', title: '英语', width: 80 },
+          { field: 'total', title: '总分', width: 90 },
+        ],
+        // 可视化表头网格的数据结构
+        headerGrid: [],
+        tableInstance: null
+      },
+      computed: {
+        // 核心：将可视化网格转换为 Layui 需要的 cols 数组
+        layuiCols () {
+          const layuiColsArray = [];
+          const dataColCount = this.dataColumns.length;
+          let dataColPointer = 0;
+
+          for (let i = 0; i < this.headerGrid.length; i++) {
+            const row = this.headerGrid[i];
+            const layuiRow = [];
+            for (let j = 0; j < row.length; j++) {
+              const cell = row[j];
+              if (cell.placeholder) continue;
+
+              const layuiCell = {
+                title: cell.title,
+                rowspan: cell.rowspan,
+                colspan: cell.colspan,
+                align: 'center'
+              };
+
+              // 如果单元格在最后一行，或者它的 rowspan 触及了最后一行
+              // 则它需要关联一个数据列的 field
+              if (i + cell.rowspan === this.headerGrid.length) {
+                // 找到它对应的第一个数据列
+                const correspondingDataCol = this.findDataColumn(i, j);
+                if (correspondingDataCol) {
+                  layuiCell.field = correspondingDataCol.field;
+                  layuiCell.width = correspondingDataCol.width;
+                }
+              }
+
+              layuiRow.push(layuiCell);
+            }
+            layuiColsArray.push(layuiRow);
+          }
+          return layuiColsArray;
+        }
+      },
+      watch: {
+        // 监听最终生成的 cols 数组的变化，一旦变化就重新渲染表格
+        layuiCols: {
+          handler: function () {
+            // 使用 nextTick 确保 DOM 更新后再渲染
+            this.$nextTick(() => {
+              this.renderTable();
+            });
+          },
+          deep: true
+        }
+      },
+      created () {
+        this.resetGrid(); // 初始化时创建默认表头
+      },
+      methods: {
+        // 渲染Layui表格
+        renderTable () {
+          this.tableInstance = layui.table.render({
+            elem: '#layui-table-container',
+            height: 400,
+            cols: this.layuiCols,
+            data: [ // 示例数据
+              { id: 1, name: '张三', score_yuwen: 85, score_shuxue: 95, score_yingyu: 90, total: 270 },
+              { id: 2, name: '李四', score_yuwen: 90, score_shuxue: 88, score_yingyu: 92, total: 270 },
+              { id: 3, name: '王五', score_yuwen: 88, score_shuxue: 92, score_yingyu: 85, total: 265 },
+            ],
+            page: false
+          });
+        },
+
+        // --- 网格操作方法 ---
+
+        // 重置网格
+        resetGrid () {
+          this.headerGrid = [
+            this.dataColumns.map((col, index) => ({
+              id: `0-${index}`, title: col.title, rowspan: 1, colspan: 1, placeholder: false
+            }))
+          ];
+        },
+        // 添加一行表头
+        addHeaderRow () {
+          const newRow = this.dataColumns.map((col, index) => ({
+            id: `${this.headerGrid.length}-${index}`, title: '新标题', rowspan: 1, colspan: 1, placeholder: false
+          }));
+          this.headerGrid.unshift(newRow); // 在顶部添加新行
+        },
+        // 移除最后一行表头
+        removeHeaderRow () {
+          if (this.headerGrid.length > 1) {
+            this.headerGrid.shift();
+          }
+        },
+        // 向右合并
+        mergeRight (rowIndex, colIndex) {
+          const cell = this.headerGrid[rowIndex][colIndex];
+          const rightCell = this.headerGrid[rowIndex][colIndex + cell.colspan];
+          if (!rightCell || rightCell.rowspan !== cell.rowspan) {
+            this.$message.error('无法合并，右侧单元格行高不一致！');
+            return;
+          }
+
+          // 将右侧单元格标记为占位符
+          for (let i = 0; i < rightCell.rowspan; i++) {
+            for (let j = 0; j < rightCell.colspan; j++) {
+              this.$set(this.headerGrid[rowIndex + i][colIndex + cell.colspan + j], 'placeholder', true);
+            }
+          }
+          cell.colspan += rightCell.colspan;
+        },
+        // 向下合并
+        mergeDown (rowIndex, colIndex) {
+          const cell = this.headerGrid[rowIndex][colIndex];
+          const downCell = this.headerGrid[rowIndex + cell.rowspan][colIndex];
+          if (!downCell || downCell.colspan !== cell.colspan) {
+            this.$message.error('无法合并，下方单元格列宽不一致！');
+            return;
+          }
+
+          // 将下方单元格标记为占位符
+          for (let i = 0; i < downCell.rowspan; i++) {
+            for (let j = 0; j < downCell.colspan; j++) {
+              this.$set(this.headerGrid[rowIndex + cell.rowspan + i][colIndex + j], 'placeholder', true);
+            }
+          }
+          cell.rowspan += downCell.rowspan;
+        },
+        // 拆分单元格
+        splitCell (rowIndex, colIndex) {
+          const cell = this.headerGrid[rowIndex][colIndex];
+          const originalColspan = cell.colspan;
+          const originalRowspan = cell.rowspan;
+          cell.colspan = 1;
+          cell.rowspan = 1;
+
+          // 恢复被合并的单元格
+          for (let i = 0; i < originalRowspan; i++) {
+            for (let j = 0; j < originalColspan; j++) {
+              if (i === 0 && j === 0) continue;
+              const placeholderCell = this.headerGrid[rowIndex + i][colIndex + j];
+              if (placeholderCell) {
+                this.$set(this.headerGrid[rowIndex + i][colIndex + j], 'placeholder', false);
+                this.$set(this.headerGrid[rowIndex + i][colIndex + j], 'rowspan', 1);
+                this.$set(this.headerGrid[rowIndex + i][colIndex + j], 'colspan', 1);
+              }
+            }
+          }
+        },
+        // 辅助函数：根据网格坐标找到对应的数据列
+        findDataColumn (rowIndex, colIndex) {
+          let count = 0;
+          for (let i = 0; i < this.dataColumns.length; i++) {
+            // 找到网格最后一行的真实单元格
+            const cell = this.headerGrid[this.headerGrid.length - 1][i];
+            if (!cell.placeholder) {
+              if (i <= colIndex) {
+                count++;
+              }
+            }
+          }
+          return this.dataColumns[count - 1];
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

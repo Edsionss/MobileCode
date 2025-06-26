@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layui-Table 动态表头配置生成器</title>
+
+  <!-- 依赖引入 (CDN) -->
+  <!-- Element UI -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- Luckysheet -->
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/css/pluginsCss.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/plugins.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/css/luckysheet.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/assets/iconfont/iconfont.css' />
+  <!-- Layui -->
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.8/dist/css/layui.css">
+
+  <style>
+    /* 全局与布局样式 */
+    html,
+    body,
+    #app {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      overflow: hidden;
+      /* 防止出现多余滚动条 */
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      background-color: #f5f7fa;
+    }
+
+    .header-bar {
+      background-color: #409EFF;
+      color: white;
+      padding: 10px 20px;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      padding: 15px;
+      gap: 15px;
+      height: calc(100% - 82px);
+      /* 减去头部和padding */
+    }
+
+    .config-area,
+    .preview-area {
+      display: flex;
+      gap: 15px;
+      border: 1px solid #DCDFE6;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+      border-radius: 4px;
+    }
+
+    .config-area {
+      height: 50%;
+    }
+
+    .preview-area {
+      height: 50%;
+      flex-direction: column;
+    }
+
+    /* 配置区样式 */
+    .luckysheet-container {
+      flex: 3;
+      /* 占据更大空间 */
+      border-right: 1px solid #DCDFE6;
+      height: 100%;
+    }
+
+    .property-panel {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .property-panel .panel-header {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #E4E7ED;
+    }
+
+    .property-panel .form-container {
+      flex-grow: 1;
+    }
+
+    .property-panel .placeholder {
+      color: #909399;
+      text-align: center;
+      margin-top: 50px;
+      font-size: 14px;
+    }
+
+    /* 预览区样式 */
+    .layui-table-preview {
+      flex-basis: 60%;
+      /* 占据60%高度 */
+      padding: 10px;
+      overflow: auto;
+      border-bottom: 1px solid #DCDFE6;
+    }
+
+    .code-viewer {
+      flex-basis: 40%;
+      /* 占据40%高度 */
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .code-viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      color: #303133;
+      font-weight: bold;
+    }
+
+    .code-viewer pre {
+      flex-grow: 1;
+      margin: 0;
+      background-color: #f9f9f9;
+      border: 1px solid #ebeef5;
+      padding: 15px;
+      overflow: auto;
+      font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #333;
+      border-radius: 4px;
+    }
+
+    /* Luckysheet 精简 */
+    #luckysheet-bottom-controll-bar {
+      display: none !important;
+    }
+
+    #luckysheet-sheet-container {
+      display: none !important;
+    }
+
+    /* Element UI 微调 */
+    .el-form-item {
+      margin-bottom: 18px;
+    }
+
+    .el-form-item__label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <header class="header-bar">Layui-Table 动态表头配置生成器</header>
+
+    <div class="main-container">
+      <!-- 上半部分：配置区域 -->
+      <section class="config-area">
+        <!-- 左侧：表格配置 -->
+        <div class="luckysheet-container" id="luckysheet"></div>
+
+        <!-- 右侧：属性配置 -->
+        <aside class="property-panel">
+          <div class="panel-header">
+            <el-button type="primary" icon="el-icon-check" @click="saveConfig" size="small">保存配置</el-button>
+            <el-button type="danger" icon="el-icon-refresh" @click="resetConfig" size="small">重置配置</el-button>
+          </div>
+
+          <div v-if="activeColumnConfig" class="form-container">
+            <el-form :model="activeColumnConfig" label-width="80px" size="small">
+              <el-form-item label="字段标题">
+                <el-input v-model="activeColumnConfig.title" @input="updateLuckysheetCellTitle"></el-input>
+              </el-form-item>
+              <el-form-item label="字段名称" required>
+                <el-input v-model="activeColumnConfig.field" placeholder="数据的key"></el-input>
+              </el-form-item>
+              <el-form-item label="列宽度">
+                <el-input-number v-model="activeColumnConfig.width" :min="0" controls-position="right"
+                  style="width: 100%;"></el-input-number>
+              </el-form-item>
+              <el-form-item label="对齐方式">
+                <el-radio-group v-model="activeColumnConfig.align">
+                  <el-radio-button label="left">居左</el-radio-button>
+                  <el-radio-button label="center">居中</el-radio-button>
+                  <el-radio-button label="right">居右</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="是否固定">
+                <el-radio-group v-model="activeColumnConfig.fixed">
+                  <el-radio-button :label="undefined">不固定</el-radio-button>
+                  <el-radio-button label="left">左固定</el-radio-button>
+                  <el-radio-button label="right">右固定</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="是否排序">
+                <el-switch v-model="activeColumnConfig.sort"></el-switch>
+              </el-form-item>
+            </el-form>
+          </div>
+          <div v-else class="placeholder">
+            <i class="el-icon-edit-outline" style="font-size: 32px; margin-bottom: 10px;"></i>
+            <p>请在左侧设计区双击<br />一个最底层的单元格以配置其列属性。</p>
+          </div>
+        </aside>
+      </section>
+
+      <!-- 下半部分：预览区域 -->
+      <section class="preview-area">
+        <!-- Layui Table 预览 -->
+        <div class="layui-table-preview">
+          <table id="layui-table-instance" lay-filter="demo-table"></table>
+        </div>
+
+        <!-- 代码查看器 -->
+        <div class="code-viewer">
+          <div class="code-viewer-header">
+            <span>Layui Table 'cols' 配置代码</span>
+            <el-button type="primary" icon="el-icon-document-copy" @click="copyCode" size="mini">一键复制</el-button>
+          </div>
+          <pre><code>{{ generatedCode }}</code></pre>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 依赖脚本 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/js/plugin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/luckysheet.umd.js"></script>
+  <script src="https://unpkg.com/layui@2.9.8/dist/layui.js"></script>
+  <script src="https://unpkg.com/clipboard@2.0.8/dist/clipboard.min.js"></script>
+
+  <script>
+    const STORAGE_KEY = 'layui-table-configurator-data';
+
+    new Vue({
+      el: '#app',
+      data: {
+        // 单一数据源：Layui table 的 cols 配置
+        cols: [],
+        // 存储最底层列的详细属性，以其在最终cols数组中的列索引为key
+        // 这是为了在复杂的表头结构中，也能稳定地绑定属性
+        finalColumnsProps: {},
+        // 当前在属性面板中激活的列配置对象
+        activeColumnConfig: null,
+        // 当前在Luckysheet中选中的单元格信息
+        activeCell: null,
+        // 用于生成唯一field的计数器
+        fieldCounter: 1,
+        // Layui table 预览用的模拟数据
+        tableDemoData: [],
+        // Layui 模块
+        layuiTable: null,
+        layer: null,
+      },
+      computed: {
+        // 生成用于展示和复制的代码
+        generatedCode () {
+          if (this.cols.length === 0) {
+            return "// 请在左侧配置区设计表头...";
+          }
+          const code = `var cols = ${JSON.stringify(this.cols, null, 4)};`;
+          return code;
+        }
+      },
+      watch: {
+        // 深度监听 cols 变化，实时重新渲染 Layui 表格
+        cols: {
+          deep: true,
+          handler () {
+            this.renderLayuiTable();
+          }
+        }
+      },
+      methods: {
+        // 1. 初始化
+        init () {
+          layui.use(['table', 'layer'], () => {
+            this.layuiTable = layui.table;
+            this.layer = layui.layer;
+
+            const savedConfig = this.loadConfigFromStorage();
+            if (savedConfig) {
+              this.initLuckysheet(savedConfig.luckysheet);
+              this.finalColumnsProps = savedConfig.props || {};
+              // 确保加载后解析一次以生成初始cols
+              this.parseLuckysheetToLayuiCols();
+            } else {
+              this.initLuckysheet(this.getDefaultLuckysheetConfig());
+              this.parseLuckysheetToLayuiCols(); // 初始解析
+            }
+          });
+        },
+
+        // 2. Luckysheet 相关方法
+        initLuckysheet (options) {
+          const vm = this;
+          luckysheet.create({
+            container: 'luckysheet',
+            lang: 'zh',
+            data: options,
+            showinfobar: false,
+            showtoolbar: true,
+            showsheetbar: false,
+            showstatisticbar: false,
+            sheetFormulaBar: false,
+            enableAddBackTop: false,
+            toolbar: {
+              'undo': true, //撤销
+              'redo': true, //重做
+              'merge': true, //合并单元格
+            },
+            // hook，当单元格操作后触发
+            updated: (operate) => {
+              vm.parseLuckysheetToLayuiCols();
+            },
+            // hook, 双击单元格时触发
+            cellDblClick: (cell, position) => {
+              vm.handleCellSelect(cell, position.r, position.c);
+            }
+          });
+        },
+
+        getDefaultLuckysheetConfig () {
+          return [{
+            "name": "Sheet1",
+            "celldata": [
+              { "r": 0, "c": 0, "v": { "ct": { "fa": "General", "t": "g" }, "m": "基础信息", "v": "基础信息" } },
+              { "r": 0, "c": 2, "v": { "ct": { "fa": "General", "t": "g" }, "m": "操作", "v": "操作" } },
+              { "r": 1, "c": 0, "v": { "ct": { "fa": "General", "t": "g" }, "m": "ID", "v": "ID" } },
+              { "r": 1, "c": 1, "v": { "ct": { "fa": "General", "t": "g" }, "m": "用户名", "v": "用户名" } },
+            ],
+            "config": {
+              "merge": {
+                "0_0": { "r": 0, "c": 0, "rs": 1, "cs": 2 },
+                "0_2": { "r": 0, "c": 2, "rs": 2, "cs": 1 }
+              },
+            },
+            "order": "0", "status": "1"
+          }];
+        },
+
+        // 3. 核心转换逻辑：Luckysheet -> Layui cols
+        parseLuckysheetToLayuiCols () {
+          const sheet = luckysheet.getLuckysheetfile()[0];
+          if (!sheet || !sheet.celldata) {
+            this.cols = [];
+            return;
+          }
+
+          const { celldata, config } = sheet;
+          const mergeConfig = config.merge || {};
+
+          // 找出表格的实际行数和列数
+          let maxRow = 0, maxCol = 0;
+          celldata.forEach(cell => {
+            if (cell.r > maxRow) maxRow = cell.r;
+            if (cell.c > maxCol) maxCol = cell.c;
+          });
+          const rowCount = maxRow + 1;
+          const colCount = maxCol + 1;
+
+          // 创建一个二维布尔数组，标记单元格是否已被合并占用
+          const visited = Array.from({ length: rowCount }, () => Array(colCount).fill(false));
+          // 最终的cols结果
+          const newCols = Array.from({ length: rowCount }, () => []);
+
+          // 存储最底层列的映射关系，key为列索引c, value为在 newCols 最后一行的对象引用
+          const bottomCellsMap = {};
+
+          for (let r = 0; r < rowCount; r++) {
+            for (let c = 0; c < colCount; c++) {
+              if (visited[r][c]) continue;
+
+              const mergeInfo = mergeConfig[`${r}_${c}`];
+              const cellData = celldata.find(d => d.r === r && d.c === c);
+              const title = (cellData && cellData.v && cellData.v.m) ? cellData.v.m : ``;
+
+              const layuiCol = { title };
+
+              let rs = 1, cs = 1;
+              if (mergeInfo) {
+                rs = mergeInfo.rs;
+                cs = mergeInfo.cs;
+                if (rs > 1) layuiCol.rowspan = rs;
+                if (cs > 1) layuiCol.colspan = cs;
+                layuiCol.align = 'center';
+              }
+
+              // 标记所有被占用的单元格
+              for (let i = r; i < r + rs; i++) {
+                for (let j = c; j < c + cs; j++) {
+                  visited[i][j] = true;
+                }
+              }
+
+              // 如果是表头最底层的单元格 (没有rowspan或者rowspan不跨出当前位置)
+              // 并且没有colspan，它就是一个真实的列
+              const isBottomCell = (r + rs - 1) === (rowCount - 1);
+              if (isBottomCell) {
+                bottomCellsMap[c] = layuiCol;
+              }
+              newCols[r].push(layuiCol);
+            }
+          }
+
+          // 统一处理最底层列的属性
+          for (let c = 0; c < colCount; c++) {
+            const cell = Object.values(bottomCellsMap).find(col => {
+              const colIndex = newCols[col.r_idx].indexOf(col);
+              // This logic is complex, simplify: find cell in the last row for given c
+              let targetCol = null;
+              for (let r = rowCount - 1; r >= 0; r--) {
+                targetCol = newCols[r].find(colObj => {
+                  // This is hard to get original c. Let's simplify logic.
+                });
+              }
+            });
+          }
+          // 简化逻辑：遍历所有最底层单元格，分配或更新属性
+          let finalColIndex = 0;
+          newCols.forEach(row => {
+            row.forEach(col => {
+              if (!col.colspan && !col.rowspan && this.isBottomLevel(col, newCols)) {
+                if (!this.finalColumnsProps[finalColIndex]) {
+                  this.finalColumnsProps[finalColIndex] = this.createDefaultColumnProps();
+                }
+                Object.assign(col, this.finalColumnsProps[finalColIndex]);
+                // 为后续选择提供索引
+                col.finalColIndex = finalColIndex;
+                finalColIndex++;
+              }
+            })
+          })
+
+          this.cols = newCols.filter(row => row.length > 0);
+          this.generateDemoData();
+        },
+
+        isBottomLevel (col, allCols) {
+          // 简化的判断：如果一个单元格没有rowspan，我们暂时认为它是最底层
+          // 严谨的判断需要遍历其下的单元格，但对于此场景，此简化足够
+          return !col.rowspan;
+        },
+
+        createDefaultColumnProps () {
+          const props = {
+            field: 'field_' + this.fieldCounter++,
+            width: 120,
+            align: 'left',
+            sort: false,
+            fixed: undefined
+          };
+          return props;
+        },
+
+        // 4. 交互与数据处理
+        handleCellSelect (cell, r, c) {
+          const flatCols = this.cols.flat();
+          const targetCol = flatCols.find(col => {
+            // Luckysheet的cell对象在我们的cols里没有直接引用，需要重新解析定位
+            const sheet = luckysheet.getLuckysheetfile()[0];
+            const mergeInfo = sheet.config.merge[`${r}_${c}`];
+            // 这是一个非常复杂的定位，因为cols已经重构了。
+            // 简化策略：双击时，我们只关心它是否是最底层。
+            if (this.isCellBottomLevel(r, c, sheet)) {
+              // 找到它在最终渲染中的列索引
+              let finalColIndex = this.getFinalColIndex(c, sheet);
+              if (finalColIndex !== -1) {
+                this.activeCell = { r, c };
+                if (!this.finalColumnsProps[finalColIndex]) {
+                  this.finalColumnsProps[finalColIndex] = this.createDefaultColumnProps();
+                  this.parseLuckysheetToLayuiCols(); // Re-parse to apply new props
+                }
+                this.activeColumnConfig = this.finalColumnsProps[finalColIndex];
+              }
+            } else {
+              this.activeColumnConfig = null;
+              this.activeCell = null;
+            }
+          });
+        },
+
+        getFinalColIndex (targetC, sheet) {
+          const { celldata, config } = sheet;
+          const mergeConfig = config.merge || {};
+          let maxCol = 0;
+          celldata.forEach(cell => { if (cell.c > maxCol) maxCol = cell.c; });
+
+          let finalIndex = -1;
+          let currentIndex = 0;
+          for (let c = 0; c <= maxCol; c++) {
+            if (this.isCellBottomLevelInItsColumn(c, sheet)) {
+              if (c === targetC) {
+                finalIndex = currentIndex;
+                break;
+              }
+              currentIndex++;
+            }
+          }
+          return finalIndex;
+        },
+
+        isCellBottomLevel (r, c, sheet) {
+          const mergeConfig = sheet.config.merge || {};
+          // 如果它是一个合并单元格的左上角，且rowspan>1，则不是最底层
+          if (mergeConfig[`${r}_${c}`] && mergeConfig[`${r}_${c}`].rs > 1) return false;
+
+          // 如果它被其他单元格的rowspan覆盖，则不是最底层
+          for (const key in mergeConfig) {
+            const merge = mergeConfig[key];
+            const startCell = key.split('_').map(Number);
+            if (c >= startCell[1] && c < startCell[1] + merge.cs && r > startCell[0] && r < startCell[0] + merge.rs) {
+              return false;
+            }
+          }
+          return true;
+        },
+
+        isCellBottomLevelInItsColumn (c, sheet) {
+          let maxRow = 0;
+          sheet.celldata.forEach(cell => { if (cell.r > maxRow) maxRow = cell.r; });
+          for (let r = 0; r <= maxRow; r++) {
+            if (!this.isCellBottomLevel(r, c, sheet)) return false;
+          }
+          return true;
+        },
+
+        updateLuckysheetCellTitle (newTitle) {
+          if (this.activeCell) {
+            luckysheet.setCellValue(this.activeCell.r, this.activeCell.c, newTitle);
+          }
+        },
+
+        // 5. 预览区方法
+        renderLayuiTable () {
+          if (!this.layuiTable || this.cols.length === 0) return;
+
+          this.layuiTable.render({
+            elem: '#layui-table-instance',
+            cols: this.cols,
+            data: this.tableDemoData,
+            page: false,
+            skin: 'line',
+            even: true,
+            height: 'full-150', // 自适应高度
+          });
+        },
+
+        generateDemoData () {
+          const data = [];
+          const fields = Object.values(this.finalColumnsProps).map(p => p.field);
+          if (fields.length === 0) {
+            this.tableDemoData = [];
+            return;
+          }
+          for (let i = 1; i <= 5; i++) {
+            const row = {};
+            fields.forEach((field, index) => {
+              row[field] = `${field}_${i}`;
+            });
+            data.push(row);
+          }
+          this.tableDemoData = data;
+        },
+
+        copyCode () {
+          const clipboard = new ClipboardJS('.el-button', {
+            text: () => this.generatedCode
+          });
+          clipboard.on('success', (e) => {
+            this.$message.success('代码已成功复制到剪贴板！');
+            e.clearSelection();
+            clipboard.destroy();
+          });
+          clipboard.on('error', () => {
+            this.$message.error('复制失败，请手动复制。');
+            clipboard.destroy();
+          });
+        },
+
+        // 6. 配置管理
+        saveConfig () {
+          const configToSave = {
+            luckysheet: luckysheet.getLuckysheetfile(),
+            props: this.finalColumnsProps
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(configToSave));
+          this.$message.success('配置已保存到浏览器本地存储！');
+        },
+
+        loadConfigFromStorage () {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          return saved ? JSON.parse(saved) : null;
+        },
+
+        resetConfig () {
+          this.$confirm('此操作将清空所有配置并恢复到默认状态, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            localStorage.removeItem(STORAGE_KEY);
+            this.activeColumnConfig = null;
+            this.activeCell = null;
+            this.finalColumnsProps = {};
+            this.fieldCounter = 1;
+            this.initLuckysheet(this.getDefaultLuckysheetConfig());
+            this.parseLuckysheetToLayuiCols();
+            this.$message({
+              type: 'success',
+              message: '重置成功!'
+            });
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消重置'
+            });
+          });
+        }
+      },
+      mounted () {
+        this.init();
+      }
+    });
+  </script>
+
+</body>
+
+</html>

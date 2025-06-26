@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可视化表头合并配置方案 (最终修复版)</title>
+  <!-- 引入 Element UI CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- 引入 Layui CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.13/dist/css/layui.css">
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      margin: 0;
+      background-color: #f7f8fa;
+    }
+
+    #app {
+      padding: 20px;
+    }
+
+    .config-panel {
+      padding: 20px;
+      border: 1px solid #EBEEF5;
+      border-radius: 4px;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+    }
+
+    .config-title {
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #303133;
+      font-weight: bold;
+    }
+
+    .preview-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #303133;
+      margin-bottom: 20px;
+    }
+
+    .header-builder-grid {
+      display: grid;
+      border-left: 1px solid #EBEEF5;
+      border-top: 1px solid #EBEEF5;
+    }
+
+    .header-cell {
+      border-right: 1px solid #EBEEF5;
+      border-bottom: 1px solid #EBEEF5;
+      padding: 10px;
+      min-height: 120px;
+      background-color: #fafafa;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .header-cell.is-hidden {
+      visibility: hidden;
+      padding: 0;
+      border: none;
+      min-height: 0;
+    }
+
+    .cell-input {
+      margin-bottom: 10px;
+    }
+
+    .cell-actions .el-button {
+      margin: 2px;
+      padding: 5px;
+    }
+
+    .grid-actions {
+      margin-top: 20px;
+      text-align: right;
+    }
+
+    .cell-info {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 12px;
+      color: #c0c4cc;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <el-row :gutter="20">
+      <!-- 配置面板 -->
+      <el-col :span="10">
+        <div class="config-panel">
+          <div class="config-title"><i class="el-icon-s-grid"></i> 可视化表头构建器</div>
+          <p style="color: #909399; font-size: 14px;">在下方网格中编辑表头结构，右侧将实时预览。</p>
+
+          <!-- 网格构建器 -->
+          <div class="header-builder-grid" :style="{ gridTemplateColumns: `repeat(${dataColumns.length}, 1fr)` }">
+            <div v-for="cell in flatHeaderGrid" :key="cell.id" class="header-cell"
+              :class="{ 'is-hidden': cell.isHidden }"
+              :style="{ gridColumn: `span ${cell.colspan}`, gridRow: `span ${cell.rowspan}` }">
+
+              <template v-if="!cell.isHidden">
+                <span class="cell-info">R{{cell.rowIndex+1}}, C{{cell.colIndex+1}}</span>
+                <el-input v-model="cell.title" placeholder="输入标题" size="mini" class="cell-input"></el-input>
+
+                <div class="cell-actions">
+                  <el-button-group>
+                    <el-button type="primary" icon="el-icon-right" size="mini" title="向右合并" @click="mergeRight(cell)"
+                      :disabled="!canMergeRight(cell)"></el-button>
+                    <el-button type="primary" icon="el-icon-bottom" size="mini" title="向下合并" @click="mergeDown(cell)"
+                      :disabled="!canMergeDown(cell)"></el-button>
+                  </el-button-group>
+                  <el-button type="warning" icon="el-icon-refresh-left" size="mini" title="拆分单元格"
+                    @click="splitCell(cell)" :disabled="cell.colspan === 1 && cell.rowspan === 1"></el-button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="grid-actions">
+            <el-button @click="addHeaderRow" icon="el-icon-plus" size="small">添加表头行</el-button>
+            <el-button @click="removeHeaderRow" icon="el-icon-minus" size="small"
+              :disabled="headerGrid.length <= 1">移除最顶行</el-button>
+            <el-button @click="resetGrid" icon="el-icon-refresh" size="small" type="danger">重置表头</el-button>
+          </div>
+        </div>
+      </el-col>
+
+      <!-- 表格预览区域 -->
+      <el-col :span="14">
+        <div class="preview-title"><i class="el-icon-view"></i> Layui 表格实时预览</div>
+        <div id="layui-table-container"></div>
+      </el-col>
+    </el-row>
+  </div>
+
+  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/layui@2.9.13/dist/layui.js"></script>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        dataColumns: [
+          { field: 'id', title: 'ID', width: 80 },
+          { field: 'name', title: '姓名', width: 100 },
+          { field: 'score_yuwen', title: '语文', width: 80 },
+          { field: 'score_shuxue', title: '数学', width: 80 },
+          { field: 'score_yingyu', title: '英语', width: 80 },
+          { field: 'total', title: '总分', width: 90 },
+        ],
+        headerGrid: [],
+        tableInstance: null,
+        cellIdCounter: 0,
+      },
+      computed: {
+        flatHeaderGrid () {
+          // 将二维数组拍平为一维，用于 v-for 渲染
+          return this.headerGrid.flat();
+        },
+        layuiCols () {
+          const layuiColsArray = [];
+          for (let i = 0; i < this.headerGrid.length; i++) {
+            const layuiRow = [];
+            for (let j = 0; j < this.headerGrid[i].length; j++) {
+              const cell = this.headerGrid[i][j];
+              if (cell.isHidden) continue;
+
+              const layuiCell = {
+                title: cell.title,
+                rowspan: cell.rowspan,
+                colspan: cell.colspan,
+                align: 'center'
+              };
+
+              // 关键：如果一个单元格是底层单元格，它必须关联一个field
+              if (cell.isDataCell) {
+                layuiCell.field = cell.field;
+                layuiCell.width = cell.width;
+              }
+
+              layuiRow.push(layuiCell);
+            }
+            if (layuiRow.length > 0) {
+              layuiColsArray.push(layuiRow);
+            }
+          }
+          return layuiColsArray;
+        }
+      },
+      watch: {
+        layuiCols: {
+          handler: function () { this.$nextTick(this.renderTable); },
+          deep: true
+        }
+      },
+      created () {
+        this.resetGrid();
+      },
+      methods: {
+        renderTable () {
+          layui.table.render({
+            elem: '#layui-table-container',
+            height: 400,
+            cols: this.layuiCols,
+            data: [
+              { id: 1, name: '张三', score_yuwen: 85, score_shuxue: 95, score_yingyu: 90, total: 270 },
+              { id: 2, name: '李四', score_yuwen: 90, score_shuxue: 88, score_yingyu: 92, total: 270 },
+              { id: 3, name: '王五', score_yuwen: 88, score_shuxue: 92, score_yingyu: 85, total: 265 },
+            ],
+            page: false
+          });
+        },
+
+        // --- 网格操作核心方法 ---
+
+        createCell (rowIndex, colIndex, options = {}) {
+          return {
+            id: this.cellIdCounter++,
+            rowIndex, colIndex,
+            rowspan: 1, colspan: 1,
+            isHidden: false,
+            isDataCell: false, // 默认不是底层数据单元格
+            ...options
+          };
+        },
+
+        resetGrid () {
+          const newRow = this.dataColumns.map((col, index) =>
+            this.createCell(0, index, {
+              title: col.title,
+              field: col.field,
+              width: col.width,
+              isDataCell: true
+            })
+          );
+          this.headerGrid = [newRow];
+        },
+
+        addHeaderRow () {
+          const newRow = this.dataColumns.map((col, index) =>
+            this.createCell(0, index, { title: '新标题' })
+          );
+          // 将所有现有单元格的 rowIndex + 1
+          this.headerGrid.forEach(row => row.forEach(cell => cell.rowIndex++));
+          this.headerGrid.unshift(newRow);
+        },
+
+        removeHeaderRow () {
+          if (this.headerGrid.length <= 1) return;
+          this.headerGrid.shift(); // 移除第一行
+          // 将所有剩余单元格的 rowIndex - 1
+          this.headerGrid.forEach(row => row.forEach(cell => cell.rowIndex--));
+          // 确保新的第一行成为底层数据单元格
+          this.headerGrid[this.headerGrid.length - 1].forEach((cell, colIndex) => {
+            if (!cell.isHidden) {
+              const dataCol = this.dataColumns[colIndex];
+              cell.isDataCell = true;
+              cell.field = dataCol.field;
+              cell.width = dataCol.width;
+            }
+          });
+        },
+
+        findCell (rowIndex, colIndex) {
+          if (this.headerGrid[rowIndex]) {
+            return this.headerGrid[rowIndex][colIndex];
+          }
+          return null;
+        },
+
+        canMergeRight (cell) {
+          const rightCellColIndex = cell.colIndex + cell.colspan;
+          if (rightCellColIndex >= this.dataColumns.length) return false;
+          const rightCell = this.findCell(cell.rowIndex, rightCellColIndex);
+          return rightCell && !rightCell.isHidden && rightCell.rowspan === cell.rowspan;
+        },
+
+        mergeRight (cell) {
+          if (!this.canMergeRight(cell)) return;
+          const rightCellColIndex = cell.colIndex + cell.colspan;
+          const rightCell = this.findCell(cell.rowIndex, rightCellColIndex);
+
+          // 隐藏被合并的单元格区域
+          for (let i = 0; i < rightCell.rowspan; i++) {
+            for (let j = 0; j < rightCell.colspan; j++) {
+              this.findCell(cell.rowIndex + i, rightCellColIndex + j).isHidden = true;
+            }
+          }
+          cell.colspan += rightCell.colspan;
+        },
+
+        canMergeDown (cell) {
+          const downCellRowIndex = cell.rowIndex + cell.rowspan;
+          if (downCellRowIndex >= this.headerGrid.length) return false;
+          const downCell = this.findCell(downCellRowIndex, cell.colIndex);
+          return downCell && !downCell.isHidden && downCell.colspan === cell.colspan;
+        },
+
+        mergeDown (cell) {
+          if (!this.canMergeDown(cell)) return;
+          const downCellRowIndex = cell.rowIndex + cell.rowspan;
+          const downCell = this.findCell(downCellRowIndex, cell.colIndex);
+
+          // 隐藏被合并的单元格区域
+          for (let i = 0; i < downCell.rowspan; i++) {
+            for (let j = 0; j < downCell.colspan; j++) {
+              this.findCell(downCellRowIndex + i, cell.colIndex + j).isHidden = true;
+            }
+          }
+          cell.rowspan += downCell.rowspan;
+
+          // 如果被合并的单元格是数据单元格，则当前单元格继承其属性
+          if (downCell.isDataCell) {
+            cell.isDataCell = true;
+            cell.field = downCell.field;
+            cell.width = downCell.width;
+          }
+        },
+
+        splitCell (cell) {
+          const oldRowspan = cell.rowspan;
+          const oldColspan = cell.colspan;
+          cell.rowspan = 1;
+          cell.colspan = 1;
+
+          // 恢复所有被隐藏的单元格
+          for (let i = 0; i < oldRowspan; i++) {
+            for (let j = 0; j < oldColspan; j++) {
+              if (i === 0 && j === 0) continue;
+              const hiddenCell = this.findCell(cell.rowIndex + i, cell.colIndex + j);
+              if (hiddenCell) {
+                hiddenCell.isHidden = false;
+                hiddenCell.rowspan = 1;
+                hiddenCell.colspan = 1;
+              }
+            }
+          }
+        },
+      }
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+<div class="framework-panel">
+  <div class="framework-panel__accordion">
+    <div v-for="framework in componentsArray" :key="framework.componentName" class="framework-panel__item">
+      <div class="framework-panel__header" @click="toggleFramework(framework.componentName)">
+        <span class="framework-panel__label">
+          <!-- <i :class="getFrameworkIcon(framework.componentName)"></i> -->
+          <i :class="framework.icon"></i>
+          {{ framework.componentName }}
+        </span>
+        <i
+          :class="['framework-panel__arrow', 'el-icon-arrow-down', { 'framework-panel__arrow--collapsed': activeFrameworkName !== framework.componentName }]"></i>
+      </div>
+      <div class="framework-panel__content" v-if="activeFrameworkName === framework.componentName">
+        <van-tabs color="#409EFF" v-model="activeTabs[framework.componentName]">
+          <van-tab v-for="group in framework.group" :title="group.label" :name="group.name" :key="group.name">
+            <div class="group-list">
+              <div class="group-list__item" v-for="children in group.group" :key="children.name">
+                <div class="group-list__header" @click="foldItem(framework.componentName, children.name)">
+                  <div class="group-list__label">{{ children.label }}</div>
+                  <i
+                    :class="['group-list__icon', 'el-icon-arrow-down', { 'group-list__icon--collapsed': !isGroupOpen(framework.componentName, children.name) }]"></i>
+                </div>
+                <div class="core-panel__item-content" v-show="isGroupOpen(framework.componentName, children.name)">
+                  <draggable :list="children.children" :group="{ name: 'itxst', pull: 'clone', put: false }"
+                    :force-fallback="true" :animation="300" :sort="false"
+                    :clone="item => onClone(item, children, framework)" chosen-class="drag-zone__item--chosen"
+                    class="drag-zone">
+                    <transition-group tag="div" class="drag-zone__group">
+                      <div class="drag-zone__item" v-for="(item, index) in children.children" :key="item.id">
+                        {{ item.props.label }}
+                      </div>
+                    </transition-group>
+                  </draggable>
+                </div>
+              </div>
+            </div>
+          </van-tab>
+        </van-tabs>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="header-panel">
+  <!-- 左侧区域 -->
+  <div class="header-panel__left-section">
+    <div class="header-panel__icon"><img :src="icon" alt=""></div>
+    <div class="header-panel__title-group">
+      <div class="header-panel__title-item" v-for="item in titleList" :key="item.id">
+        {{ item.label }}
+      </div>
+    </div>
+    <div class="header-panel__version"><el-tag type="primary">{{versionLabel}} {{version}}</el-tag></div>
+    <div class="header-panel__theme" @click="toggleTheme">
+      <el-icon :class="currentTheme==='light'?'el-icon-moon':'el-icon-sunny'"></el-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- 中间模式切换区域 -->
+  <div class="header-panel__mode-switcher">
+    <div class="header-panel__mode-item" v-for="item in modeList" @click="changeMode(item)" :key="item.id"
+      :class="{'header-panel__mode-item--active': item.label === currentMode}">
+      <div class=" header-panel__mode-content">
+        <div class="header-panel__mode-icon"><img :src="item.icon" alt=""></div>
+        <div class="header-panel__mode-label">
+          {{ item.label }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧操作按钮区域 -->
+  <div class="header-panel__actions">
+    <div class="header-panel__actions-group">
+      <div class="header-panel__action-item" v-for="item in buttonList" :key="item.id">
+        <el-button :type="item.type || 'primary'" :icon="item.icon||'el-icon-thumb'" :disabled="item.disabled||false"
+          :plain="item.plain||true" :round="item.round||false" :circle="item.circle||false" :size="item.size||'mini'"
+          :loading="item.loading||false" :loading-text="item.loadingText||'加载中'" @click="defaultClick(item)">
+          {{item.label}}
+        </el-button>
+      </div>
+    </div>
+  </div>
+</div>

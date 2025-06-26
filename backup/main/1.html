@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layui - 手动组装终极版</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.13/dist/css/layui.css">
+  <style>
+    body {
+      padding: 20px;
+    }
+
+    .layui-card-header {
+      font-weight: bold;
+    }
+
+    #my-layui-pagination {
+      text-align: right;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="layui-card">
+    <div class="layui-card-header">Layui Table 和 Laypage 手动组装 (终极版)</div>
+    <div class="layui-card-body">
+      <!-- 容器1：只给表格用 -->
+      <div id="my-layui-table"></div>
+      <!-- 容器2：只给分页用 -->
+      <div id="my-layui-pagination"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/layui@2.9.13/dist/layui.js"></script>
+  <script>
+    // ==================== 模拟后端部分 (无变化) ====================
+    const MOCK_DATABASE = (() => {
+      const data = []; for (let i = 1; i <= 153; i++) { data.push({ id: i, username: 'user-' + i, email: 'user' + i + '@example.com', city: ['北京', '上海', '广州', '深圳', '杭州'][i % 5], experience: Math.floor(Math.random() * 1000) }); } return data;
+    })();
+
+    function fetchApiData (page, limit) {
+      console.log(`[模拟API] 正在请求: 第 ${page} 页, 每页 ${limit} 条`);
+      return new Promise(resolve => {
+        setTimeout(() => {
+          const total = MOCK_DATABASE.length;
+          const start = (page - 1) * limit;
+          const end = page * limit;
+          const pageData = MOCK_DATABASE.slice(start, end);
+          const response = { code: 0, msg: '请求成功', count: total, data: pageData };
+          console.log('[模拟API] 请求成功, 返回数据:', response);
+          resolve(response);
+        }, 500);
+      });
+    }
+
+    // ==================== Layui 前端逻辑部分 (彻底重构) ====================
+    layui.use(['table', 'laypage', 'layer'], function () {
+      const table = layui.table;
+      const laypage = layui.laypage;
+      const layer = layui.layer;
+
+      // 1. 【只渲染表格骨架】
+      // 保证页面一加载，表格的头就出现了，不会等到API返回。
+      table.render({
+        elem: '#my-layui-table',
+        id: 'myTableId',
+        cols: [[
+          { type: 'checkbox', fixed: 'left' },
+          { field: 'id', title: 'ID', width: 80, sort: true },
+          { field: 'username', title: '用户名', width: 120 },
+          { field: 'email', title: '邮箱' },
+          { field: 'city', title: '城市', width: 100 },
+          { field: 'experience', title: '积分', width: 100, sort: true }
+        ]],
+        data: [],       // 初始数据为空
+        page: false,    // 彻底禁用表格自带的分页
+        height: '450',
+      });
+
+      /**
+       * 2. 【唯一的“上帝”函数】
+       *    负责获取数据，并更新表格和分页。
+       * @param {number} page - 要加载的页码
+       * @param {number} limit - 每页的条数
+       */
+      function loadPage (page, limit) {
+        const loadingIndex = layer.load(2); // 显示加载动画
+
+        fetchApiData(page, limit).then(res => {
+          if (res.code !== 0) {
+            return layer.msg('数据加载失败: ' + res.msg);
+          }
+
+          // a. 【更新表格数据】
+          // 只更新数据，不碰其他任何东西
+          table.reloadData('myTableId', {
+            data: res.data
+          });
+
+          // b. 【【【核心：重新渲染分页组件】】】
+          // 每次数据加载成功后，都根据最新的数据重新绘制一次分页。
+          laypage.render({
+            elem: 'my-layui-pagination',
+            count: res.count, // 新的总数
+            limit: limit,     // 当前的每页条数
+            curr: page,       // 当前页码
+            layout: ['count', 'prev', 'page', 'next', 'limit', 'skip'],
+
+            // c. 【设置回调】
+            jump: function (obj, first) {
+              // `jump` 回调会在初始化时执行一次（first为true）
+              // 和用户点击时执行（first为false）。
+              // 我们只在用户点击时才重新加载页面。
+              if (!first) {
+                loadPage(obj.curr, obj.limit);
+              }
+            }
+          });
+        }).catch(err => {
+          layer.msg('网络请求出错！');
+          console.error(err);
+        }).finally(() => {
+          layer.close(loadingIndex); // 无论成功失败，都关闭加载动画
+        });
+      }
+
+      // 3. 【首次启动】
+      // 页面加载完成后，手动调用一次“上帝函数”，加载第一页。
+      loadPage(1, 10);
+
+    });
+  </script>
+
+</body>
+
+</html>

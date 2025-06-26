@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>【纯模板最终版】LayUI 栅格与组件渲染</title>
+  <!-- 1. 引入依赖 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.2/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.8/dist/css/layui.css">
+  <script src="https://unpkg.com/layui@2.9.8/dist/layui.js"></script>
+
+  <style>
+    /* 所有 CSS 样式与之前版本完全相同 */
+    body {
+      font-family: sans-serif;
+      background-color: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 20px;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .panel {
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .05);
+    }
+
+    .components-panel {
+      width: 280px;
+      padding: 15px;
+    }
+
+    .canvas-panel {
+      flex-grow: 1;
+      padding: 15px;
+    }
+
+    h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #e4e7ed;
+      padding-bottom: 10px;
+    }
+
+    .component-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #f5f7fa;
+      cursor: move;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .component-item:hover {
+      border-color: #1E9FFF;
+      color: #1E9FFF;
+    }
+
+    .sortable-ghost {
+      opacity: 0.4;
+      background: #c8ebfb;
+      border-radius: 4px;
+    }
+
+    .canvas-item-wrapper {
+      position: relative;
+      padding: 2px;
+      margin-bottom: 10px;
+    }
+
+    .canvas-item-wrapper.is-selected {
+      background-color: rgba(255, 87, 34, 0.1);
+      box-shadow: 0 0 0 2px #FF5722 inset;
+    }
+
+    .drag-handle {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      cursor: move;
+      background: #1E9FFF;
+      color: white;
+      padding: 2px 5px;
+      font-size: 12px;
+      border-radius: 4px;
+      z-index: 10;
+      display: none;
+    }
+
+    .canvas-item-wrapper:hover .drag-handle {
+      display: block;
+    }
+
+    .is-selected .drag-handle {
+      background-color: #FF5722;
+    }
+
+    .drop-zone {
+      min-height: 60px;
+      padding: 5px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+      border: 1px dashed #ccc;
+    }
+
+    .layui-col-content {
+      min-height: 60px;
+      box-sizing: border-box;
+      background-color: rgba(236, 245, 255, 0.5);
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <!-- HTML 结构与之前版本完全相同 -->
+    <div class="main-layout">
+      <div class="panel components-panel">
+        <h3>组件库</h3>
+        <draggable :list="sourceComponents" :group="{ name: 'main-group', pull: 'clone', put: false }"
+          :clone="cloneComponent" :sort="false">
+          <div v-for="item in sourceComponents" :key="item.name" class="component-item">{{ item.name }}</div>
+        </draggable>
+      </div>
+      <div class="panel canvas-panel">
+        <h3>画布</h3>
+        <nested-canvas :components-list.sync="canvasComponents" :active-component-id="activeComponentId"
+          @component-clicked="onComponentClick"></nested-canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 组件模板定义 ==================== -->
+  <!-- NestedCanvas 的模板保持不变 -->
+  <template id="nested-canvas-template">
+    <draggable v-model="draggableList" group="main-group" class="drop-zone">
+      <div v-for="config in draggableList" :key="config.id" class="canvas-item-wrapper"
+        :class="{ 'is-selected': activeComponentId === config.id }" @click.stop="clickOnComponent(config)">
+        <div class="drag-handle">{{ config.name }}</div>
+        <div class="canvas-item-content">
+          <component is="layui-canvas" :config="config">
+            <template v-if="config.tag === 'grid'">
+              <nested-canvas v-for="(colChildren, index) in config.children" :key="index"
+                :slot="'col-slot-' + (index + 1)" :components-list.sync="config.children[index]"
+                :active-component-id="activeComponentId" @component-clicked="bubbleClick"></nested-canvas>
+            </template>
+            <nested-canvas v-else-if="isContainer(config)" :components-list.sync="config.children"
+              :active-component-id="activeComponentId" @component-clicked="bubbleClick"></nested-canvas>
+          </component>
+        </div>
+      </div>
+    </draggable>
+  </template>
+
+  <!-- GridComponent 的模板保持不变 -->
+  <template id="grid-component-template">
+    <div :class="gridRowClass">
+      <div v-for="i in colsArray" :key="i" :class="gridColClass(i)">
+        <div class="layui-col-content">
+          <slot :name="'col-slot-' + i"></slot>
+        </div>
+      </div>
+    </div>
+  </template>
+
+
+
+
+  <!-- ==================== Vue 脚本 ==================== -->
+  <script>
+    // ---------- 1. 定义独立的 GridComponent ----------
+    const GridComponent = {
+      name: 'GridComponent',
+      template: '#grid-component-template',
+      props: {
+        cols: { type: Number, default: 2 },
+        gap: { type: Number, default: 10 },
+        breakpoint: { type: String, default: 'md' }
+      },
+      computed: {
+        colsArray () { return Array.from({ length: this.cols }, (_, i) => i + 1); },
+        gridRowClass () { let c = ['layui-row']; if (this.gap >= 0) c.push(`layui-col-space${this.gap}`); return c; }
+      },
+      methods: {
+        gridColClass (i) {
+          let span = Math.floor(12 / this.cols); const rem = 12 % this.cols; if (i <= rem) span++;
+          return ['layui-col', `layui-col-${this.breakpoint}${span}`];
+        }
+      }
+    };
+
+
+    // ---------- 2. 定义使用模板的 LayuiCanvas ----------
+    const LayuiCanvas = {
+      name: 'LayuiCanvas',
+      template: '#layui-canvas-template',
+      components: {
+        'grid': GridComponent,
+      },
+      props: {
+        config: {
+          type: Object,
+          required: true
+        }
+      },
+      // mounted () { this.renderLayuiElements(); },
+      // updated () { this.renderLayuiElements(); },
+      methods: {
+        // getRenderHtmlWithSlot () {
+        // if (!this.config.render) return '';
+        // 注意：这个方法有局限性，它只能处理默认插槽，无法处理具名插槽。
+        // 它将父组件的默认插槽内容硬编码到 HTML 字符串中，这是一种 hack。
+        // 我们通过 this.$scopedSlots.default() 获取默认插槽的 VNode 数组，
+        // 然后需要一个 hacky 的方式将 VNode 渲染成 HTML 字符串，这非常困难且不推荐。
+        // 一个更简单的 hack 是直接返回带 <slot> 标签的模板，但 v-html 不会解析它。
+        // 
+        // 鉴于 v-html 的限制，对于卡片这类简单容器，我们可以采取另一种模板策略：
+        // 在 LayuiCanvas 模板中也为 card 写一个 v-if 分支。
+        // 让我们采用这种更清晰的策略。
+        // 因此，这个方法实际上不会被完美地使用，下面的模板会重写。
+        // return this.config.render.replace('<!-- slot -->', '<slot></slot>'); // 这个替换在 v-html 中是无效的
+        // },
+        // renderLayuiElements () {
+        //   this.$nextTick(() => {
+        //     if (window.layui && window.layui.element) {
+        //       layui.element.render(null, this.$el.getAttribute('lay-filter'));
+        //     }
+        //   });
+        // }
+      }
+    };
+
+
+    // ---------- 3. 定义 NestedCanvas 递归组件 (无任何改动) ----------
+    const NestedCanvas = {
+      name: 'NestedCanvas',
+      template: '#nested-canvas-template',
+      components: { 'draggable': vuedraggable, 'layui-canvas': LayuiCanvas },
+      props: ['componentsList', 'activeComponentId'],
+      computed: {
+        draggableList: {
+          get () { return this.componentsList; },
+          set (newValue) { this.$emit('update:componentsList', newValue); }
+        }
+      },
+      methods: {
+        isContainer (config) { return Array.isArray(config.children); },
+        clickOnComponent (config) { this.$emit('component-clicked', config); },
+        bubbleClick (config) { this.$emit('component-clicked', config); }
+      }
+    };
+
+
+    // ---------- 4. 创建主 Vue 实例 ----------
+    new Vue({
+      el: '#app',
+      components: { 'nested-canvas': NestedCanvas },
+      data: {
+        sourceComponents: [
+          // 为容器明确指定 tag
+          { name: '栅格：一行两列', tag: 'grid', type: 'container', props: { cols: 2, gap: 10 } },
+          { name: '栅格：一行三列', tag: 'grid', type: 'container', props: { cols: 3, gap: 15 } },
+          // 【演示】卡片也应该被视为一个已知的容器组件
+          { name: '卡片', tag: 'card', type: 'container', props: { title: '动态标题' } },
+          { name: 'LayUI 按钮', type: 'atomic', render: '<button type="button" class="layui-btn">一个按钮</button>' },
+        ],
+        canvasComponents: [],
+        activeComponentId: null,
+      },
+      created () { layui.use(['element', 'form'], () => console.log('LayUI modules loaded.')); },
+      methods: {
+        cloneComponent (original) {
+          const newId = 'comp-' + Date.now() + Math.random().toString(36).substr(2, 5);
+          const newComponent = { ...JSON.parse(JSON.stringify(original)), id: newId };
+
+          const isContainer = !!original.tag; // 判断标准：有 tag 就是我们已知的容器
+
+          if (isContainer) {
+            if (original.tag === 'grid') {
+              newComponent.children = Array.from({ length: original.props.cols || 1 }, () => []);
+            } else {
+              newComponent.children = [];
+            }
+          } else {
+            delete newComponent.children;
+          }
+          return newComponent;
+        },
+        onComponentClick (config) {
+          this.activeComponentId = config.id;
+        }
+      }
+    });
+  </script>
+
+  <!-- 【最终修正】我们需要重写 LayuiCanvas 的模板，使其能处理多种已知容器 -->
+  <script type="text/x-template" id="layui-canvas-template-final">
+  <div :lay-filter="'lay-filter-' + config.id">
+    <!-- 分支1：处理栅格组件 -->
+    <grid v-if="config.tag === 'grid'" v-bind="config.props">
+      <!-- 语法 v-slot:[slotName] 用于动态绑定插槽名 -->
+      <template v-for="(_, slotName) in $scopedSlots" v-slot:[slotName]="scope">
+        <slot :name="slotName" v-bind="scope"></slot>
+      </template>
+    </grid>
+
+    <!-- 分支2：处理卡片组件 -->
+    <div v-else-if="config.tag === 'card'" class="layui-card">
+      <div class="layui-card-header">{{ config.props.title }}</div>
+      <div class="layui-card-body">
+        <!-- 卡片只有一个默认插槽 -->
+        <slot></slot>
+      </div>
+    </div>
+    
+    <!-- 可以在这里添加更多的 v-else-if 来处理其他已知容器，如 tabs, collapse... -->
+
+    <!-- 分支N：处理未知或原子组件 -->
+    <div v-else v-html="config.render"></div>
+  </div>
+</script>
+
+  <script>
+    // 【最终修正】在创建 Vue 实例之前，用最终的模板覆盖之前的定义
+    LayuiCanvas.template = '#layui-canvas-template-final';
+  </script>
+
+</body>
+
+</html>

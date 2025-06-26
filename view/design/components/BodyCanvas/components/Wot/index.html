@@ -1,0 +1,10 @@
+<component :is="config.component" @click="defaultClick(config)" :key="config.id" v-bind="config.props"
+  :value="bindValue" @input="config.groupName === 'form'&& componentEmittedInput($event,config)">
+  <template v-if="config.children">
+    <slot></slot>
+  </template>
+  <template v-if="config.slot && typeof config.slot === 'string'">
+    <span v-if="utils.isHtmlString(config.slot)" v-html="config.slot"></span>
+    <span v-else>{{ config.slot }}</span>
+  </template>
+</component>

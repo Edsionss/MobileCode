@@ -1,0 +1,94 @@
+/* Block: components-panel */
+.components-panel {
+  max-width: 350px;
+  height: 100%;
+}
+
+/* Element: 内容区域的包裹容器 */
+.components-panel__content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* Element: 左侧模块栏 */
+.components-panel__module-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 10px;
+  width: 50px;
+  align-items: center;
+  border-right: #ccc 0.5px dashed;
+}
+
+/* Element: 模块栏中的单个项目 */
+.components-panel__module-item {
+  cursor: pointer;
+  font-size: 20px;
+  padding: 8px;
+}
+
+/* Element: 模块项目中的图标容器 */
+.components-panel__module-icon {}
+
+/* 针对元素内特定标签的样式 */
+.components-panel__module-icon i {
+  font-weight: bolder !important;
+}
+
+/* Element: 右侧详情面板 */
+.components-panel__detail-pane {
+  display: flex;
+  flex-direction: column;
+  /* 建议添加，因为 header 和 main 是垂直排列的 */
+  width: 300px;
+  border-right: #ccc 0.5px dashed;
+}
+
+/* Element: 详情面板的头部 */
+.components-panel__header {
+  display: flex;
+  height: 30px;
+  width: 100%;
+  align-items: center;
+  border-bottom: #ccc 0.5px dashed;
+  padding: 5px;
+  box-sizing: border-box;
+  /* 建议添加，避免 padding 影响总宽度 */
+}
+
+/* Element: 头部标题 */
+.components-panel__title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: bold;
+  padding-left: 15px;
+  /* 原有样式中的 display:flex 和 justify-content:left 是多余的，父元素已经是flex布局 */
+}
+
+/* Element: 头部右侧的工具组 */
+.components-panel__tools-group {
+  flex: 1;
+  font-size: 18px;
+  display: flex;
+  justify-content: flex-end;
+  /* flex-end 比 right 更标准 */
+  font-weight: bold;
+  gap: 8px;
+  padding-right: 10px;
+  /* 增加一些右边距，避免工具贴边 */
+}
+
+/* Element: 工具组中的单个工具项 */
+.components-panel__tool-item {
+  cursor: pointer;
+}
+
+/* Element: 详情面板的主体区域 */
+.components-panel__main {
+  flex-grow: 1;
+  /* 使主体区域可以填充剩余的垂直空间 */
+  overflow: auto;
+  /* 如果内容溢出，则显示滚动条 */
+}

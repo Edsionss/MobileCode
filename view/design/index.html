@@ -1,0 +1,27 @@
+<!-- Block: design-layout -->
+<div class="design-layout">
+  <!-- Element: header -->
+  <div class="design-layout__header">
+    <header-component @change-Mode="changeMode"></header-component>
+  </div>
+  <!-- Element: body -->
+  <div class="design-layout__body">
+    <!-- Element: components-panel -->
+    <div class="design-layout__components-panel">
+      <modules-component></modules-component>
+    </div>
+    <!-- Element: canvas-panel -->
+    <div class="design-layout__canvas-panel" :style="canvas.currentModeStyle">
+
+      <canvas-error-component v-if="canvas.canvasWarning"></canvas-error-component>
+
+      <div class="design-layout__canvas-panel__body" v-else>
+        <canvas-component></canvas-component>
+      </div>
+    </div>
+    <!-- Element: attribute-panel -->
+    <div class="design-layout__attribute-panel">
+      <attribute-component></attribute-component>
+    </div>
+  </div>
+</div>

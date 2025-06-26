@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>低代码平台原型 - 协调样式版</title>
+
+  <!-- 1. CDN 依赖 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vant@2.12/lib/vant.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.12/lib/index.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuedraggable@2.24.3/dist/vuedraggable.umd.min.js"></script>
+  <script src="https://unpkg.com/layui@2.9.8/dist/layui.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.8/dist/css/layui.css">
+
+  <style>
+    /* ================================================== */
+    /*         移动低代码平台 - 新版协调样式             */
+    /* ================================================== */
+
+    /* --- 全局与布局 --- */
+    :root {
+      --primary-color: #409eff;
+      --bg-color: #f0f2f5;
+      --panel-bg-color: #ffffff;
+      --border-color: #e4e7ed;
+      --text-color-primary: #303133;
+      --text-color-secondary: #909399;
+    }
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      margin: 0;
+      background-color: var(--bg-color);
+      /* 模拟背景的点状网格 */
+      background-image: linear-gradient(to right, #dcdfe6 1px, transparent 1px),
+        linear-gradient(to bottom, #dcdfe6 1px, transparent 1px);
+      background-size: 20px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .panel {
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      background-color: var(--panel-bg-color);
+      border-radius: 8px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
+      color: var(--text-color-primary);
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-color-primary);
+    }
+
+    /* --- 左侧组件源 --- */
+    #component-source {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    .source-item {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 10px;
+      border-radius: 4px;
+      cursor: grab;
+      text-align: center;
+      background-color: #fafafa;
+      transition: all 0.2s ease;
+    }
+
+    .source-item:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 5px rgba(64, 158, 255, 0.2);
+    }
+
+    /* --- 右侧画布区域 --- */
+    #main-canvas-wrapper {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* 让画布居中 */
+    }
+
+    .main-canvas {
+      width: 375px;
+      /* 模拟手机宽度 */
+      min-height: 667px;
+      /* 模拟手机高度 */
+      background-color: var(--panel-bg-color);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 1px solid #dcdfe6;
+    }
+
+    /* --- 画布中的组件项 (核心样式) --- */
+    .canvas-item-wrapper {
+      position: relative;
+      padding: 5px;
+      /* 为选中边框留出空间 */
+      margin: 0 -5px 10px -5px;
+      /* 抵消padding，保持内容对齐 */
+      border: 1px dashed transparent;
+      /* 占位，防止抖动 */
+      transition: all 0.2s ease-in-out;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .canvas-item-wrapper:hover {
+      border-color: var(--primary-color);
+    }
+
+    /* 模拟真实点击后的选中状态 */
+    .canvas-item-wrapper.is-selected {
+      border-color: var(--primary-color);
+      border-style: solid;
+      background-color: rgba(64, 158, 255, 0.05);
+      /* 浅蓝色背景以突出选中 */
+    }
+
+    /* 操作句柄/标签 */
+    .item-handle {
+      position: absolute;
+      top: -10px;
+      /* 定位到边框外部左上角 */
+      left: -1px;
+      background: var(--primary-color);
+      color: white;
+      padding: 2px 8px;
+      font-size: 12px;
+      border-radius: 4px 4px 0 0;
+      z-index: 10;
+      opacity: 0;
+      /* 默认隐藏 */
+      transform: translateY(5px);
+      transition: all 0.2s ease-in-out;
+      pointer-events: none;
+      /* 避免遮挡点击事件 */
+    }
+
+    /* 悬停或选中时显示句柄 */
+    .canvas-item-wrapper:hover .item-handle,
+    .canvas-item-wrapper.is-selected .item-handle {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- 组件在画布中的具体样式 --- */
+    .canvas-item-content .layui-form-item {
+      margin-bottom: 0;
+    }
+
+    .canvas-item-content .van-button {
+      height: 44px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==================== -->
+  <!--     3. HTML 结构     -->
+  <!-- ==================== -->
+
+  <!-- 左侧组件源 -->
+  <div id="component-source" class="panel">
+    <h3>组件</h3>
+    <draggable v-model="sourceList" :group="{ name: 'canvas-group', pull: 'clone', put: false }" :sort="false"
+      :clone="cloneComponent">
+      <div v-for="item in sourceList" :key="item.tag" class="source-item">
+        {{ item.label }}
+      </div>
+    </draggable>
+  </div>
+
+  <!-- 右侧主画布 -->
+  <div id="main-canvas-wrapper" class="panel">
+    <h3>画布</h3>
+    <!-- 这是主画布的Vue实例 -->
+    <div id="main-canvas-app">
+      <draggable v-model="componentList" group="canvas-group" class="main-canvas">
+        <div v-for="componentData in componentList" :key="componentData.id" class="canvas-item-wrapper"
+          @click.native.stop="selectComponent(componentData.id)"
+          :class="{ 'is-selected': selectedComponentId === componentData.id }">
+          <!-- 标签 -->
+          <div class="item-handle">{{ componentData.label }}</div>
+
+          <!-- 组件实际内容 -->
+          <div class="canvas-item-content">
+            <component :is="getRendererName(componentData.framework)" :config="componentData">
+            </component>
+          </div>
+        </div>
+      </draggable>
+    </div>
+  </div>
+
+
+  <script>
+    // ======================= -->
+    //     4. Vue 脚本逻辑     -->
+    // ======================= -->
+
+    // --- 4.1 定义Layui渲染器 (基于HTML字符串) ---
+    const layuiRenderer = {
+      props: ['config'],
+      template: `<div v-html="componentHtml" :data-id="config.id"></div>`,
+      computed: {
+        componentHtml () {
+          const { label = '标签', name = 'field', placeholder = '请输入...' } = this.config;
+          if (this.config.tag === 'input') {
+            return `
+              <div class="layui-form-item">
+                  <label class="layui-form-label">${label}</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="${name}" placeholder="${placeholder}" class="layui-input">
+                  </div>
+              </div>`;
+          }
+          if (this.config.tag === 'switch') {
+            return `
+              <div class="layui-form-item">
+                  <label class="layui-form-label">${label}</label>
+                  <div class="layui-input-block">
+                      <input type="checkbox" name="switch" lay-skin="switch">
+                  </div>
+              </div>`;
+          }
+          return '<div>未知的Layui组件</div>';
+        }
+      },
+      mounted () {
+        this.$nextTick(() => {
+          if (window.layui && window.layui.form) {
+            window.layui.form.render(null, this.$el.getAttribute('lay-filter'));
+          }
+        });
+      },
+      updated () {
+        this.$nextTick(() => {
+          if (window.layui && window.layui.form) {
+            window.layui.form.render(null, this.$el.getAttribute('lay-filter'));
+          }
+        });
+      }
+    };
+
+    // --- 4.2 定义Vant渲染器 (基于Vant组件) ---
+    const vantRenderer = {
+      props: ['config'],
+      template: `
+        <div>
+            <van-button v-if="config.tag === 'van-button'" v-bind="config.props" block>
+                {{ config.props.text }}
+            </van-button>
+        </div>
+      `
+    };
+
+
+    // --- 4.3 初始化左侧组件源的Vue实例 ---
+    new Vue({
+      el: '#component-source',
+      components: {
+        'draggable': window.vuedraggable,
+      },
+      data: {
+        sourceList: [
+          { framework: 'layui', tag: 'input', label: 'Layui输入框', placeholder: '这是一个Layui输入框' },
+          { framework: 'vant', tag: 'van-button', label: 'Vant按钮', props: { type: 'primary', text: 'Vant 按钮' } },
+          { framework: 'layui', tag: 'switch', label: 'Layui开关' }
+        ]
+      },
+      methods: {
+        cloneComponent (original) {
+          return {
+            ...original,
+            id: 'comp_' + Date.now() + Math.random().toString(36).substr(2, 5)
+          };
+        }
+      }
+    });
+
+    // --- 4.4 初始化右侧主画布的Vue实例 (核心) ---
+    new Vue({
+      el: '#main-canvas-app',
+      components: {
+        'draggable': window.vuedraggable,
+        'layui-renderer': layuiRenderer,
+        'vant-renderer': vantRenderer
+      },
+      data: {
+        componentList: [],
+        selectedComponentId: null // 新增：用于追踪当前选中的组件ID
+      },
+      methods: {
+        getRendererName (frameworkName) {
+          const rendererMap = {
+            'layui': 'layui-renderer',
+            'vant': 'vant-renderer'
+          };
+          return rendererMap[frameworkName] || 'div';
+        },
+        // 新增：选中组件的方法
+        selectComponent (id) {
+          this.selectedComponentId = id;
+        }
+      }
+    });
+
+  </script>
+</body>
+
+</html>

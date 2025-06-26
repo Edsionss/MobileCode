@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LayUI表头配置器 (vue-contextmenujs)</title>
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/css/layui.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+  <link rel="stylesheet" href="../../package/Vant/vant.css">
+  <link rel="stylesheet" href="../../package/ElementUI/ElementUI.css">
+  <link rel="stylesheet" href="../../package/WotDesign/WotDesign.css">
+  <link rel="stylesheet" href="../../package/ContextMenu/contextmenu.css">
+  <link rel="stylesheet" href="../../package/layui/css/layui.css">
+  <!-- The new library does not require a separate CSS file -->
+  <style>
+    /* All styles are the same as before */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+
+
+    .config-panel {}
+
+    .grid-workspace {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .grid-area {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .property-panel {
+      background: #fff;
+      border-radius: 15px;
+      padding: 25px;
+      color: #333;
+      /* height: fit-content; */
+      height: 600px;
+      margin-top: 30px;
+    }
+
+
+
+    .grid-container {
+      flex-grow: 1;
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      overflow: auto;
+    }
+
+
+
+    .grid-header {
+      color: #333;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+
+    }
+
+    .merge-grid {
+      display: grid;
+      gap: 2px;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      width: 100%;
+      overflow: auto;
+    }
+
+    .grid-cell {
+      min-width: 70px;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .grid-cell.selected {
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.7);
+      z-index: 10;
+    }
+
+    .grid-cell.merged {
+      background: white;
+      color: #333;
+    }
+
+    .cell-edit-input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      text-align: center;
+      font-size: 1em;
+      font-weight: 500;
+      background-color: #fff;
+      color: #333;
+      padding: 5px;
+      border-radius: 4px;
+      outline: 2px solid #764ba2;
+    }
+
+    .preview-section {
+      margin-top: 30px;
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .preview-header h3 {
+      color: #333;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .export-btn {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .code-container {
+      background: #2d3748;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 15px;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .code-container pre {
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .tips {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      color: #8b4513;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="container">
+
+    <!-- Main Panel -->
+    <div class="config-panel">
+      <!-- Wrapper for left column items -->
+      <div>
+        <div class="grid-workspace">
+          <div class="grid-area">
+            <div class="grid-container">
+              <div class="grid-header">
+                <h3><i class="fas fa-th"></i> 可视化配置网格 (右键操作)</h3>
+                <el-button type="primary" @click="addColumn">添加列</el-button>
+                <el-button type="primary" @click="addRow">添加行</el-button>
+              </div>
+              <div class="merge-grid" :style="{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }"
+                @contextmenu.prevent="showContextMenu" @mouseup="handleMouseUp">
+                <template v-if="columns.length > 0">
+                  <div v-for="cell in flatGridData" v-if="cell.visible" :key="cell.id" class="grid-cell"
+                    :class="{ 'merged': cell.merged, 'selected': cell.selected }"
+                    :style="{ gridRowEnd: `span ${cell.rowspan}`, gridColumnEnd: `span ${cell.colspan}` }"
+                    @mousedown="handleMouseDown(cell, $event)" @mousemove="handleMouseMove(cell, $event)"
+                    @dblclick.prevent="handleDoubleClick(cell)">
+                    <span v-if="editingCellId !== cell.id">{{ cell.title }}</span>
+                    <input v-else type="text" class="cell-edit-input" v-model="cell.title" @blur="saveCellEdit"
+                      @keyup.enter.prevent="saveCellEdit" :ref="'editInput-' + cell.id" />
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Preview Section -->
+        <div class="preview-section" style="">
+          <div class="preview-header">
+            <h3><i class="fas fa-eye"></i> 实时预览</h3>
+            <button class="export-btn" @click="exportConfig">
+              <i class="fas fa-download"></i> 导出配置
+            </button>
+            <button class="export-btn" @click="viewConfig">
+              <i class="fas fa-eye"></i> 查看配置
+            </button>
+          </div>
+          <div id="previewTable"></div>
+
+        </div>
+        <div class="property-panel">
+          <div v-if="selectedCell" class="prop-form">
+            <el-form label-position="left" size="small" label-width="150px">
+              <!-- 基础属性 -->
+              <el-form-item label="标题 (Title)">
+                <el-input v-model="selectedCell.title" @focus="saveState"></el-input>
+              </el-form-item>
+
+              <el-form-item label="字段名 (Field)">
+                <el-input v-model="selectedCell.field" @focus="saveState">
+
+                </el-input>
+              </el-form-item>
+
+              <!-- 样式属性 -->
+              <el-form-item label="对齐方式 (Align)">
+                <el-select v-model="selectedCell.align" @change="saveState">
+                  <el-option label="左对齐" value="left"></el-option>
+                  <el-option label="居中" value="center"></el-option>
+                  <el-option label="右对齐" value="right"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="固定列 (Fixed)">
+                <el-select v-model="selectedCell.fixed" @change="saveState" style="width: 100%">
+                  <el-option label="不固定" :value="null"></el-option>
+                  <el-option label="左侧固定" value="left"></el-option>
+                  <el-option label="右侧固定" value="right"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <!-- 新增属性 -->
+              <el-form-item label="列宽 (Width)">
+                <el-input-number v-model="selectedCell.width" :min="0" :step="10" @change="saveState"
+                  style="width: 100%">
+                </el-input-number>
+              </el-form-item>
+
+              <el-form-item label="最小列宽 (MinWidth)">
+                <el-input-number v-model="selectedCell.minWidth" :min="0" :step="10" @change="saveState"
+                  style="width: 100%">
+                </el-input-number>
+              </el-form-item>
+
+              <el-form-item label="是否隐藏 (Hide)">
+                <el-switch v-model="selectedCell.hide" @change="saveState">
+                </el-switch>
+              </el-form-item>
+
+              <el-form-item label="排序 (Sort)">
+                <el-switch v-model="selectedCell.sort" @change="saveState">
+                </el-switch>
+              </el-form-item>
+
+              <el-form-item label="是否可编辑 (Edit)">
+                <el-switch v-model="selectedCell.edit" @change="saveState">
+                </el-switch>
+              </el-form-item>
+            </el-form>
+          </div>
+          <div v-else class="prop-placeholder">
+            <p><i class="fas fa-mouse-pointer"></i></p>
+            <p>在左侧网格中<br>单击或拖动选择单元格</p>
+          </div>
+        </div>
+        <el-dialog title="配置" :visible.sync="configDialogVisible" width="90%" :append-to-body="true">
+          <div class="code-container">
+            <button class="copy-btn" @click="copyCode">
+              <i class="fas fa-copy"></i> 复制
+            </button>
+            <pre>{{ codeOutput }}</pre>
+          </div>
+          <div class="tips">
+            <strong>提示：</strong> 生成的代码可以直接用于LayUI表格的cols配置项中。支持多级表头和复杂的合并结构。
+          </div>
+        </el-dialog>
+      </div>
+
+
+
+    </div>
+  </div>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/layui.min.js"></script>
+  <script src="https://unpkg.com/vue-contextmenujs/dist/contextmenu.umd.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+  <script src="../../package/esModule/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@config/": "../../config/",
+        "@/": "/",
+        "@designComponents/": "../components/",
+        "@utils/": "../../utils/",
+        "@assets/": "../../assets/",
+        "@design/": "../../design/",
+        "@modules/": "../../modules/",
+        "@package/": "../../package/"
+      }
+    }  
+  </script>
+  <script src="../../package/Vue/vue.js"></script>
+  <script src="../../package/Router/vue-router.js"></script>
+  <script src="../../package/Vuex/vuex.js"></script>
+  <!-- 引入Vant -->
+  <script src="../../package/Vant/vant.min.js"></script>
+  <!-- 引入ElementUI -->
+  <script src="../../package/ElementUI/ElementUi.js"></script>
+  <!-- 引入WotDesign -->
+  <script src="../../package/WotDesign/WotDesign.js"></script>
+  <!-- 引入layui -->
+  <script src="../../package/Layui/layui.js"></script>
+  <!-- xm-select -->
+  <script src="../../package/XmSelect/xm-select.js"></script>
+  <!-- echarts 5.6 -->
+  <script src="../../package/Echarts/echarts.min.js"></script>
+  <!-- 引入Sortable -->
+  <script src="../../package/Sortable/Sortable.js"></script>
+  <!-- 引入vuedraggable -->
+  <script src="../../package/Vuedraggable/vuedraggable.umd.js"></script>
+  <!-- 引入右键菜单 contextmenu -->
+  <script src="../../package/ContextMenu/contextmenu.umd.js"></script>
+  <!-- 引入lodash -->
+  <script src="../../package/Lodash/lodash.min.js"></script>
+  <script type="module">
+    import utils from '@utils/index.js'
+    // 初始化LayUI
+    let layer, table;
+    layui.use(['layer', 'table'], function () {
+      layer = layui.layer;
+      table = layui.table;
+    });
+
+    // 注册Element UI组件
+    Vue.use(ELEMENT);
+
+    new Vue({
+      el: '#app',
+      data: {
+        // 基础数据
+        columns: [], // 列配置数组
+        gridData: [], // 网格数据
+        rows: 0, // 行数
+        columnIdCounter: 0, // 列ID计数器
+        cellIdCounter: 0, // 单元格ID计数器
+        historyStack: [], // 历史记录栈
+        editingCellId: null, // 当前编辑的单元格ID
+        isDragging: false, // 是否正在拖拽
+        dragStartCell: null, // 拖拽起始单元格
+        previewTable: null, // 添加预览表格实例
+        configDialogVisible: false, // 配置对话框可见性
+        layConfig: [],//
+      },
+      computed: {
+        // 扁平化的网格数据
+        flatGridData () { return this.gridData.flat(); },
+
+        // 选中的单元格数组
+        selectedCells () { return this.flatGridData.filter(c => c.selected); },
+
+        // 当前选中的单元格
+        selectedCell () { return this.selectedCells.length > 0 ? this.selectedCells[0] : null; },
+
+        // 是否可以合并
+        canMerge () { return this.selectedCells.length > 1; },
+
+        // 是否可以拆分
+        canSplit () { return this.selectedCells.length === 1 && this.selectedCells[0].merged; },
+
+        // 生成LayUI表格配置
+        layuiConfig () {
+          console.log('Generating LayUI config...');
+          const config = [];
+          if (this.columns.length === 0) return config;
+          // 获取最后一个可见行的索引
+          const lastVisibleRowIndex = this.getLastVisibleRowIndex();
+          // 遍历每一行
+          this.gridData.forEach((rowData, i) => {
+            if (this.isRowEmpty(i)) return;
+            const row = [];
+            let currentCol = 0;
+            // 遍历每一列
+            while (currentCol < this.columns.length) {
+              const cellData = this.gridData[i][currentCol];
+              // 如果单元格不可见，跳过
+              if (!cellData.visible) {
+                currentCol++;
+                continue;
+              }
+              // 检查是否是有效的合并单元格
+              if (i !== 0) {
+                const preIndex = i - 1;
+                const preRow = config[preIndex] || [];
+                // 检查是否超出上一行的边界
+                if (currentCol >= preRow.length) {
+                  currentCol++;
+                  continue;
+                }
+                // 检查是否被上一行合并单元格覆盖
+                const preCell = preRow[currentCol];
+                if (preCell && preCell.rowspan > 1) {
+                  currentCol++;
+                  continue;
+                }
+              }
+              // 创建单元格配置
+              const cell = { title: cellData.title || '' };
+              // 添加合并属性
+              if (cellData.rowspan > 1) cell.rowspan = cellData.rowspan;
+              if (cellData.colspan > 1) cell.colspan = cellData.colspan;
+              // 添加其他属性
+              const isLastEligibleRow = (i + cellData.rowspan - 1) === lastVisibleRowIndex;
+              if (isLastEligibleRow && cellData.field) cell.field = cellData.field;
+              if (cellData.align && cellData.align !== 'center') cell.align = cellData.align;
+              if (cellData.fixed) cell.fixed = cellData.fixed;
+              if (cellData.width) cell.width = cellData.width;
+              if (cellData.minWidth) cell.minWidth = cellData.minWidth;
+              if (cellData.hide) cell.hide = cellData.hide;
+              if (cellData.sort) cell.sort = cellData.sort;
+              if (cellData.edit) cell.edit = cellData.edit;
+              row.push(cell);
+              currentCol += cellData.colspan || 1;
+            }
+            if (row.length > 0) config.push(row);
+          });
+          let resultConfig = _.cloneDeep(config);
+          if (config.length > 0) {
+            // const firstRowMaxCol = config[0].length;//获取第一行最大列数
+            const firstRow = resultConfig[0];
+            const firstRowMaxCol = firstRow.reduce((pre, col) => {
+              return col.title ? pre + 1 : pre;
+            }, 0);//获取第一行最大列数
+            resultConfig = []
+            config.forEach(row => {
+              // 确保每一行的列数一致
+              while (!row.length > firstRowMaxCol) {
+                resultConfig.push({ title: '', rowspan: 1, colspan: 1, visible: false });
+              }
+            });
+          }
+          this.layConfig = resultConfig;
+          console.log('Generated config:', resultConfig);
+          return resultConfig;
+        },
+
+        newRow () {
+          return {
+            merged: false,
+            title: '',
+            rowspan: 1,
+            colspan: 1,
+            visible: true,
+            selected: false,
+            field: '',
+            align: 'center',
+            fixed: null,
+            width: null,
+            minWidth: null,
+            hide: false,
+            sort: false,
+            edit: false
+          }
+        },
+        // 生成代码输出
+        codeOutput () {
+          if (this.columns.length === 0 || this.layuiConfig.length === 0)
+            return '// 请先添加列并配置表头结构';
+          // 获取最后一行的字段配置
+          const lastRowFields = this.getLastRowFields();
+          return utils.formatJSONLikeImage(lastRowFields)
+        }
+      },
+      watch: {
+        // 监听配置变化，更新预览
+        layuiConfig: {
+          handler (newConfig) {
+            this.updatePreview();
+          },
+          deep: true
+        },
+        // 监听网格数据变化
+        gridData: {
+          handler () {
+            this.updatePreview();
+          },
+          deep: true
+        },
+        // 监听列配置变化
+        columns: {
+          handler () {
+            this.updatePreview();
+          },
+          deep: true
+        }
+      },
+      created () {
+        // 初始化默认网格
+        this.initializeDefaultGrid(15, 1);
+      },
+      methods: {
+        //查看配置
+        viewConfig () {
+          console.log(this.$data);
+
+          this.configDialogVisible = true;
+        },
+        // 初始化默认网格
+        initializeDefaultGrid (cols, rows) {
+          this.columns = Array.from({ length: cols }, (_, i) => ({
+            id: this.columnIdCounter++,
+            name: `列${i + 1}`
+          }));
+          this.rows = rows;
+          this.rebuildGrid(true);
+        },
+
+        // 判断行是否为空
+        isRowEmpty (rowIndex) {
+          return !this.gridData[rowIndex] ||
+            this.gridData[rowIndex].every(cell => !cell.visible || !cell.title.trim());
+        },
+
+        // 获取最后一个可见行的索引
+        getLastVisibleRowIndex () {
+          for (let i = this.rows - 1; i >= 0; i--) {
+            if (!this.isRowEmpty(i)) return i;
+          }
+          return -1;
+        },
+
+        // 保存当前状态
+        saveState () {
+          const snapshot = JSON.parse(JSON.stringify({
+            gridData: this.gridData,
+            rows: this.rows,
+            columns: this.columns
+          }));
+          this.historyStack.push(snapshot);
+        },
+
+        // 撤销操作
+        undo () {
+          if (this.historyStack.length > 0) {
+            const lastState = this.historyStack.pop();
+            this.gridData = lastState.gridData;
+            this.rows = lastState.rows;
+            this.columns = lastState.columns;
+            layer.msg('操作已撤销', { icon: 1, time: 1000 });
+          }
+        },
+
+        // 重建网格
+        rebuildGrid (clearHistory = false) {
+          if (clearHistory) {
+            this.historyStack = [];
+          }
+          this.gridData = Array.from({ length: this.rows }, () =>
+            Array.from({ length: this.columns.length }, () => ({
+              id: this.cellIdCounter++,
+              ...this.newRow
+            }))
+          );
+          this.updateTitles();
+        },
+
+        // 更新标题
+        updateTitles () {
+          if (!this.gridData || this.gridData.length === 0) return;
+          const lastVisibleRowIndex = this.getLastVisibleRowIndex();
+          this.gridData.forEach((row, rowIndex) => {
+            row.forEach((cell, colIndex) => {
+              const isLastRow = (rowIndex + cell.rowspan - 1) === lastVisibleRowIndex;
+              let isCovered = false;
+              if (isLastRow) {
+                for (let r = 0; r < rowIndex; r++)
+                  if (this.isCellCovering(r, colIndex, rowIndex)) {
+                    isCovered = true;
+                    break;
+                  }
+                if (!isCovered) {
+                  // 移除自动设置标题的逻辑
+                  // 只保留字段名的自动生成
+                  if (!cell.field) {
+                    cell.field = (this.columns[colIndex]?.name || '').toLowerCase().replace(/[^a-zA-Z0-9]/g, '_');
+                  }
+                }
+              }
+            });
+          });
+        },
+
+        // 检查单元格是否覆盖目标位置
+        isCellCovering (parentRowIndex, targetColIndex, targetRowIndex) {
+          let parentCell = this.gridData[parentRowIndex]?.[targetColIndex];
+          if (!parentCell) return false;
+          let scanCol = targetColIndex;
+          while (!parentCell.visible) {
+            scanCol--;
+            if (scanCol < 0) return false;
+            parentCell = this.gridData[parentRowIndex][scanCol];
+          }
+          const parentCoords = this.findCellCoords(parentCell.id);
+          return parentCoords && parentCoords.row + parentCell.rowspan - 1 >= targetRowIndex;
+        },
+
+        // 查找单元格坐标
+        findCellCoords (cellId) {
+          for (let r = 0; r < this.rows; r++)
+            for (let c = 0; c < this.columns.length; c++)
+              if (this.gridData[r]?.[c]?.id === cellId)
+                return { row: r, col: c };
+          return null;
+        },
+
+        // 添加列
+        addColumn () {
+          this.saveState();
+          const newName = `列${this.columns.length + 1}`;
+          this.columns.push({ id: this.columnIdCounter++, name: newName });
+          this.gridData.forEach(row => row.push({
+            id: this.cellIdCounter++,
+            ...this.newRow
+          }));
+          this.updateTitles();
+        },
+
+        // 添加行
+        addRow () {
+          this.saveState();
+          this.rows++;
+          const newRow = Array.from({ length: this.columns.length }, () => ({
+            id: this.cellIdCounter++,
+            ...this.newRow
+          }));
+          this.gridData.push(newRow);
+          this.updateTitles();
+        },
+
+        // 选择单元格
+        selectCellForProperties (cell) {
+          this.flatGridData.forEach(c => c.selected = (c.id === cell.id));
+        },
+
+        // 处理双击事件
+        handleDoubleClick (cell) {
+          this.selectCellForProperties(cell);
+          this.editCellTitle(cell);
+        },
+
+        // 编辑单元格标题
+        editCellTitle (cell) {
+          this.saveState();
+          this.editingCellId = cell.id;
+          this.$nextTick(() => {
+            const inputRef = this.$refs['editInput-' + cell.id];
+            if (inputRef && inputRef[0]) {
+              inputRef[0].focus();
+              inputRef[0].select();
+            }
+          });
+        },
+
+        // 保存单元格编辑
+        saveCellEdit () {
+          if (this.editingCellId !== null) {
+            this.editingCellId = null;
+            this.updateTitles();
+          }
+        },
+
+        // 处理鼠标按下事件
+        handleMouseDown (cell, event) {
+          if (event.button !== 0) return;
+          this.isDragging = true;
+          this.dragStartCell = cell;
+          this.flatGridData.forEach(c => c.selected = (c.id === cell.id));
+        },
+
+        // 处理鼠标移动事件
+        handleMouseMove (cell, event) {
+          if (!this.isDragging || !this.dragStartCell) return;
+          const startCoords = this.findCellCoords(this.dragStartCell.id);
+          const currentCoords = this.findCellCoords(cell.id);
+          if (!startCoords || !currentCoords) return;
+          const minRow = Math.min(startCoords.row, currentCoords.row);
+          const maxRow = Math.max(startCoords.row, currentCoords.row);
+          const minCol = Math.min(startCoords.col, currentCoords.col);
+          const maxCol = Math.max(startCoords.col, currentCoords.col);
+          this.flatGridData.forEach(c => {
+            const coords = this.findCellCoords(c.id);
+            c.selected = coords &&
+              coords.row >= minRow &&
+              coords.row <= maxRow &&
+              coords.col >= minCol &&
+              coords.col <= maxCol;
+          });
+        },
+
+        // 处理鼠标松开事件
+        handleMouseUp () {
+          this.isDragging = false;
+          this.dragStartCell = null;
+        },
+
+        // 显示右键菜单
+        showContextMenu (event) {
+          this.$contextmenu({
+            x: event.x,
+            y: event.y,
+            items: [
+              { label: "合并选中", icon: "fas fa-compress-alt", disabled: !this.canMerge, onClick: this.mergeSelected },
+              { label: "拆分选中", icon: "fas fa-th-large", disabled: !this.canSplit, onClick: this.splitSelected },
+              { divider: true },
+              { label: `撤销 (${this.historyStack.length})`, icon: "fas fa-undo", disabled: this.historyStack.length === 0, onClick: this.undo },
+              { label: "清除所有合并", icon: "fas fa-eraser", onClick: this.clearMerge },
+              { label: "清除选择", icon: "fas fa-times-circle", disabled: this.selectedCells.length === 0, onClick: this.clearSelection },
+            ]
+          });
+        },
+
+        // 清除选择
+        clearSelection () {
+          this.selectedCells.forEach(c => c.selected = false);
+        },
+
+        // 清除所有合并
+        clearMerge () {
+          this.saveState();
+          this.initializeDefaultGrid(this.columns.length, this.rows);
+          layer.msg('已清除所有合并', { icon: 1 });
+        },
+
+        // 拆分选中的单元格
+        splitSelected () {
+          if (!this.canSplit) return;
+          const cellToSplit = this.selectedCells[0];
+          this.saveState();
+          const coords = this.findCellCoords(cellToSplit.id);
+          for (let r = coords.row; r < coords.row + cellToSplit.rowspan; r++)
+            for (let c = coords.col; c < coords.col + cellToSplit.colspan; c++) {
+              const cell = this.gridData[r][c];
+              cell.visible = true;
+              cell.merged = false;
+              cell.selected = false;
+              cell.rowspan = 1;
+              cell.colspan = 1;
+              cell.title = '';
+            }
+          this.updateTitles();
+          layer.msg('单元格已拆分', { icon: 1 });
+        },
+
+        // 合并选中的单元格
+        mergeSelected () {
+          if (!this.canMerge) return;
+          const coordsList = this.selectedCells.map(c => this.findCellCoords(c.id)).filter(Boolean);
+          console.log(coordsList);
+          const minRow = Math.min(...coordsList.map(c => c.row));
+          const maxRow = Math.max(...coordsList.map(c => c.row));
+          const minCol = Math.min(...coordsList.map(c => c.col));
+          const maxCol = Math.max(...coordsList.map(c => c.col));
+          const minData = this.gridData[minRow][minCol],//获取最小单元格的数据
+            maxData = this.gridData[maxRow][maxCol],//获取最大单元格的数据
+            firstRow = _.cloneDeep(this.layConfig)[minRow];//获取第一行的配置
+          if (!minData.title && !maxData.title) return layer.msg('不能合并两个空内容', { icon: 2 });
+          if ((minRow !== 0 && maxRow !== 0)) {
+            const firstCol = firstRow.length - 1
+            if ((minCol > firstCol || maxCol > firstCol))//不能超出第一行的边界
+              return layer.msg('合并失败,不能超出上一行的边界！', { icon: 2 });
+          }
+          let isRectangle = true;
+          for (let r = minRow; r <= maxRow; r++)
+            for (let c = minCol; c <= maxCol; c++)
+              if (!this.gridData[r][c].selected || !this.gridData[r][c].visible) {
+                isRectangle = false;
+                break;
+              }
+          if (!isRectangle) {
+            return layer.msg('合并失败：只能合并连续的、可见的矩形区域！', { icon: 2 });
+          }
+          this.saveState();
+          const rowspan = maxRow - minRow + 1;
+          const colspan = maxCol - minCol + 1;
+          const masterCell = this.gridData[minRow][minCol];
+          masterCell.rowspan = rowspan;
+          masterCell.colspan = colspan;
+          masterCell.merged = true;
+          for (let r = minRow; r <= maxRow; r++)
+            for (let c = minCol; c <= maxCol; c++) {
+              this.gridData[r][c].selected = false;
+              if (r !== minRow || c !== minCol)
+                this.gridData[r][c].visible = false;
+            }
+          masterCell.selected = true;
+          layer.msg('合并成功！', { icon: 1 });
+        },
+
+        // 导出配置
+        exportConfig () {
+          const blob = new Blob([JSON.stringify(this.layuiConfig, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'layui-table-config.json';
+          a.click();
+          URL.revokeObjectURL(url);
+          layer.msg('配置已导出！', { icon: 1 });
+        },
+
+        // 复制代码
+        copyCode () {
+          navigator.clipboard.writeText(this.codeOutput).then(() => {
+            layer.msg('代码已复制到剪贴板！', { icon: 1 });
+          });
+        },
+
+        // 获取最后一行的字段配置
+        getLastRowFields () {
+          const lastVisibleRowIndex = this.getLastVisibleRowIndex();
+          if (lastVisibleRowIndex === -1) return [];
+          const fields = [];
+          for (let j = 0; j < this.columns.length; j++) {
+            let cell = null;
+            for (let i = 0; i <= lastVisibleRowIndex; i++) {
+              const currentCell = this.gridData[i][j];
+              if (currentCell.visible) {
+                cell = currentCell;
+                if (i + currentCell.rowspan - 1 === lastVisibleRowIndex) {
+                  break;
+                }
+              }
+            }
+            if (cell) {
+              fields.push(cell)
+            }
+          }
+          return fields;
+        },
+
+        // 生成测试数据
+        generateTestData (fields) {
+          const data = [];
+          const rowCount = 3; // 生成3行测试数据
+          for (let i = 0; i < rowCount; i++) {
+            const row = {};
+            fields.forEach(field => {
+              if (field && field.field) {
+                // 只用text生成器
+                row[field.field] = '测试数据'
+
+              }
+            });
+            data.push(row);
+          }
+          return data;
+        },
+        // 更新预览表格
+        updatePreview () {
+          if (!table) return;
+          // console.log(this.layuiConfig);
+          // 获取最后一行的字段配置
+          const lastRowFields = this.getLastRowFields();
+          // 生成测试数据
+          const testData = this.generateTestData(lastRowFields);
+          // 配置项
+          const tableConfig = {
+            elem: '#previewTable',
+            data: testData,
+            cols: this.layuiConfig,
+            style: 'margin: 0;',
+            // size: 'sm',
+            limit: 5,
+            height: 'auto',
+            // 添加更多表格配置
+            // skin: 'line', // 表格风格
+            // even: true, // 开启隔行背景
+            page: false, // 关闭分页
+            loading: false, // 关闭加载条
+            cellMinWidth: 80, // 单元格最小宽度
+            done: function () {
+              // 表格渲染完成后的回调
+              // console.log('表格渲染完成');
+            }
+          };
+
+          // 销毁旧的表格实例
+          if (this.previewTable) {
+            this.previewTable.reload(tableConfig);
+          } else {
+            // 创建新的表格实例
+            this.previewTable = table.render(tableConfig);
+          }
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Layui动态组件生成器</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.8/dist/css/layui.css">
+</head>
+
+<body>
+
+  <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>动态生成的Layui表单</legend>
+  </fieldset>
+
+  <!-- 我们将把动态生成的HTML插入到这里 -->
+  <form class="layui-form" action="" id="dynamic-form" style="width: 600px; margin: 0 auto;">
+    <!-- 内容将由JS动态填充 -->
+  </form>
+
+  <script src="https://unpkg.com/layui@2.9.8/dist/layui.js"></script>
+  <!-- 引入上面的字典和生成器JS代码 -->
+  <script src="index.js"></script>
+  <script>
+
+    // (这里假设 layuiComponentDictionary.js 和主函数已加载)
+
+    // 定义我们要渲染的组件配置数组
+    const formComponents = [
+      // 1. 简单的输入框，使用所有默认参数
+      {
+        label: '用户名',
+        tag: 'input',
+        name: 'username',
+        // layVerify: 'required'
+      },
+      // 2. 带详细配置的密码框
+      {
+        label: '密码',
+        tag: 'input',
+        name: 'password',
+        type: 'password',
+        placeholder: '请输入6-12位密码',
+        layVerify: 'required|pass'
+      },
+      // 3. 被禁用的输入框，并有默认值
+      {
+        label: '邀请码',
+        tag: 'input',
+        name: 'inviteCode',
+        value: 'ABC-123',
+        disabled: true
+      },
+      // 4. 下拉选择框
+      {
+        label: '所在城市',
+        tag: 'select',
+        name: 'city',
+        selectedValue: '2', // 默认选中上海
+        options: [
+          { value: '1', text: '北京' },
+          { value: '2', text: '上海' },
+          { value: '3', text: '广州', disabled: true }, // 也可以禁用某个选项
+          { value: '4', text: '深圳' }
+        ]
+      },
+      // 5. 开关
+      {
+        label: '接收通知',
+        tag: 'switch',
+        name: 'notification',
+        checked: true, // 默认开启
+        text: '接收|拒收'
+      },
+      // 6. 文本域
+      {
+        label: '个人简介',
+        tag: 'textarea',
+        name: 'bio'
+      },
+      // 7. 日期选择器
+      {
+        label: '出生日期',
+        tag: 'date',
+        name: 'birthday',
+        id: 'birth-date-picker' // 最好给一个明确的ID
+      }
+    ];
+
+    // --- 渲染逻辑 ---
+    const formContainer = document.getElementById('dynamic-form');
+    let finalHtml = '';
+
+    formComponents.forEach(config => {
+      finalHtml += generateLayuiElement(config);
+    });
+
+    // 添加一个提交按钮
+    finalHtml += `
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+    </div>
+  </div>
+`;
+
+    formContainer.innerHTML = finalHtml;
+
+
+    // --- 关键步骤：渲染Layui组件 ---
+    layui.use(['form', 'laydate'], function () {
+      var form = layui.form;
+      var laydate = layui.laydate;
+
+      // 1. 渲染整个表单（select, checkbox, radio, switch）
+      form.render();
+
+      // 2. 单独渲染日期选择器
+      laydate.render({
+        elem: '#birth-date-picker' // 绑定我们之前定义的ID
+      });
+
+      // 监听提交
+      form.on('submit(formDemo)', function (data) {
+        layer.msg(JSON.stringify(data.field));
+        return false;
+      });
+    });
+  </script>
+
+</body>
+
+</html>

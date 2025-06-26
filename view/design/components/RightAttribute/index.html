@@ -1,0 +1,86 @@
+<div class="attribute-panel">
+  <!-- 主内容区域，当有组件被选中时显示 -->
+  <div v-if="group && component" class="attribute-panel__content">
+    <div class="attribute-panel__header"></div>
+    <div class="attribute-panel__main">
+      <div class="attribute-panel__tabs">
+        <van-tabs color="#409EFF" v-model:active="currentTabName" @click="defaultClick">
+          <van-tab v-for="tab in tabs" :title="tab.label" :name="tab.name" :key="tab.id">
+            <!-- 属性列表容器 -->
+            <div class="attribute-panel__properties-list">
+              <!-- 单个属性/表单项 -->
+              <div v-if="!tab.contentNone">
+                <div class="attribute-panel__property-item" v-for="(item, index) in tab.content"
+                  :key="formValueName(item.valueName) || item.component + '-' + index">
+                  <!-- 属性标签 -->
+                  <div class="attribute-panel__label">
+                    <el-tooltip v-if="item.props.tip" class="item" effect="dark" :content="item.props.tip||'没有任何提示'"
+                      :placement="item.tipPosition || 'top'">
+                      <div class="attribute-panel__label-content">
+                        <el-icon class="el-icon-warning-outline"></el-icon>
+                        <label>{{item.props.label||'标题' }}：</label>
+                      </div>
+                    </el-tooltip>
+                    <div class="attribute-panel__label-content" v-else>
+                      <el-icon v-if="item.props.labelIcon" :class="item.props.labelIcon"></el-icon>
+                      <label>{{item.props.label||'标题' }}：</label>
+                    </div>
+                  </div>
+                  <!-- 属性的输入控件 -->
+                  <div class="attribute-panel__control">
+                    <component :is="item.component" v-bind="getProcessedProps(item)" v-on="getProcessedEvents(item)"
+                      :value="isInputWithValue(tab,item) ? formData[tab.name][formValueName(item.valueName)] : undefined"
+                      @input="componentEmittedInput($event, tab,item)"
+                      :file-list="item.component === 'el-upload' && formValueName(item.valueName) ? formData[tab.name][formValueName(item.valueName)] : undefined"
+                      v-if="!isHidden(tab,item)">
+                      <template
+                        v-if="item.options && Array.isArray(item.options) && (item.component === 'el-select' || item.component === 'el-radio-group' || item.component === 'el-checkbox-group')">
+                        <template v-if="item.component === 'el-select'">
+                          <el-option v-for="optionItem in item.options" :key="optionItem.id" :label="optionItem.label"
+                            :value="optionItem.value" :disabled="optionItem.disabled === true">
+                          </el-option>
+                        </template>
+                        <template v-else-if="item.component === 'el-radio-group'">
+                          <el-radio v-for="optionItem in item.options" :key="optionItem.id" :label="optionItem.value"
+                            :disabled="optionItem.disabled === true">
+                            {{ optionItem.label }}
+                          </el-radio>
+                        </template>
+                        <template v-else-if="item.component === 'el-checkbox-group'">
+                          <el-checkbox v-for="optionItem in item.options" :key="optionItem.id" :label="optionItem.value"
+                            :disabled="optionItem.disabled === true">
+                            {{ optionItem.label }}
+                          </el-checkbox>
+                        </template>
+                      </template>
+                      <template v-else-if="item.slot && typeof item.slot === 'string'">
+                        <span v-if="utils.isHtmlString(item.slot)" v-html="item.slot"></span>
+                        <span v-else>{{ item.slot }}</span>
+                      </template>
+                    </component>
+                    <!-- 调试信息 -->
+                    <div v-if="item.valueState" class="attribute-panel__debug-info">
+                      绑定的值 (formData.{{tab.name}}{{formValueName(item.valueName)}}): {{
+                      formData[tab.name][formValueName(item.valueName)] }}
+                    </div>
+                  </div>
+                </div>
+                <div class="attribute-panel__property-save">
+                  <el-button type="primary" plain size="small" @click="saveAttr(tab)">保存</el-button>
+                </div>
+              </div>
+              <div class="attribute-panel__empty-state" v-else>
+                <el-empty description="当前组件暂无属性"></el-empty>
+              </div>
+            </div>
+          </van-tab>
+        </van-tabs>
+      </div>
+    </div>
+  </div>
+
+  <!-- 空状态，当没有组件被选中时显示 -->
+  <div class="attribute-panel__empty-state" v-else>
+    <el-empty description="当前没有选择组件或该组建暂无属性"></el-empty>
+  </div>
+</div>

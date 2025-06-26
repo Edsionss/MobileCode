@@ -1,0 +1,80 @@
+{
+  "componentProps": {
+    "style": {
+      "padding": "16px"
+    }
+  },
+  "id": "root",
+  "label": "页面",
+  "type": "page",
+  "children": [
+    {
+      "componentProps": {
+        "label-position": "left",
+        "labelWidth": "100px",
+        "name": "default",
+        "labelSuffix": "123",
+        "size": "large",
+        "require-asterisk-position": "left",
+        "inline-message": true,
+        "status-icon": true,
+        "scroll-to-error": true,
+        "inline": true,
+        "disabled": true,
+        "hidden": true,
+        "style": {
+          "width": "123px",
+          "height": "123px",
+          "padding": "123px",
+          "margin": "123px",
+          "backgroundColor": "#8C3C3C",
+          "color": "#B03D3D"
+        }
+      },
+      "label": "表单",
+      "type": "form",
+      "children": [],
+      "id": "form_wldwg9uh",
+      "on": {
+        "epicReady": [
+          {
+            "componentId": null,
+            "methodName": "test",
+            "type": "custom"
+          }
+        ],
+        "vnodeMounted": [
+          {
+            "componentId": null,
+            "methodName": "test",
+            "type": "custom"
+          }
+        ],
+        "vnodeUpdated": [
+          {
+            "componentId": null,
+            "methodName": "test",
+            "type": "custom"
+          }
+        ],
+        "vnodeUnmounted": [
+          {
+            "componentId": null,
+            "methodName": "test",
+            "type": "custom"
+          }
+        ]
+      }
+    },
+    {
+      "componentProps": {
+        "placeholder": "请输入"
+      },
+      "field": "input_61dmu7uc",
+      "input": true,
+      "label": "输入框",
+      "type": "input",
+      "id": "input_61dmu7uc"
+    }
+  ]
+}

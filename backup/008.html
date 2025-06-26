@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LayUI表头配置器 (最终稳定版)</title>
+  <!-- Layui CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.11/css/layui.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <!-- Luckysheet CSS -->
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/css/pluginsCss.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/plugins.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/css/luckysheet.css' />
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/assets/iconfont/iconfont.css' />
+
+  <style>
+    :root {
+      --primary-color: #667eea;
+      --secondary-color: #764ba2;
+      --border-color: #e5e7eb;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: #f1f3f6;
+      color: #333;
+      padding: 15px;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      gap: 15px;
+      height: calc(100vh - 30px);
+    }
+
+    .main-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      min-width: 0;
+    }
+
+    .configurator-panel,
+    .preview-panel {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .configurator-panel {
+      height: 55%;
+    }
+
+    .preview-panel {
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    #luckysheet-container {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    .property-panel {
+      width: 320px;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .property-panel h3 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--secondary-color);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .prop-content {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .prop-item {
+      margin-bottom: 15px;
+    }
+
+    .prop-item label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .prop-item input,
+    .prop-item select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
+
+    .prop-item input:focus,
+    .prop-item select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+
+    .code-container {
+      background: #2d3748;
+      border-radius: 8px;
+      padding: 15px;
+      position: relative;
+      overflow-y: auto;
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .code-container pre {
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .toolbar {
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .toolbar-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-right: auto;
+      color: var(--secondary-color);
+    }
+
+    .preview-content {
+      padding: 0 20px 20px 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow: hidden;
+    }
+
+    .live-table-wrapper {
+      flex: 1;
+      overflow: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      min-height: 100px;
+    }
+
+    .code-preview-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      max-height: 250px;
+      flex-shrink: 0;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app" class="container">
+    <div class="main-panel">
+      <div class="configurator-panel">
+        <div id="luckysheet-container"></div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="toolbar">
+          <div class="toolbar-title"><i class="fa-solid fa-desktop"></i> Layui 实时预览</div>
+        </div>
+        <div class="preview-content">
+          <div class="live-table-wrapper">
+            <table id="live-preview-table" lay-filter="live-preview-filter"></table>
+          </div>
+          <div class="code-preview-wrapper">
+            <div class="code-header">
+              <label><strong>最终表头配置 (cols)</strong></label>
+              <button class="control-btn" @click="copyConfig"><i class="fas fa-copy"></i> 复制配置</button>
+            </div>
+            <div class="code-container">
+              <pre>{{ finalLayuiConfigString }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="property-panel">
+      <h3><i class="fa-solid fa-sliders"></i> 列属性面板</h3>
+      <div class="prop-content">
+        <div v-if="activeColIndex !== null && selectedColumn">
+          <div class="prop-item">
+            <label>选中列</label>
+            <input type="text" :value="getColLabel(activeColIndex)" readonly
+              style="background:#f0f0f0; font-weight:bold;">
+          </div>
+          <div class="prop-item">
+            <label for="field">字段名 (field)</label>
+            <input id="field" type="text" v-model="selectedColumn.field">
+          </div>
+          <div class="prop-item">
+            <label for="width">宽度 (width)</label>
+            <input id="width" type="number" v-model.number="selectedColumn.width">
+          </div>
+          <div class="prop-item">
+            <label for="align">对齐方式 (align)</label>
+            <select id="align" v-model="selectedColumn.align">
+              <option value="left">左对齐</option>
+              <option value="center">居中</option>
+              <option value="right">右对齐</option>
+            </select>
+          </div>
+          <div class="prop-item">
+            <label for="fixed">固定列 (fixed)</label>
+            <select id="fixed" v-model="selectedColumn.fixed">
+              <option :value="undefined">不固定</option>
+              <option value="left">左固定</option>
+              <option value="right">右固定</option>
+            </select>
+          </div>
+        </div>
+        <div v-else>
+          <p style="color: #888; text-align:center; margin-top: 40px;">请**双击或单击**表格中的任意单元格<br>来配置其所在列的底层属性</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.16/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.11/layui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/js/plugin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/luckysheet.umd.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let layer, table;
+
+      layui.use(['layer', 'table'], function () {
+        layer = layui.layer;
+        table = layui.table;
+      });
+
+      new Vue({
+        el: '#app',
+        data: {
+          isSheetReady: false, // Core state flag
+          columnProps: [],
+          activeColIndex: null,
+          layuiConfig: [[]],
+          initialRows: 6,
+          initialCols: 8,
+        },
+        watch: {
+          columnProps: {
+            handler (newVal, oldVal) {
+              if (!this.isSheetReady || !oldVal || oldVal.length === 0) return;
+              newVal.forEach((prop, index) => {
+                const oldProp = oldVal[index];
+                if (prop && oldProp && prop.width !== oldProp.width && prop.width > 0) {
+                  window.luckysheet.setColumnWidth(prop.width, index);
+                }
+              });
+              this.updatePreview();
+            },
+            deep: true
+          }
+        },
+        computed: {
+          selectedColumn: {
+            get () {
+              if (this.activeColIndex === null) return null;
+              if (!this.columnProps[this.activeColIndex]) {
+                this.$set(this.columnProps, this.activeColIndex, this.createDefaultColProp(this.activeColIndex));
+              }
+              return this.columnProps[this.activeColIndex];
+            },
+            set (newVal) {
+              if (this.activeColIndex === null) return;
+              this.$set(this.columnProps, this.activeColIndex, newVal);
+            }
+          },
+          dummyData () {
+            const data = [];
+            const fields = this.columnProps.map(p => p ? p.field : '').filter(Boolean);
+            for (let i = 1; i <= 5; i++) {
+              const row = {};
+              fields.forEach(field => { row[field] = `${field.replace(/_/g, ' ')} ${i}`; });
+              data.push(row);
+            }
+            return data;
+          },
+          finalLayuiConfigString () {
+            return `layui.table.render({
+  // ... 其他选项
+  cols: ${JSON.stringify(this.layuiConfig, null, 2)}
+});`;
+          }
+        },
+        mounted () {
+          this.initSheet();
+        },
+        methods: {
+          createDefaultColProp (index) {
+            return { field: `field_${index + 1}`, width: 100, align: 'left', fixed: undefined };
+          },
+          initSheet () {
+            this.columnProps = Array.from({ length: this.initialCols }, (_, i) => this.createDefaultColProp(i));
+            const initialCellData = Array.from({ length: this.initialCols }, (_, i) => ({ r: 0, c: i, v: { v: `表头 ${i + 1}` } }));
+
+            const options = {
+              container: 'luckysheet-container',
+              lang: 'zh',
+              data: [{ name: "表头配置", celldata: initialCellData }],
+              column: this.initialCols,
+              row: this.initialRows,
+              showtoolbar: true,
+              showtoolbarConfig: {
+                undo: true, redo: true, mergeCell: true,
+                paintFormat: false, currencyFormat: false, percentageFormat: false,
+                numberDecrease: false, numberIncrease: false, font: false,
+                fontSize: false, bold: false, italic: false,
+                strikethrough: false, underline: false, textColor: false,
+                fillColor: false, border: false, horizontalAlign: false,
+                verticalAlign: false, textWrap: false, textRotate: false,
+                image: false, link: false, chart: false, postil: false,
+                pivotTable: false, 'function': false, frozenMode: false,
+                sortAndFilter: false, conditionalFormat: false, dataVerification: false,
+                splitColumn: false, screenshot: false, findAndReplace: false, print: false,
+              },
+              showinfobar: false, showsheetbar: false, allowEdit: true,
+              cellRightClickConfig: {
+                copy: true, paste: true, merge: true, cancelMerge: true,
+                deleteRow: true, insertRow: true, deleteCol: true, insertCol: true,
+                clear: true, matrix: false, sort: false, filter: false,
+                chart: false, image: false, link: false, data: false, cellFormat: false
+              },
+              hook: {
+                updated: () => {
+                  if (!this.isSheetReady) {
+                    this.isSheetReady = true;
+                    const colWidthMap = {};
+                    this.columnProps.forEach((p, i) => colWidthMap[i] = p.width);
+                    window.luckysheet.setColumnWidth(colWidthMap);
+                  }
+                  this.updatePreview();
+                },
+                cellMousedown: (cell) => {
+                  if (cell && cell.c != null) { this.activeColIndex = cell.c; }
+                },
+                columnWidthChange: (col, width) => {
+                  if (this.columnProps[col]) { this.columnProps[col].width = width; }
+                }
+              }
+            };
+            window.luckysheet.create(options);
+          },
+          updatePreview () {
+            if (!this.isSheetReady) return;
+            this.generateLayuiConfig();
+            this.renderPreviewTable();
+          },
+          generateLayuiConfig () {
+            if (!this.isSheetReady) return;
+
+            const sheetFile = window.luckysheet.getluckysheetfile()[0];
+            if (!sheetFile) return;
+
+            const celldata = sheetFile.celldata || [];
+            const mergeConfig = sheetFile.config.merge || {};
+
+            let totalRows = 0, totalCols = 0;
+            if (sheetFile.data && sheetFile.data.length > 0) {
+              totalRows = sheetFile.data.length;
+              totalCols = sheetFile.data[0].length;
+            } else { // Fallback for empty sheet
+              totalRows = this.initialRows;
+              totalCols = this.initialCols;
+            }
+
+            while (this.columnProps.length < totalCols) {
+              this.columnProps.push(this.createDefaultColProp(this.columnProps.length));
+            }
+
+            const layuiCols = [];
+            const visited = Array.from({ length: totalRows }, () => Array(totalCols).fill(false));
+
+            for (let r = 0; r < totalRows; r++) {
+              const rowItems = [];
+              for (let c = 0; c < totalCols; c++) {
+                if (visited[r][c]) continue;
+
+                const cellData = window.luckysheet.getcellvalue(r, c);
+                const cellConfig = {};
+                const mergeInfo = mergeConfig[`${r}_${c}`];
+
+                if (mergeInfo) {
+                  cellConfig.rowspan = mergeInfo.rs;
+                  cellConfig.colspan = mergeInfo.cs;
+                  for (let i = r; i < r + mergeInfo.rs; i++) {
+                    for (let j = c; j < c + mergeInfo.cs; j++) { visited[i][j] = true; }
+                  }
+                }
+
+                const isLeaf = (r + (cellConfig.rowspan || 1)) === totalRows;
+                const props = this.columnProps[c] || this.createDefaultColProp(c);
+
+                let title = (cellData && cellData.v) ? String(cellData.v) : '';
+                if (!title && isLeaf) { title = props.field; }
+                cellConfig.title = title || ' ';
+
+                if (isLeaf) {
+                  Object.assign(cellConfig, {
+                    field: props.field, width: props.width,
+                    align: props.align, fixed: props.fixed,
+                  });
+                }
+
+                Object.keys(cellConfig).forEach(key => (cellConfig[key] === undefined || cellConfig[key] === null || cellConfig[key] === '') && delete cellConfig[key]);
+                if (cellConfig.rowspan === 1) delete cellConfig.rowspan;
+                if (cellConfig.colspan === 1) delete cellConfig.colspan;
+
+                rowItems.push(cellConfig);
+              }
+              if (rowItems.length > 0) {
+                layuiCols.push(rowItems);
+              }
+            }
+            this.layuiConfig = layuiCols;
+          },
+          renderPreviewTable () {
+            if (!table || !this.isSheetReady) return;
+            this.$nextTick(() => {
+              table.render({
+                elem: '#live-preview-table', cols: this.layuiConfig,
+                data: this.dummyData, page: false,
+                skin: 'line', even: true, height: 'auto'
+              });
+            });
+          },
+          getColLabel (index) {
+            let label = ''; let num = index + 1;
+            while (num > 0) {
+              let r = (num - 1) % 26;
+              label = String.fromCharCode(65 + r) + label;
+              num = Math.floor((num - 1) / 26);
+            }
+            return label;
+          },
+          copyConfig () {
+            const codeToCopy = `cols: ${JSON.stringify(this.layuiConfig, null, 2)}`;
+            navigator.clipboard.writeText(codeToCopy).then(() => {
+              layer.msg('配置已成功复制到剪贴板！', { icon: 1 });
+            }).catch(() => {
+              layer.msg('复制失败，请检查浏览器权限。', { icon: 2 });
+            });
+          }
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

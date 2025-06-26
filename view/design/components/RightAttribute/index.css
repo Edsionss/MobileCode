@@ -1,0 +1,121 @@
+/* Block: attribute-panel */
+.attribute-panel {
+  width: 400px;
+  height: 100%;
+  border-left: #ccc 0.5px dashed;
+  border-right: #ccc 0.5px dashed;
+  display: flex;
+  /* 让子元素能撑满高度 */
+  flex-direction: column;
+}
+
+/* Element: 主内容容器 */
+.attribute-panel__content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Element: 面板头部 */
+.attribute-panel__header {
+  height: 30px;
+  width: 100%;
+  border-bottom: #ccc 0.5px dashed;
+  flex-shrink: 0;
+  /* 防止头部被压缩 */
+}
+
+/* Element: 面板主体 */
+.attribute-panel__main {
+  flex-grow: 1;
+  /* 占据剩余空间 */
+  overflow: auto;
+  /* 内容过多时可滚动 */
+}
+
+/* Element: Tabs 容器 */
+.attribute-panel__tabs {
+  /* Vant Tabs 组件的样式会覆盖这里，但保留类名以示结构 */
+}
+
+/* Element: 单个 Tab 内的属性列表 */
+.attribute-panel__properties-list {
+  border-top: #ccc 0.5px dashed;
+}
+
+/* Element: 单个属性项（一行） */
+.attribute-panel__property-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  /* 增加上下 padding 使其更舒适 */
+}
+
+.attribute-panel__property-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 8px;
+
+}
+
+/* Element: 属性项的标签 */
+.attribute-panel__label {
+  flex-shrink: 0;
+  /* 防止标签被压缩 */
+  min-width: 90px;
+  margin-right: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  text-align: right;
+}
+
+/* Element: 标签的内部容器，用于对齐图标和文字 */
+.attribute-panel__label-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* 使内容靠右对齐 */
+  gap: 3px;
+}
+
+/* 针对 Element 内的特定标签进行样式设置是允许的 */
+.attribute-panel__label label {
+  /* 原始样式中的一些属性移到了父元素或不再需要 */
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Element: 属性项的控件（如输入框、选择器等） */
+.attribute-panel__control {
+  flex-grow: 1;
+  /* 占据剩余的横向空间 */
+  width: 100%;
+  /* 配合 flex-grow */
+}
+
+/* Element: 调试信息 */
+.attribute-panel__debug-info {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+  word-break: break-all;
+  /* 防止长字符串撑破布局 */
+}
+
+/* Element: 空状态容器 */
+.attribute-panel__empty-state {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 全局修复（与 BEM 无关，但属于原 CSS），保持不变 */
+input[aria-hidden="true"] {
+  display: none !important;
+}

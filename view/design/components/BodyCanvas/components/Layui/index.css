@@ -1,0 +1,9 @@
+.layui-panel__container .layui-form-item {
+  margin-bottom: 0;
+}
+
+.layui-children-content {
+  padding: 5px;
+  border: 0.5px dashed #A0CFFF;
+  min-height: 60px;
+}

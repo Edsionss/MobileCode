@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>【Vue 2】牛逼的嵌套拖拽编辑器</title>
+  <!-- 1. 引入 Vue 2 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <!-- 2. 引入 SortableJS (vuedraggable 的依赖) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.2/Sortable.min.js"></script>
+  <!-- 3. 引入适用于 Vue 2 的 vuedraggable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 20px;
+    }
+
+    .panel {
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .components-panel {
+      width: 280px;
+      padding: 15px;
+    }
+
+    .canvas-panel {
+      flex-grow: 1;
+      padding: 15px;
+    }
+
+    h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #e4e7ed;
+      padding-bottom: 10px;
+    }
+
+    /* 左侧组件库项 */
+    .component-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #f5f7fa;
+      cursor: move;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .component-item:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    /* 画布中的组件项 */
+    .canvas-item {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 2px solid transparent;
+      background-color: #fff;
+      position: relative;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .canvas-item:hover {
+      border-color: #c0c4cc;
+    }
+
+    .canvas-item.is-selected {
+      border-color: #409eff !important;
+      box-shadow: 0 0 10px rgba(64, 158, 255, 0.5);
+    }
+
+    /* 容器组件的样式 */
+    .is-container {
+      border: 2px dashed #b3d8ff;
+      background-color: #ecf5ff;
+    }
+
+    .container-drop-zone {
+      min-height: 60px;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 1px dashed #a0c4e8;
+      border-radius: 4px;
+    }
+
+    /* 模拟具体组件样式 */
+    .comp-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 5px 0;
+    }
+
+    .comp-paragraph {
+      margin: 5px 0;
+      line-height: 1.6;
+    }
+
+    .comp-input {
+      width: 98%;
+      padding: 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+    }
+
+    .comp-button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      background-color: #409eff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .comp-card {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .comp-card-header {
+      padding: 10px 15px;
+      background-color: #f5f7fa;
+      border-bottom: 1px solid #ebeef5;
+      font-weight: bold;
+    }
+
+    .comp-card-body {
+      padding: 15px;
+    }
+
+    .comp-form {
+      border: 1px solid #e4e7ed;
+      padding: 20px;
+      border-radius: 4px;
+    }
+
+    /* 拖拽占位符 */
+    .sortable-ghost {
+      opacity: 0.5;
+      background: #c8ebfb;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <div class="main-layout">
+      <!-- ==================== 左侧：组件源 ==================== -->
+      <div class="panel components-panel">
+        <h3>组件库 (拖我!)</h3>
+        <draggable :list="sourceComponents" :group="{ name: 'components-group', pull: 'clone', put: false }"
+          :clone="cloneComponent" :sort="false">
+          <div v-for="element in sourceComponents" :key="element.type" class="component-item">
+            {{ element.name }}
+          </div>
+        </draggable>
+      </div>
+
+      <!-- ==================== 右侧：主画布 ==================== -->
+      <div class="panel canvas-panel">
+        <h3>画布区域 (在这里搭建)</h3>
+        <draggable-area :components="canvasComponents" :active-id="activeComponentId"
+          @component-clicked="onComponentClick"></draggable-area>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Vue 组件模板定义 ==================== -->
+
+  <!-- 【核心】递归拖拽区域模板 -->
+  <template id="draggable-area-template">
+    <draggable :list="components" group="components-group" class="container-drop-zone">
+      <div v-for="element in components" :key="element.id" class="canvas-item" :class="{
+                'is-container': isContainer(element),
+                'is-selected': activeId === element.id
+            }" @click.stop="clickComponent(element)">
+        <component-wrapper :config="element">
+          <!-- 递归渲染子区域 -->
+          <draggable-area v-if="isContainer(element)" :components="element.children" :active-id="activeId"
+            @component-clicked="bubbleClick"></draggable-area>
+        </component-wrapper>
+      </div>
+    </draggable>
+  </template>
+
+  <!-- 组件渲染包装器模板 -->
+  <template id="component-wrapper-template">
+    <div>
+      <!-- 卡片容器 -->
+      <div v-if="config.type === 'card'" class="comp-card">
+        <div class="comp-card-header">{{ config.props.title }}</div>
+        <div class="comp-card-body">
+          <slot></slot> <!-- 儿子们放这里 -->
+        </div>
+      </div>
+
+      <!-- 表单容器 -->
+      <form v-else-if="config.type === 'form'" class="comp-form" @submit.prevent>
+        <slot></slot> <!-- 儿子们放这里 -->
+      </form>
+
+      <!-- 标题 -->
+      <h3 v-else-if="config.type === 'title'" class="comp-title">{{ config.props.text }}</h3>
+
+      <!-- 段落 -->
+      <p v-else-if="config.type === 'paragraph'" class="comp-paragraph">{{ config.props.text }}</p>
+
+      <!-- 输入框 -->
+      <input v-else-if="config.type === 'input'" class="comp-input" type="text" :placeholder="config.props.placeholder">
+
+      <!-- 按钮 -->
+      <button v-else-if="config.type === 'button'" class="comp-button">{{ config.props.text }}</button>
+    </div>
+  </template>
+
+  <!-- ==================== Vue 应用脚本 ==================== -->
+  <script>
+    // 定义组件包装器
+    var ComponentWrapper = {
+      template: '#component-wrapper-template',
+      props: ['config']
+    };
+
+    // 定义递归拖拽区域
+    var DraggableArea = {
+      name: 'DraggableArea', // 递归组件必须有 name
+      template: '#draggable-area-template',
+      props: ['components', 'activeId'],
+      components: {
+        'draggable': vuedraggable, // 直接使用全局变量
+        'component-wrapper': ComponentWrapper
+      },
+      methods: {
+        isContainer: function (element) {
+          return element.children && Array.isArray(element.children);
+        },
+        clickComponent: function (element) {
+          this.$emit('component-clicked', element);
+        },
+        bubbleClick: function (element) {
+          this.$emit('component-clicked', element);
+        }
+      }
+    };
+
+    new Vue({
+      el: '#app',
+      components: {
+        'draggable': vuedraggable,
+        'draggable-area': DraggableArea
+      },
+      data: {
+        // 左侧组件库的数据
+        sourceComponents: [
+          { name: '标题', type: 'title', props: { text: '这是一个大标题' } },
+          { name: '段落', type: 'paragraph', props: { text: '这是一段详细的文字描述内容...' } },
+          { name: '输入框', type: 'input', props: { placeholder: '请输入...' } },
+          { name: '按钮', type: 'button', props: { text: '提交' } },
+          { name: '卡片容器', type: 'card', props: { title: '卡片标题' }, children: [] },
+          { name: '表单容器', type: 'form', props: {}, children: [] }
+        ],
+        // 右侧画布的数据模型
+        canvasComponents: [],
+        // 当前选中的组件ID
+        activeComponentId: null,
+      },
+      methods: {
+        // 克隆组件的函数，保证每次拖拽都是一个新的、唯一的组件
+        cloneComponent: function (original) {
+          var newComponent = JSON.parse(JSON.stringify(original));
+          // 生成一个绝对唯一的ID
+          newComponent.id = 'comp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+          // 如果是容器，确保克隆出来的是一个空的 children 数组
+          if (newComponent.children) {
+            newComponent.children = [];
+          }
+          return newComponent;
+        },
+        // 点击画布中的组件时触发
+        onComponentClick: function (element) {
+          console.log('你他妈的终于点中了:', element.id, element);
+          this.activeComponentId = element.id;
+          console.log('this.activeComponentId', this.canvasComponents);
+
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

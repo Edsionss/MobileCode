@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>【框选合并】表头配置方案</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.13/dist/css/layui.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background-color: #f7f8fa;
+      user-select: none;
+    }
+
+    #app {
+      padding: 20px;
+    }
+
+    .panel {
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
+    }
+
+    .panel-title {
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #303133;
+      font-weight: bold;
+    }
+
+    .header-builder-wrapper {
+      position: relative;
+    }
+
+    .header-builder-grid {
+      display: grid;
+      border-left: 1px solid #EBEEF5;
+      border-top: 1px solid #EBEEF5;
+      cursor: cell;
+    }
+
+    .header-cell {
+      border-right: 1px solid #EBEEF5;
+      border-bottom: 1px solid #EBEEF5;
+      min-height: 60px;
+      background-color: #fafbfc;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .header-cell.is-hidden {
+      visibility: hidden;
+    }
+
+    .header-cell-content {
+      padding: 5px;
+      text-align: center;
+    }
+
+    .header-cell-title {
+      font-weight: 500;
+    }
+
+    .split-button {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      cursor: pointer;
+      color: #F56C6C;
+      font-size: 16px;
+      display: none;
+    }
+
+    .header-cell:hover .split-button {
+      display: block;
+    }
+
+    /* 框选区域的样式 */
+    .selection-box {
+      position: absolute;
+      background-color: rgba(64, 158, 255, 0.2);
+      border: 1px solid #409EFF;
+      pointer-events: none;
+      /* 让鼠标事件穿透 */
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <el-row :gutter="20">
+      <!-- 配置面板 -->
+      <el-col :span="12">
+        <div class="panel">
+          <div class="panel-title"><i class="el-icon-edit-outline"></i> 表头合并配置 (框选模式)</div>
+          <p style="color: #909399; font-size: 14px;">在下方网格中，按住鼠标左键拖拽以框选需要合并的单元格。</p>
+
+          <div class="header-builder-wrapper">
+            <div class="header-builder-grid" :style="{ gridTemplateColumns: `repeat(${dataColumns.length}, 1fr)` }"
+              @mousedown="startSelection">
+              <div v-for="cell in flatHeaderGrid" :key="cell.id" class="header-cell"
+                :class="{ 'is-hidden': cell.isHidden }"
+                :style="{ gridColumn: `span ${cell.colspan}`, gridRow: `span ${cell.rowspan}` }"
+                :data-row="cell.rowIndex" :data-col="cell.colIndex">
+
+                <div class="header-cell-content">
+                  <span class="header-cell-title">{{ cell.title }}</span>
+                </div>
+                <i v-if="cell.colspan > 1 || cell.rowspan > 1" class="el-icon-delete-solid split-button" title="拆分单元格"
+                  @click.stop="splitCell(cell)"></i>
+              </div>
+            </div>
+            <!-- 框选的视觉效果元素 -->
+            <div v-if="selection.active" class="selection-box" :style="selection.style"></div>
+          </div>
+
+          <div style="margin-top: 20px; text-align: right;">
+            <el-button @click="addHeaderRow" icon="el-icon-plus" size="small">添加表头行</el-button>
+            <el-button @click="resetGrid" icon="el-icon-refresh" size="small" type="danger">重置表头</el-button>
+          </div>
+        </div>
+      </el-col>
+
+      <!-- 表格预览区域 -->
+      <el-col :span="12">
+        <div class="panel">
+          <div class="panel-title"><i class="el-icon-view"></i> Layui 表格实时预览</div>
+          <div id="layui-table-container"></div>
+        </div>
+      </el-col>
+    </el-row>
+  </div>
+
+  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/layui@2.9.13/dist/layui.js"></script>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        dataColumns: [
+          { field: 'id', title: 'ID' }, { field: 'name', title: '姓名' }, { field: 'score_yuwen', title: '语文' },
+          { field: 'score_shuxue', title: '数学' }, { field: 'score_yingyu', title: '英语' }, { field: 'total', title: '总分' },
+        ],
+        headerGrid: [],
+        cellIdCounter: 0,
+        selection: { active: false, startCell: null, endCell: null, style: {} }
+      },
+      computed: {
+        flatHeaderGrid () { return this.headerGrid.flat(); },
+        layuiCols () {
+          const layuiColsArray = [];
+          this.headerGrid.forEach(row => {
+            const layuiRow = [];
+            row.forEach(cell => {
+              if (cell.isHidden) return;
+              const layuiCell = { title: cell.title, rowspan: cell.rowspan, colspan: cell.colspan, align: 'center' };
+              if (cell.isDataCell) { layuiCell.field = cell.field; }
+              layuiRow.push(layuiCell);
+            });
+            if (layuiRow.length > 0) layuiColsArray.push(layuiRow);
+          });
+          return layuiColsArray;
+        }
+      },
+      watch: {
+        layuiCols: { handler: function () { this.$nextTick(this.renderTable); }, deep: true }
+      },
+      created () { this.resetGrid(); },
+      methods: {
+        renderTable () {
+          layui.table.render({
+            elem: '#layui-table-container', height: 400, cols: this.layuiCols,
+            data: [
+              { id: 1, name: '张三', score_yuwen: 85, score_shuxue: 95, score_yingyu: 90, total: 270 },
+              { id: 2, name: '李四', score_yuwen: 90, score_shuxue: 88, score_yingyu: 92, total: 270 },
+            ]
+          });
+        },
+        createCell (rowIndex, colIndex, options = {}) {
+          return { id: this.cellIdCounter++, rowIndex, colIndex, rowspan: 1, colspan: 1, isHidden: false, isDataCell: false, ...options };
+        },
+        resetGrid () {
+          this.headerGrid = [this.dataColumns.map((col, i) => this.createCell(0, i, { title: col.title, field: col.field, isDataCell: true }))];
+        },
+        addHeaderRow () {
+          const newRow = this.dataColumns.map((col, i) => this.createCell(0, i, { title: '新标题' }));
+          this.headerGrid.forEach(row => row.forEach(cell => cell.rowIndex++));
+          this.headerGrid.unshift(newRow);
+        },
+        findCellByCoords (rowIndex, colIndex) {
+          if (this.headerGrid[rowIndex]) return this.headerGrid[rowIndex][colIndex];
+          return null;
+        },
+        getCellFromElement (element) {
+          const target = element.closest('.header-cell');
+          if (!target) return null;
+          const rowIndex = parseInt(target.dataset.row);
+          const colIndex = parseInt(target.dataset.col);
+          return this.findCellByCoords(rowIndex, colIndex);
+        },
+        startSelection (e) {
+          e.preventDefault();
+          this.selection.startCell = this.getCellFromElement(e.target);
+          if (!this.selection.startCell) return;
+          this.selection.active = true;
+
+          const moveHandler = (moveEvent) => {
+            const currentCell = this.getCellFromElement(moveEvent.target);
+            if (!currentCell) return;
+            this.selection.endCell = currentCell;
+            this.updateSelectionBox();
+          };
+
+          const upHandler = () => {
+            document.removeEventListener('mousemove', moveHandler);
+            document.removeEventListener('mouseup', upHandler);
+            this.selection.active = false;
+            this.processSelection();
+          };
+
+          document.addEventListener('mousemove', moveHandler);
+          document.addEventListener('mouseup', upHandler);
+        },
+        updateSelectionBox () {
+          if (!this.selection.startCell || !this.selection.endCell) return;
+          const gridEle = this.$el.querySelector('.header-builder-grid');
+          const startEle = gridEle.querySelector(`[data-row='${this.selection.startCell.rowIndex}'][data-col='${this.selection.startCell.colIndex}']`);
+          const endEle = gridEle.querySelector(`[data-row='${this.selection.endCell.rowIndex}'][data-col='${this.selection.endCell.colIndex}']`);
+
+          const rectStart = startEle.getBoundingClientRect();
+          const rectEnd = endEle.getBoundingClientRect();
+          const gridRect = gridEle.getBoundingClientRect();
+
+          const left = Math.min(rectStart.left, rectEnd.left) - gridRect.left;
+          const top = Math.min(rectStart.top, rectEnd.top) - gridRect.top;
+          const width = Math.max(rectStart.right, rectEnd.right) - Math.min(rectStart.left, rectEnd.left);
+          const height = Math.max(rectStart.bottom, rectEnd.bottom) - Math.min(rectStart.top, rectEnd.top);
+
+          this.selection.style = { left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` };
+        },
+        processSelection () {
+          if (!this.selection.startCell || !this.selection.endCell) return;
+
+          const r1 = Math.min(this.selection.startCell.rowIndex, this.selection.endCell.rowIndex);
+          const c1 = Math.min(this.selection.startCell.colIndex, this.selection.endCell.colIndex);
+          const r2 = Math.max(this.selection.startCell.rowIndex, this.selection.endCell.rowIndex);
+          const c2 = Math.max(this.selection.startCell.colIndex, this.selection.endCell.colIndex);
+
+          let canMerge = true;
+          const cellsToMerge = [];
+          for (let i = r1; i <= r2; i++) {
+            for (let j = c1; j <= c2; j++) {
+              const cell = this.findCellByCoords(i, j);
+              if (!cell || cell.isHidden) {
+                canMerge = false; break;
+              }
+              cellsToMerge.push(cell);
+            }
+            if (!canMerge) break;
+          }
+
+          if (!canMerge || cellsToMerge.length <= 1) return;
+
+          this.$prompt('请输入合并后单元格的标题', '合并单元格', {
+            confirmButtonText: '确定合并',
+            cancelButtonText: '取消',
+            inputValue: this.findCellByCoords(r1, c1).title,
+          }).then(({ value }) => {
+            const masterCell = this.findCellByCoords(r1, c1);
+            masterCell.title = value;
+            masterCell.rowspan = r2 - r1 + 1;
+            masterCell.colspan = c2 - c1 + 1;
+
+            let containsDataCell = false;
+            let dataCellField = null;
+
+            cellsToMerge.forEach(cell => {
+              if (cell !== masterCell) cell.isHidden = true;
+              if (cell.isDataCell) {
+                containsDataCell = true;
+                dataCellField = cell.field;
+              }
+              cell.isDataCell = false; // 清除所有旧的dataCell标记
+            });
+
+            if (containsDataCell) {
+              masterCell.isDataCell = true;
+              masterCell.field = dataCellField;
+            }
+
+            this.$message({ type: 'success', message: '合并成功!' });
+          }).catch(() => { });
+        },
+        splitCell (masterCell) {
+          for (let i = 0; i < masterCell.rowspan; i++) {
+            for (let j = 0; j < masterCell.colspan; j++) {
+              const cell = this.findCellByCoords(masterCell.rowIndex + i, masterCell.colIndex + j);
+              if (cell) {
+                cell.isHidden = false;
+                cell.rowspan = 1;
+                cell.colspan = 1;
+              }
+            }
+          }
+          // 如果拆分的单元格是底层单元格，需要将isDataCell属性重新分配
+          if (masterCell.isDataCell) {
+            for (let j = 0; j < masterCell.colspan; j++) {
+              const cell = this.findCellByCoords(masterCell.rowIndex + masterCell.rowspan - 1, masterCell.colIndex + j);
+              cell.isDataCell = true;
+              cell.field = this.dataColumns[cell.colIndex].field;
+            }
+          }
+          masterCell.isDataCell = (masterCell.rowspan === 1);
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

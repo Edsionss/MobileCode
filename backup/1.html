@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>【Vue 2】重构后的 LayUI 风格嵌套拖拽编辑器</title>
+  <!-- 1. 引入依赖 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.2/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script>
+
+  <style>
+    /* --- 基础布局和面板样式 --- */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .main-layout {
+      display: flex;
+      gap: 20px;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .panel {
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .components-panel {
+      width: 280px;
+      padding: 15px;
+    }
+
+    .canvas-panel {
+      flex-grow: 1;
+      padding: 15px;
+    }
+
+    h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #e4e7ed;
+      padding-bottom: 10px;
+    }
+
+    /* --- 左侧组件库项 --- */
+    .component-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #f5f7fa;
+      cursor: move;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .component-item:hover {
+      border-color: #1E9FFF;
+      color: #1E9FFF;
+    }
+
+    /* --- 画布中的组件项 (外层包裹器) --- */
+    .canvas-node-wrapper {
+      margin-bottom: 10px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .canvas-node-wrapper:hover {
+      box-shadow: 0 0 8px rgba(30, 159, 255, 0.3);
+    }
+
+    .canvas-node-wrapper.is-selected>* {
+      border-color: #FF5722 !important;
+      box-shadow: 0 0 0 2px #FF5722;
+    }
+
+    /* --- 拖拽占位符 --- */
+    .sortable-ghost {
+      opacity: 0.5;
+      background: #c8ebfb;
+      border-radius: 4px;
+    }
+
+    .sortable-ghost>* {
+      visibility: hidden;
+    }
+
+    /* --- LayUI 风格组件样式 --- */
+    .layui-card {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .08);
+    }
+
+    .layui-card-header {
+      padding: 10px 15px;
+      background-color: #f5f7fa;
+      border-bottom: 1px solid #ebeef5;
+      font-weight: bold;
+    }
+
+    .layui-card-body {
+      padding: 15px;
+      min-height: 80px;
+    }
+
+    .layui-row {
+      display: flex;
+      flex-wrap: wrap;
+      position: relative;
+      box-sizing: border-box;
+      border: 1px dashed #1E9FFF;
+      margin-bottom: 10px;
+    }
+
+    .layui-col {
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .layui-col-content {
+      min-height: 60px;
+      box-sizing: border-box;
+      border: 1px dashed #5FB878;
+      background-color: rgba(255, 255, 255, 0.7);
+      height: 100%;
+      padding: 10px;
+    }
+
+    /* --- 拖拽区域和空状态 --- */
+    .drop-zone {
+      min-height: 50px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .empty-placeholder {
+      text-align: center;
+      color: #999;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <div class="main-layout">
+      <!-- ==================== 左侧：组件源 ==================== -->
+      <div class="panel components-panel">
+        <h3>组件库 (拖我!)</h3>
+        <draggable :list="sourceComponents" :group="{ name: 'components-group', pull: 'clone', put: false }"
+          :clone="cloneComponent" :sort="false">
+          <div v-for="element in sourceComponents" :key="element.name" class="component-item">
+            {{ element.name }}
+          </div>
+        </draggable>
+      </div>
+
+      <!-- ==================== 右侧：主画布 ==================== -->
+      <div class="panel canvas-panel">
+        <h3>画布区域 (在这里搭建)</h3>
+        <draggable :list="canvasComponents" group="components-group" class="drop-zone">
+          <!-- 画布的根级渲染 -->
+          <render-node v-for="node in canvasComponents" :key="node.id" :node-config="node"
+            :active-id="activeComponentId" @component-clicked="onComponentClick"></render-node>
+        </draggable>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Vue 组件模板定义 ==================== -->
+
+  <!-- 【核心】递归渲染节点模板 -->
+  <template id="render-node-template">
+    <div class="canvas-node-wrapper" :class="{ 'is-selected': activeId === nodeConfig.id }"
+      @click.stop="clickComponent(nodeConfig)">
+
+      <component :is="nodeConfig.componentName" v-bind="nodeConfig.props">
+        <!-- 如果是容器 (有 children 数组)，则创建可拖拽区域 -->
+        <draggable v-if="isContainer(nodeConfig)" v-model="nodeConfig.children" group="components-group"
+          class="drop-zone">
+          <!-- 递归渲染子节点 -->
+          <render-node v-for="childNode in nodeConfig.children" :key="childNode.id" :node-config="childNode"
+            :active-id="activeId" @component-clicked="bubbleClick"></render-node>
+        </draggable>
+
+        <!-- 如果是空容器，显示提示信息 -->
+        <div v-if="isContainer(nodeConfig) && nodeConfig.children.length === 0" class="empty-placeholder">
+          请拖拽组件到此区域
+        </div>
+      </component>
+    </div>
+  </template>
+
+
+  <!-- ==================== Vue 应用脚本 ==================== -->
+  <script>
+    // -----------------------------------------------------------------
+    // 1. 定义所有可用的物料组件
+    // -----------------------------------------------------------------
+    const LayCard = {
+      template: `
+        <div class="layui-card">
+          <div class="layui-card-header">{{ title || '卡片标题' }}</div>
+          <div class="layui-card-body"><slot></slot></div>
+        </div>
+      `,
+      props: ['title']
+    };
+
+    const LayRow = {
+      template: `<div class="layui-row" :style="rowStyle"><slot></slot></div>`,
+      props: { gap: { type: Number, default: 0 } },
+      computed: {
+        rowStyle () {
+          const margin = this.gap / 2;
+          return { marginLeft: `-${margin}px`, marginRight: `-${margin}px` };
+        }
+      },
+      provide () { return { rowGutter: this.gap }; }
+    };
+
+    const LayCol = {
+      template: `
+        <div class="layui-col" :style="colStyle">
+          <div class="layui-col-content"><slot></slot></div>
+        </div>
+      `,
+      props: { span: { type: Number, default: 24 } },
+      inject: { rowGutter: { from: 'rowGutter', default: 0 } },
+      computed: {
+        colStyle () {
+          const width = (this.span / 24) * 100;
+          const padding = this.rowGutter / 2;
+          return { width: `${width}%`, paddingLeft: `${padding}px`, paddingRight: `${padding}px` };
+        }
+      }
+    };
+
+    // -----------------------------------------------------------------
+    // 2. 定义核心的递归渲染组件
+    // -----------------------------------------------------------------
+    const RenderNode = {
+      name: 'RenderNode', // 递归组件必须有 name
+      template: '#render-node-template',
+      props: ['nodeConfig', 'activeId'],
+      components: {
+        'draggable': vuedraggable, // 引入 vuedraggable
+        // 注册所有物料组件，这样 <component :is> 才能找到它们
+        'lay-card': LayCard,
+        'lay-row': LayRow,
+        'lay-col': LayCol,
+      },
+      methods: {
+        isContainer (node) {
+          // 判断一个节点是否为容器的标准是：它有 children 数组
+          return Array.isArray(node.children);
+        },
+        clickComponent (node) {
+          this.$emit('component-clicked', node);
+        },
+        // 将子组件的点击事件冒泡到顶层
+        bubbleClick (node) {
+          this.$emit('component-clicked', node);
+        }
+      }
+    };
+
+    // -----------------------------------------------------------------
+    // 3. 创建主 Vue 实例
+    // -----------------------------------------------------------------
+    new Vue({
+      el: '#app',
+      components: {
+        'draggable': vuedraggable,
+        'render-node': RenderNode // 在根实例中注册 RenderNode
+      },
+      data: {
+        // 左侧组件库的数据源
+        sourceComponents: [
+          {
+            name: '卡片',
+            componentName: 'lay-card',
+            props: { title: '新卡片' },
+            children: [] // 卡片是容器
+          },
+          {
+            name: '栅格：一行两列',
+            componentName: 'lay-row',
+            props: { gap: 10 },
+            // meta 用于在克隆时生成动态结构
+            meta: { type: 'grid', cols: 2 }
+          },
+          {
+            name: '栅格：一行三列',
+            componentName: 'lay-row',
+            props: { gap: 10 },
+            meta: { type: 'grid', cols: 3 }
+          },
+          {
+            name: '栅格：一行四列',
+            componentName: 'lay-row',
+            props: { gap: 10 },
+            meta: { type: 'grid', cols: 4 }
+          }
+        ],
+        // 右侧画布的数据模型
+        canvasComponents: [],
+        // 当前选中的组件ID
+        activeComponentId: null,
+      },
+      methods: {
+        // 唯一的ID生成器
+        generateUniqueId () {
+          return 'comp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        },
+
+        // 克隆组件的函数，处理栅格等特殊情况
+        cloneComponent (original) {
+          const id = this.generateUniqueId();
+
+          // 如果是栅格布局
+          if (original.meta && original.meta.type === 'grid') {
+            const newRow = {
+              id: id,
+              componentName: 'lay-row',
+              props: JSON.parse(JSON.stringify(original.props)),
+              children: []
+            };
+
+            const colCount = original.meta.cols;
+            const span = Math.floor(24 / colCount);
+            for (let i = 0; i < colCount; i++) {
+              newRow.children.push({
+                id: this.generateUniqueId(),
+                componentName: 'lay-col',
+                props: { span: span },
+                children: [] // 列也是容器
+              });
+            }
+            const remainder = 24 % colCount;
+            if (remainder > 0) {
+              newRow.children[newRow.children.length - 1].props.span += remainder;
+            }
+            return newRow;
+          }
+
+          // 其他普通组件
+          const newComponent = JSON.parse(JSON.stringify(original));
+          newComponent.id = id;
+          // 如果是容器但没有 children，确保有一个空的 children 数组
+          if (newComponent.children) {
+            newComponent.children = [];
+          }
+          delete newComponent.meta; // 清理掉 meta 数据
+          return newComponent;
+        },
+
+        // 点击画布中的组件时触发
+        onComponentClick (element) {
+          console.log('选中组件:', element.id, element);
+          this.activeComponentId = element.id;
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+<div class="layui-panel__container">
+  <component v-if="config.children" :is="config.tag" :config="config" class="layui-panel__item">
+    <!-- 语法 v-slot:[slotName] 用于动态绑定插槽名 -->
+    <template v-for="(_, slotName) in $scopedSlots" v-slot:[slotName]="scope">
+      <slot :name="slotName" v-bind="scope"></slot>
+    </template>
+  </component>
+  <lay-form v-else-if="config.groupName=='form'">
+    <component :is="config.tag" :config="config" class="layui-panel__item" v-if="config.props.other"></component>
+    <div class="layui-panel__item" v-html="renderHtml"></div>
+  </lay-form>
+  <component :is="config.tag" :config="config" class="layui-panel__item" v-else-if="config.props.other"></component>
+  <div v-else class="layui-panel__item" v-html="renderHtml"></div>
+</div>
